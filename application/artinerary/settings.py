@@ -31,7 +31,7 @@ SECRET_KEY_FALLBACKS = [
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['artinerary-dev.us-east-2.elasticbeanstalk.com']
 
 
 # Application definition
