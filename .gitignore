@@ -1,4 +1,12 @@
 .vscode
 .env
 
-application/artinerary/__pycache__/
+__pycache__/
+core/__pycache__/
+core/__pycache__/*
+artinerary/__pycache__/*
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
