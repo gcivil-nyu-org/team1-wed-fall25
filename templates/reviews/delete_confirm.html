@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Review{% endblock %}
+
+{% block content %}
+<div class="delete-confirm">
+    <h1>Delete Review</h1>
+    
+    <p>Are you sure you want to delete your review of <strong>{{ review.location.name }}</strong>?</p>
+    
+    <div class="review-preview" style="border: 1px solid #ddd; padding: 15px; margin: 20px 0; background: #f9f9f9;">
+        <p><strong>Rating:</strong> {{ review.rating }} ⭐</p>
+        <p>{{ review.text|truncatewords:50 }}</p>
+        {% if review.photos.all %}
+        <p><strong>Photos:</strong> {{ review.photos.count }}</p>
+        {% endif %}
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Yes, Delete Review</button>
+        <a href="{% url 'locations:detail' review.location.pk %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}
+

@@ -63,7 +63,7 @@
         <h2>Reviews</h2>
         
         {% if user.is_authenticated %}
-        <a href="/locations/{{ location.pk }}/reviews/new/" class="btn btn-primary">Write a Review</a>
+        <a href="{% url 'reviews:create' location.pk %}" class="btn btn-primary">Write a Review</a>
         {% endif %}
         
         {% if reviews %}
@@ -71,6 +71,20 @@
             <div class="review-card" style="border: 1px solid #ddd; padding: 15px; margin: 15px 0; border-radius: 5px;">
                 <p><strong>{{ review.user.username }}</strong> - {{ review.rating }} ⭐</p>
                 <p>{{ review.text }}</p>
+                
+                {% if review.photos.all %}
+                <div class="review-photos" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
+                    {% for photo in review.photos.all %}
+                    <div class="photo-item">
+                        <img src="{{ photo.image.url }}" alt="{{ photo.caption }}" style="max-width: 200px; height: auto; border-radius: 5px;">
+                        {% if photo.caption %}
+                        <p style="font-size: 0.85em; color: #666;">{{ photo.caption }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
                 <p style="font-size: 0.9em; color: #666;">{{ review.created_at|date:"F d, Y" }}</p>
                 
                 {% if review.user == user or user.is_staff %}

@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} Review - {{ location.name }}{% endblock %}
+
+{% block content %}
+<div class="review-form">
+    <h1>{{ action }} Review: {{ location.name }}</h1>
+    
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        {% if form.errors or photo_formset.errors %}
+        <div class="form-errors" style="color: red; margin-bottom: 15px;">
+            {{ form.errors }}
+            {{ photo_formset.errors }}
+        </div>
+        {% endif %}
+        
+        <div class="form-group">
+            <label>Rating:*</label>
+            {{ form.rating }}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.text.id_for_label }}">Review:*</label>
+            {{ form.text }}
+        </div>
+        
+        <h3>Photos (optional, up to 5)</h3>
+        {{ photo_formset.management_form }}
+        
+        <div id="photo-formset">
+            {% for photo_form in photo_formset %}
+            <div class="photo-form-row" style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px;">
+                {% if photo_form.instance.pk and photo_form.instance.image %}
+                <img src="{{ photo_form.instance.image.url }}" alt="Current photo" style="max-width: 150px; display: block; margin-bottom: 10px;">
+                {% endif %}
+                
+                <div class="form-group">
+                    <label>Image:</label>
+                    {{ photo_form.image }}
+                </div>
+                
+                <div class="form-group">
+                    <label>Caption:</label>
+                    {{ photo_form.caption }}
+                </div>
+                
+                {% if photo_form.instance.pk %}
+                <div class="form-group">
+                    <label>
+                        {{ photo_form.DELETE }}
+                        Delete this photo
+                    </label>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save Review</button>
+            <a href="{% url 'locations:detail' location.pk %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
