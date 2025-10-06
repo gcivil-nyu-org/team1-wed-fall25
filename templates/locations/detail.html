@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ location.name }} - Artinerary{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+{% endblock %}
+
+{% block content %}
+<div class="location-detail">
+    <h1>{{ location.name }}</h1>
+    
+    {% if location.image_url %}
+    <img src="{{ location.image_url }}" alt="{{ location.name }}" style="max-width: 100%; height: auto; margin-bottom: 20px;">
+    {% endif %}
+    
+    <div class="location-actions" style="margin-bottom: 20px;">
+        {% if user.is_authenticated %}
+        <form method="post" action="{% url 'locations:favorite_toggle' location.pk %}" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">
+                {% if is_favorited %}❤️ Unfavorite{% else %}🤍 Favorite{% endif %}
+            </button>
+        </form>
+        
+        {% if location.created_by == user or user.is_staff %}
+        <a href="{% url 'locations:edit' location.pk %}" class="btn btn-secondary">Edit</a>
+        {% endif %}
+        {% endif %}
+        
+        <a href="/reports/new/?type=location&id={{ location.pk }}" class="btn btn-secondary">Report Issue</a>
+    </div>
+    
+    <div class="location-info">
+        <p>{{ location.description }}</p>
+        
+        <p><strong>Address:</strong> {{ location.address }}, {{ location.city }}, {{ location.state }} {{ location.postal_code }}</p>
+        
+        <p><strong>Rating:</strong> {{ location.average_rating|floatformat:1 }} ⭐ ({{ location.review_count }} reviews)</p>
+        
+        {% if location.website_url %}
+        <p><strong>Website:</strong> <a href="{{ location.website_url }}" target="_blank">{{ location.website_url }}</a></p>
+        {% endif %}
+        
+        {% if location.tags.all %}
+        <p><strong>Tags:</strong>
+            {% for tag in location.tags.all %}
+                <span class="tag">{{ tag.name }}</span>
+            {% endfor %}
+        </p>
+        {% endif %}
+        
+        <p><strong>Source:</strong> {{ location.get_source_display }}</p>
+        {% if location.created_by %}
+        <p><strong>Added by:</strong> {{ location.created_by.username }}</p>
+        {% endif %}
+    </div>
+    
+    <div id="map" style="height: 300px; width: 100%; margin: 20px 0;"></div>
+    
+    <div class="reviews-section" style="margin-top: 30px;">
+        <h2>Reviews</h2>
+        
+        {% if user.is_authenticated %}
+        <a href="/locations/{{ location.pk }}/reviews/new/" class="btn btn-primary">Write a Review</a>
+        {% endif %}
+        
+        {% if reviews %}
+            {% for review in reviews %}
+            <div class="review-card" style="border: 1px solid #ddd; padding: 15px; margin: 15px 0; border-radius: 5px;">
+                <p><strong>{{ review.user.username }}</strong> - {{ review.rating }} ⭐</p>
+                <p>{{ review.text }}</p>
+                <p style="font-size: 0.9em; color: #666;">{{ review.created_at|date:"F d, Y" }}</p>
+                
+                {% if review.user == user or user.is_staff %}
+                <a href="{% url 'reviews:edit' review.pk %}">Edit</a> | 
+                <a href="{% url 'reviews:delete' review.pk %}">Delete</a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <p>No reviews yet. Be the first to review!</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// Single location map
+document.addEventListener('DOMContentLoaded', function() {
+    const map = L.map('map').setView([{{ location.latitude }}, {{ location.longitude }}], 15);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+    
+    L.marker([{{ location.latitude }}, {{ location.longitude }}])
+        .addTo(map)
+        .bindPopup("<strong>{{ location.name|escapejs }}</strong>")
+        .openPopup();
+});
+</script>
+{% endblock %}
+

@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}My Favorites - Artinerary{% endblock %}
+
+{% block content %}
+<div class="favorites-container">
+    <h1>My Favorite Locations</h1>
+    
+    {% if favorites %}
+        <div class="favorites-list">
+            {% for favorite in favorites %}
+            <div class="location-card" style="border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 5px;">
+                <h3><a href="{% url 'locations:detail' favorite.location.pk %}">{{ favorite.location.name }}</a></h3>
+                <p>{{ favorite.location.description|truncatewords:30 }}</p>
+                <p><strong>Address:</strong> {{ favorite.location.address }}</p>
+                <p><strong>Rating:</strong> {{ favorite.location.average_rating|floatformat:1 }} ⭐ ({{ favorite.location.review_count }} reviews)</p>
+                
+                {% if favorite.location.tags.all %}
+                <p><strong>Tags:</strong>
+                    {% for tag in favorite.location.tags.all %}
+                        <span class="tag">{{ tag.name }}</span>
+                    {% endfor %}
+                </p>
+                {% endif %}
+                
+                <p style="font-size: 0.9em; color: #666;">Favorited on {{ favorite.created_at|date:"F d, Y" }}</p>
+                
+                <form method="post" action="{% url 'locations:favorite_toggle' favorite.location.pk %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm">❤️ Remove from Favorites</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if page_obj.has_other_pages %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+            {% endif %}
+            
+            <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">Next</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    {% else %}
+        <p>You haven't favorited any locations yet. <a href="{% url 'locations:list' %}">Browse locations</a> to find your favorites!</p>
+    {% endif %}
+</div>
+{% endblock %}
+

@@ -1,0 +1,12 @@
+name,description,address,latitude,longitude,id
+"The Sphere","Bronze sculpture by Fritz Koenig, relocated from World Trade Center","Battery Park, Manhattan",40.703952,-74.017189,sphere_001
+"Charging Bull","Bronze bull sculpture by Arturo Di Modica","Bowling Green, Manhattan",40.705557,-74.013333,bull_001
+"Fearless Girl","Bronze statue by Kristen Visbal facing Charging Bull","Bowling Green, Manhattan",40.705646,-74.013319,girl_001
+"Alice in Wonderland","Bronze sculpture by Jose de Creeft","Central Park East 75th Street",40.774383,-73.966458,alice_001
+"Balto Statue","Bronze sled dog sculpture","Central Park East Drive at 67th Street",40.769394,-73.971654,balto_001
+"Bethesda Fountain","Angel of the Waters sculpture by Emma Stebbins","Central Park Mid-Park at 72nd Street",40.773983,-73.971298,bethesda_001
+"The Imagine Mosaic","John Lennon memorial mosaic","Strawberry Fields, Central Park West at 72nd Street",40.775669,-73.975697,imagine_001
+"Grant's Tomb","Mausoleum and memorial","Riverside Drive at 122nd Street",40.813838,-73.963055,grant_001
+"Columbus Circle Monument","Monument to Christopher Columbus","Central Park Southwest entrance",40.768105,-73.981927,columbus_001
+"Prometheus Statue","Gilded bronze statue by Paul Manship","Rockefeller Center Lower Plaza",40.758740,-73.978674,prometheus_001
+

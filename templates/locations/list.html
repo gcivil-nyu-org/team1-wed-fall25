@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Locations - Artinerary{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+{% endblock %}
+
+{% block content %}
+<div class="locations-container">
+    <h1>Art Locations</h1>
+    
+    <div class="filters" style="margin-bottom: 20px;">
+        <form method="get" style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <input type="text" name="q" placeholder="Search..." value="{{ search_query }}" style="flex: 1; min-width: 200px;">
+            
+            <select name="tag" onchange="this.form.submit()">
+                <option value="">All Tags</option>
+                {% for tag in tags %}
+                <option value="{{ tag.slug }}" {% if tag.slug == current_tag %}selected{% endif %}>
+                    {{ tag.name }}
+                </option>
+                {% endfor %}
+            </select>
+            
+            <select name="sort" onchange="this.form.submit()">
+                <option value="-created_at" {% if sort == '-created_at' %}selected{% endif %}>Newest</option>
+                <option value="-average_rating" {% if sort == '-average_rating' %}selected{% endif %}>Highest Rated</option>
+                <option value="-review_count" {% if sort == '-review_count' %}selected{% endif %}>Most Reviewed</option>
+                <option value="name" {% if sort == 'name' %}selected{% endif %}>Name A-Z</option>
+            </select>
+            
+            <button type="submit" class="btn btn-primary">Filter</button>
+            <a href="{% url 'locations:list' %}" class="btn btn-secondary">Clear</a>
+        </form>
+        
+        {% if user.is_authenticated %}
+        <a href="{% url 'locations:create' %}" class="btn btn-primary" style="margin-top: 10px;">Add New Location</a>
+        {% endif %}
+    </div>
+    
+    <div id="map" style="height: 400px; width: 100%; margin-bottom: 20px;"></div>
+    
+    <div class="locations-list">
+        {% if locations %}
+            {% for location in locations %}
+            <div class="location-card" style="border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 5px;">
+                <h3><a href="{% url 'locations:detail' location.pk %}">{{ location.name }}</a></h3>
+                <p>{{ location.description|truncatewords:30 }}</p>
+                <p><strong>Address:</strong> {{ location.address }}</p>
+                <p><strong>Rating:</strong> {{ location.average_rating|floatformat:1 }} ⭐ ({{ location.review_count }} reviews)</p>
+                
+                {% if location.tags.all %}
+                <p><strong>Tags:</strong>
+                    {% for tag in location.tags.all %}
+                        <span class="tag">{{ tag.name }}</span>
+                    {% endfor %}
+                </p>
+                {% endif %}
+                
+                {% if user.is_authenticated %}
+                <form method="post" action="{% url 'locations:favorite_toggle' location.pk %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm">
+                        {% if location.pk in user_favorites %}❤️ Unfavorite{% else %}🤍 Favorite{% endif %}
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <p>No locations found. {% if user.is_authenticated %}<a href="{% url 'locations:create' %}">Add the first one!</a>{% endif %}</p>
+        {% endif %}
+    </div>
+    
+    {% if page_obj.has_other_pages %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page=1&q={{ search_query }}&tag={{ current_tag }}&sort={{ sort }}">&laquo; First</a>
+            <a href="?page={{ page_obj.previous_page_number }}&q={{ search_query }}&tag={{ current_tag }}&sort={{ sort }}">Previous</a>
+        {% endif %}
+        
+        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&q={{ search_query }}&tag={{ current_tag }}&sort={{ sort }}">Next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}&q={{ search_query }}&tag={{ current_tag }}&sort={{ sort }}">Last &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// Pass locations data to JS
+window.locationsData = [
+    {% for loc in locations %}
+    {
+        id: {{ loc.pk }},
+        name: "{{ loc.name|escapejs }}",
+        description: "{{ loc.description|truncatewords:20|escapejs }}",
+        latitude: {{ loc.latitude }},
+        longitude: {{ loc.longitude }}
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+</script>
+<script src="{% static 'js/map.js' %}"></script>
+{% endblock %}
+
