@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ itinerary.title }} - Artinerary{% endblock %}
+
+{% block content %}
+<div class="itinerary-detail">
+    <h1>{{ itinerary.title }}</h1>
+    
+    {% if itinerary.notes %}
+    <p>{{ itinerary.notes }}</p>
+    {% endif %}
+    
+    <p><strong>Owner:</strong> {{ itinerary.owner.username }}</p>
+    <p><strong>Visibility:</strong> {% if itinerary.is_public %}Public{% else %}Private{% endif %}</p>
+    <p><strong>Stops:</strong> {{ items.count }}</p>
+    
+    {% if is_owner %}
+    <div class="actions" style="margin: 20px 0;">
+        <a href="{% url 'itineraries:edit' itinerary.pk %}" class="btn btn-secondary">Edit Details</a>
+        <a href="{% url 'itineraries:item_add' itinerary.pk %}" class="btn btn-primary">Add Location</a>
+        <form method="post" action="{% url 'itineraries:delete' itinerary.pk %}" style="display: inline;" 
+              onsubmit="return confirm('Delete this itinerary and all its stops?');">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Delete Itinerary</button>
+        </form>
+    </div>
+    {% endif %}
+    
+    <h2>Stops</h2>
+    {% if items %}
+        <div id="items-list" class="items-list" style="margin-top: 20px;">
+            {% for item in items %}
+            <div class="itinerary-item" data-item-id="{{ item.pk }}" 
+                 style="border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 5px; background: white; cursor: move;">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div style="flex: 1;">
+                        <h4>
+                            {{ forloop.counter }}. 
+                            <a href="{% url 'locations:detail' item.location.pk %}">{{ item.location.name }}</a>
+                        </h4>
+                        <p>{{ item.location.address }}</p>
+                        {% if item.note %}
+                        <p><em>Note: {{ item.note }}</em></p>
+                        {% endif %}
+                        {% if item.planned_start %}
+                        <p><strong>Planned:</strong> {{ item.planned_start|date:"M d, Y g:i A" }}
+                           {% if item.planned_end %} - {{ item.planned_end|date:"g:i A" }}{% endif %}</p>
+                        {% endif %}
+                    </div>
+                    
+                    {% if is_owner %}
+                    <div class="item-actions">
+                        <form method="post" action="{% url 'itineraries:item_delete' itinerary.pk item.pk %}" style="display: inline;"
+                              onsubmit="return confirm('Remove this stop?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if is_owner %}
+        <p style="color: #666; font-size: 0.9em; margin-top: 10px;">💡 Drag items to reorder</p>
+        {% endif %}
+    {% else %}
+        <p>No stops yet. {% if is_owner %}<a href="{% url 'itineraries:item_add' itinerary.pk %}">Add your first location!</a>{% endif %}</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if is_owner and items %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+// Drag and drop reordering
+document.addEventListener('DOMContentLoaded', function() {
+    const itemsList = document.getElementById('items-list');
+    if (!itemsList) return;
+    
+    const sortable = new Sortable(itemsList, {
+        animation: 150,
+        handle: '.itinerary-item',
+        onEnd: function(evt) {
+            // Get new order
+            const items = itemsList.querySelectorAll('.itinerary-item');
+            const itemIds = Array.from(items).map(item => item.dataset.itemId);
+            
+            // Send to server
+            fetch('{% url "itineraries:item_reorder" itinerary.pk %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ item_ids: itemIds })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update numbering
+                    items.forEach((item, index) => {
+                        const header = item.querySelector('h4');
+                        header.innerHTML = header.innerHTML.replace(/^\d+\./, (index + 1) + '.');
+                    });
+                } else {
+                    alert('Failed to reorder: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                alert('Failed to reorder: ' + error);
+            });
+        }
+    });
+});
+</script>
+{% endif %}
+{% endblock %}
+

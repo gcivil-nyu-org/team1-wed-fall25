@@ -24,6 +24,8 @@
             </button>
         </form>
         
+        <a href="{% url 'itineraries:list' %}?add_location={{ location.pk }}" class="btn btn-primary">📍 Add to Itinerary</a>
+        
         {% if location.created_by == user or user.is_staff %}
         <a href="{% url 'locations:edit' location.pk %}" class="btn btn-secondary">Edit</a>
         {% endif %}

@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}My Itineraries - Artinerary{% endblock %}
+
+{% block content %}
+<div class="itineraries-container">
+    <h1>My Itineraries</h1>
+    
+    {% if request.GET.add_location %}
+    <div class="info-message" style="background: #e7f3ff; padding: 15px; margin-bottom: 20px; border-radius: 5px;">
+        <p>Select an itinerary to add this location to, or create a new one.</p>
+    </div>
+    {% endif %}
+    
+    <div class="actions" style="margin-bottom: 20px;">
+        <a href="{% url 'itineraries:create' %}" class="btn btn-primary">Create New Itinerary</a>
+    </div>
+    
+    {% if itineraries %}
+        <div class="itineraries-list">
+            {% for itinerary in itineraries %}
+            <div class="itinerary-card" style="border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 5px;">
+                <h3><a href="{% url 'itineraries:detail' itinerary.pk %}">{{ itinerary.title }}</a></h3>
+                
+                {% if itinerary.notes %}
+                <p>{{ itinerary.notes|truncatewords:30 }}</p>
+                {% endif %}
+                
+                <p><strong>Stops:</strong> {{ itinerary.items.count }}</p>
+                <p><strong>Visibility:</strong> {% if itinerary.is_public %}Public{% else %}Private{% endif %}</p>
+                <p style="font-size: 0.9em; color: #666;">
+                    Created: {{ itinerary.created_at|date:"F d, Y" }} | 
+                    Updated: {{ itinerary.updated_at|date:"F d, Y" }}
+                </p>
+                
+                <div class="card-actions">
+                    {% if request.GET.add_location %}
+                    <a href="{% url 'itineraries:item_add' itinerary.pk %}?location_id={{ request.GET.add_location }}" class="btn btn-sm btn-primary">Add Here</a>
+                    {% endif %}
+                    <a href="{% url 'itineraries:detail' itinerary.pk %}" class="btn btn-sm">View</a>
+                    <a href="{% url 'itineraries:edit' itinerary.pk %}" class="btn btn-sm">Edit</a>
+                    <form method="post" action="{% url 'itineraries:delete' itinerary.pk %}" style="display: inline;" 
+                          onsubmit="return confirm('Delete this itinerary?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if page_obj.has_other_pages %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+            {% endif %}
+            
+            <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">Next</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    {% else %}
+        <p>You haven't created any itineraries yet. <a href="{% url 'itineraries:create' %}">Create your first one!</a></p>
+    {% endif %}
+</div>
+{% endblock %}
+
