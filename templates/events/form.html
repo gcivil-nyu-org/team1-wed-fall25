@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} Event - Artinerary{% endblock %}
+
+{% block content %}
+<div class="event-form">
+    <h1>{{ action }} Event</h1>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        {% if form.errors %}
+        <div class="form-errors" style="color: red; margin-bottom: 15px;">
+            {{ form.errors }}
+        </div>
+        {% endif %}
+        
+        <div class="form-group">
+            <label for="{{ form.title.id_for_label }}">Title:*</label>
+            {{ form.title }}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.description.id_for_label }}">Description:*</label>
+            {{ form.description }}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.visibility.id_for_label }}">Visibility:*</label>
+            {{ form.visibility }}
+        </div>
+        
+        <div class="form-row" style="display: flex; gap: 10px;">
+            <div class="form-group" style="flex: 1;">
+                <label for="{{ form.start_time.id_for_label }}">Start Time:*</label>
+                {{ form.start_time }}
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label for="{{ form.end_time.id_for_label }}">End Time:</label>
+                {{ form.end_time }}
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.max_attendees.id_for_label }}">Max Attendees (optional):</label>
+            {{ form.max_attendees }}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.itinerary.id_for_label }}">Link Itinerary (optional):</label>
+            {{ form.itinerary }}
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save Event</button>
+            <a href="{% if event %}{% url 'events:detail' event.pk %}{% else %}{% url 'events:list' %}{% endif %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+

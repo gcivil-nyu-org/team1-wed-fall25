@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ event.title }} - Artinerary{% endblock %}
+
+{% block content %}
+<div class="event-detail">
+    <h1>{{ event.title }}</h1>
+    
+    <p>{{ event.description }}</p>
+    
+    <p><strong>When:</strong> {{ event.start_time|date:"F d, Y g:i A" }}
+       {% if event.end_time %} - {{ event.end_time|date:"g:i A" }}{% endif %}</p>
+    <p><strong>Organizer:</strong> {{ event.owner.username }}</p>
+    <p><strong>Visibility:</strong> {{ event.get_visibility_display }}</p>
+    {% if event.max_attendees %}
+    <p><strong>Capacity:</strong> {{ event.attendee_count }} / {{ event.max_attendees }}</p>
+    {% endif %}
+    
+    {% if is_owner %}
+    <div class="owner-actions" style="margin: 20px 0;">
+        <a href="{% url 'events:edit' event.pk %}" class="btn btn-secondary">Edit Event</a>
+        <a href="{% url 'events:invite' event.pk %}" class="btn btn-primary">Invite Users</a>
+        <form method="post" action="{% url 'events:delete' event.pk %}" style="display: inline;" onsubmit="return confirm('Delete this event?');">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+    </div>
+    {% endif %}
+    
+    {% if user.is_authenticated and not is_owner %}
+    <div class="rsvp-section" style="margin: 20px 0;">
+        <h3>Your RSVP</h3>
+        {% if user_rsvp %}
+        <p>Current status: <strong>{{ user_rsvp.get_status_display }}</strong></p>
+        {% endif %}
+        
+        <form method="post" action="{% url 'events:rsvp' event.pk %}">
+            {% csrf_token %}
+            <button type="submit" name="status" value="going" class="btn btn-primary">Going</button>
+            <button type="submit" name="status" value="maybe" class="btn btn-secondary">Maybe</button>
+            <button type="submit" name="status" value="not_going" class="btn btn-secondary">Not Going</button>
+        </form>
+    </div>
+    {% endif %}
+    
+    <h2>Locations</h2>
+    {% if locations %}
+        <div class="event-locations">
+            {% for loc in locations %}
+            <div class="location-item" style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px;">
+                <h4>{{ forloop.counter }}. <a href="{% url 'locations:detail' loc.location.pk %}">{{ loc.location.name }}</a></h4>
+                <p>{{ loc.location.address }}</p>
+                {% if loc.note %}<p><em>{{ loc.note }}</em></p>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No locations added yet.</p>
+    {% endif %}
+    
+    <h2>Attendees</h2>
+    <h3>Going ({{ rsvps_going.count }})</h3>
+    {% if rsvps_going %}
+        <ul>
+            {% for rsvp in rsvps_going %}
+            <li>{{ rsvp.user.username }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No confirmed attendees yet.</p>
+    {% endif %}
+    
+    {% if rsvps_maybe %}
+    <h3>Maybe ({{ rsvps_maybe.count }})</h3>
+    <ul>
+        {% for rsvp in rsvps_maybe %}
+        <li>{{ rsvp.user.username }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</div>
+{% endblock %}
+

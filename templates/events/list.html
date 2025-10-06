@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Events - Artinerary{% endblock %}
+
+{% block content %}
+<div class="events-container">
+    <h1>Art Events</h1>
+    
+    <div class="actions" style="margin-bottom: 20px;">
+        {% if user.is_authenticated %}
+        <a href="{% url 'events:create' %}" class="btn btn-primary">Create Event</a>
+        {% endif %}
+        
+        <form method="get" style="display: inline; margin-left: 10px;">
+            <select name="time" onchange="this.form.submit()">
+                <option value="upcoming" {% if filter_time == 'upcoming' %}selected{% endif %}>Upcoming</option>
+                <option value="past" {% if filter_time == 'past' %}selected{% endif %}>Past</option>
+                <option value="all" {% if filter_time == 'all' %}selected{% endif %}>All</option>
+            </select>
+        </form>
+    </div>
+    
+    {% if events %}
+        <div class="events-list">
+            {% for event in events %}
+            <div class="event-card" style="border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 5px;">
+                <h3><a href="{% url 'events:detail' event.pk %}">{{ event.title }}</a></h3>
+                <p>{{ event.description|truncatewords:30 }}</p>
+                <p><strong>When:</strong> {{ event.start_time|date:"F d, Y g:i A" }}</p>
+                <p><strong>Organizer:</strong> {{ event.owner.username }}</p>
+                <p><strong>Visibility:</strong> {{ event.get_visibility_display }}</p>
+                <p><strong>Attendees:</strong> {{ event.attendee_count }}</p>
+                <a href="{% url 'events:detail' event.pk %}" class="btn btn-sm">View Details</a>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if page_obj.has_other_pages %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}&time={{ filter_time }}">Previous</a>
+            {% endif %}
+            <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&time={{ filter_time }}">Next</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    {% else %}
+        <p>No events found. {% if user.is_authenticated %}<a href="{% url 'events:create' %}">Create the first one!</a>{% endif %}</p>
+    {% endif %}
+</div>
+{% endblock %}
+
