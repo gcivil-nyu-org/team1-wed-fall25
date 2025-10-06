@@ -6,14 +6,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Artinerary{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/site.css' %}">
+    {% block extra_head %}{% endblock %}
 </head>
 <body>
     <nav>
         <div class="nav-container">
-            <a href="/artinerary/" class="logo">Artinerary</a>
+            <a href="/" class="logo">Artinerary</a>
             <div class="nav-links">
+                <a href="/">Map</a>
                 {% if user.is_authenticated %}
-                    <span>Hello, {{ user.username }}</span>
+                    <a href="{% url 'locations:list' %}">Locations</a>
+                    <a href="{% url 'itineraries:list' %}">Itineraries</a>
+                    <a href="{% url 'events:list' %}">Events</a>
+                    <a href="{% url 'locations:favorites' %}">Favorites</a>
+                    <a href="{% url 'accounts:profile' %}">Profile</a>
                     <a href="{% url 'accounts:logout' %}">Logout</a>
                 {% else %}
                     <a href="{% url 'accounts:login' %}">Login</a>
@@ -34,6 +40,7 @@
     <main>
         {% block content %}{% endblock %}
     </main>
+    {% block extra_js %}{% endblock %}
 </body>
 </html>
 

@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home - Artinerary{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+{% endblock %}
+
+{% block content %}
+<div class="home-container">
+    <h1>Discover Public Art in NYC</h1>
+    <p>Explore outdoor art installations, plan itineraries, and join community events.</p>
+    
+    <div id="map" style="height: 500px; width: 100%; margin-top: 20px;"></div>
+    
+    {% if not user.is_authenticated %}
+    <div class="cta-section" style="text-align: center; margin-top: 30px;">
+        <h2>Get Started</h2>
+        <p>Sign up to save your favorite locations, create itineraries, and join events!</p>
+        <a href="{% url 'accounts:signup' %}" class="btn btn-primary">Sign Up</a>
+        <a href="{% url 'accounts:login' %}" class="btn btn-secondary">Login</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{% static 'js/map.js' %}"></script>
+{% endblock %}
+

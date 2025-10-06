@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile - {{ profile.name }}{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <h1>{{ profile.name }}'s Profile</h1>
+    
+    {% if profile.avatar %}
+    <img src="{{ profile.avatar.url }}" alt="Avatar" style="max-width: 200px; border-radius: 50%;">
+    {% endif %}
+    
+    <div class="profile-info">
+        <p><strong>Username:</strong> {{ profile.user.username }}</p>
+        <p><strong>Email:</strong> {{ profile.user.email }}</p>
+        {% if profile.user.first_name or profile.user.last_name %}
+        <p><strong>Name:</strong> {{ profile.user.first_name }} {{ profile.user.last_name }}</p>
+        {% endif %}
+        {% if profile.bio %}
+        <p><strong>Bio:</strong> {{ profile.bio }}</p>
+        {% endif %}
+        <p><strong>Member since:</strong> {{ profile.created_at|date:"F d, Y" }}</p>
+    </div>
+    
+    <div class="profile-actions" style="margin-top: 20px;">
+        <a href="{% url 'accounts:profile_edit' %}" class="btn btn-primary">Edit Profile</a>
+    </div>
+</div>
+{% endblock %}
+
