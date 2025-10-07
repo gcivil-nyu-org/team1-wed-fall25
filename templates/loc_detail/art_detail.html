@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ art.title|default:"Untitled" }} - Artinerary{% endblock %}
+
+{% block content %}
+<div class="art-detail-container">
+    <div class="breadcrumb">
+        <a href="{% url 'loc_detail:index' %}">← Back to Gallery</a>
+    </div>
+
+    <div class="detail-grid">
+        <div class="detail-main">
+            <div class="detail-header">
+                <h1 class="detail-title">{{ art.title|default:"Untitled" }}</h1>
+                {% if art.borough %}
+                    <span class="detail-badge">{{ art.borough }}</span>
+                {% endif %}
+            </div>
+
+            <div class="detail-section">
+                <h2>Artist Information</h2>
+                <p class="detail-artist">{{ art.artist_name|default:"Unknown Artist" }}</p>
+            </div>
+
+            {% if art.description %}
+                <div class="detail-section">
+                    <h2>Description</h2>
+                    <p class="detail-description">{{ art.description }}</p>
+                </div>
+            {% endif %}
+
+            <div class="detail-section">
+                <h2>Details</h2>
+                <div class="detail-info-grid">
+                    {% if art.medium %}
+                        <div class="info-item">
+                            <span class="info-label">Medium</span>
+                            <span class="info-value">{{ art.medium }}</span>
+                        </div>
+                    {% endif %}
+
+                    {% if art.dimensions %}
+                        <div class="info-item">
+                            <span class="info-label">Dimensions</span>
+                            <span class="info-value">{{ art.dimensions }}</span>
+                        </div>
+                    {% endif %}
+
+                    {% if art.year_created %}
+                        <div class="info-item">
+                            <span class="info-label">Year Created</span>
+                            <span class="info-value">{{ art.year_created }}</span>
+                        </div>
+                    {% endif %}
+
+                    {% if art.year_dedicated %}
+                        <div class="info-item">
+                            <span class="info-label">Year Dedicated</span>
+                            <span class="info-value">{{ art.year_dedicated }}</span>
+                        </div>
+                    {% endif %}
+
+                    {% if art.agency %}
+                        <div class="info-item">
+                            <span class="info-label">Agency</span>
+                            <span class="info-value">{{ art.agency }}</span>
+                        </div>
+                    {% endif %}
+
+                    {% if art.community_board %}
+                        <div class="info-item">
+                            <span class="info-label">Community Board</span>
+                            <span class="info-value">{{ art.community_board }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if art.location %}
+                <div class="detail-section">
+                    <h2>Location</h2>
+                    <p class="detail-location">{{ art.location }}</p>
+                    
+                    {% if art.latitude and art.longitude %}
+                        <div class="coordinates">
+                            <small>Coordinates: {{ art.latitude }}, {{ art.longitude }}</small>
+                            <a href="https://www.google.com/maps?q={{ art.latitude }},{{ art.longitude }}" 
+                               target="_blank" 
+                               class="map-link">
+                                Open in Google Maps →
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <!-- Comments Section -->
+            <div class="detail-section comments-section">
+                <h2>Community Comments</h2>
+                
+                <!-- Comment Form -->
+                <div class="comment-form-container">
+                    <h3>Leave a Comment</h3>
+                    <form method="post" class="comment-form">
+                        {% csrf_token %}
+                        <textarea 
+                            name="comment" 
+                            rows="4" 
+                            placeholder="Share your thoughts about this artwork..."
+                            required
+                            class="comment-textarea"
+                        ></textarea>
+                        <button type="submit" class="btn btn-comment">Post Comment</button>
+                    </form>
+                </div>
+
+                <!-- Display Comments -->
+                <div class="comments-list">
+                    <h3>Comments ({{ comments.count }})</h3>
+                    {% if comments %}
+                        {% for comment in comments %}
+                            <div class="comment-item">
+                                <div class="comment-header">
+                                    <span class="comment-author">{{ comment.user.username }}</span>
+                                    <span class="comment-date">{{ comment.created_at|date:"M d, Y - g:i A" }}</span>
+                                </div>
+                                <div class="comment-body">
+                                    {{ comment.comment }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="no-comments">No comments yet. Be the first to share your thoughts!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-sidebar">
+            <div class="sidebar-section">
+                <h3>Quick Info</h3>
+                <div class="quick-info">
+                    {% if art.borough %}
+                        <div class="quick-info-item">
+                            <span class="quick-label">Borough</span>
+                            <span class="quick-value">{{ art.borough }}</span>
+                        </div>
+                    {% endif %}
+                    
+                    {% if art.year_created %}
+                        <div class="quick-info-item">
+                            <span class="quick-label">Created</span>
+                            <span class="quick-value">{{ art.year_created }}</span>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="quick-info-item">
+                        <span class="quick-label">Last Updated</span>
+                        <span class="quick-value">{{ art.updated_at|date:"M d, Y" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            {% if related_art %}
+                <div class="sidebar-section">
+                    <h3>Related Art</h3>
+                    <div class="related-art-list">
+                        {% for related in related_art %}
+                            <a href="{% url 'loc_detail:art_detail' related.id %}" class="related-art-item">
+                                <div class="related-art-title">{{ related.title|default:"Untitled"|truncatewords:8 }}</div>
+                                <div class="related-art-artist">{{ related.artist_name|default:"Unknown"|truncatewords:4 }}</div>
+                                {% if related.borough %}
+                                    <div class="related-art-location">{{ related.borough }}</div>
+                                {% endif %}
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

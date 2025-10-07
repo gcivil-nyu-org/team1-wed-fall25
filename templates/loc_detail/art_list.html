@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}NYC Public Art - Artinerary{% endblock %}
+
+{% block content %}
+<div class="art-list-container">
+    <div class="page-header">
+        <h1>Discover NYC Public Art</h1>
+        <p class="subtitle">Explore {{ total_count }} outdoor art installation{{ total_count|pluralize }} across New York City</p>
+    </div>
+
+    <div class="filters-section">
+        <form method="get" class="filters-form">
+            <div class="filter-group">
+                <input 
+                    type="text" 
+                    name="search" 
+                    placeholder="Search by title, artist, or location..." 
+                    value="{{ search_query }}"
+                    class="search-input"
+                >
+            </div>
+            
+            <div class="filter-group">
+                <select name="borough" class="borough-select">
+                    <option value="">All Boroughs</option>
+                    {% for borough in boroughs %}
+                        <option value="{{ borough }}" {% if borough_filter == borough %}selected{% endif %}>
+                            {{ borough }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <button type="submit" class="btn btn-filter">Filter</button>
+            
+            {% if search_query or borough_filter %}
+                <a href="{% url 'loc_detail:index' %}" class="btn btn-clear">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+
+    {% if page_obj %}
+        <div class="art-grid">
+            {% for art in page_obj %}
+                <a href="{% url 'loc_detail:art_detail' art.id %}" class="art-card">
+                    <div class="art-card-header">
+                        <h3 class="art-title">{{ art.title|default:"Untitled" }}</h3>
+                        {% if art.borough %}
+                            <span class="art-badge">{{ art.borough }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="art-card-body">
+                        <p class="art-artist">
+                            <strong>Artist:</strong> {{ art.artist_name|default:"Unknown Artist" }}
+                        </p>
+                        
+                        {% if art.location %}
+                            <p class="art-location">
+                                <strong>Location:</strong> {{ art.location|truncatewords:15 }}
+                            </p>
+                        {% endif %}
+                        
+                        {% if art.medium %}
+                            <p class="art-medium">
+                                <strong>Medium:</strong> {{ art.medium|truncatewords:10 }}
+                            </p>
+                        {% endif %}
+                        
+                        {% if art.year_created %}
+                            <p class="art-year">
+                                <strong>Year:</strong> {{ art.year_created }}
+                            </p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="art-card-footer">
+                        <span class="view-details">View Details →</span>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if borough_filter %}&borough={{ borough_filter }}{% endif %}" class="page-link">« First</a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if borough_filter %}&borough={{ borough_filter }}{% endif %}" class="page-link">‹ Previous</a>
+                {% endif %}
+
+                <span class="page-current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if borough_filter %}&borough={{ borough_filter }}{% endif %}" class="page-link">Next ›</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if borough_filter %}&borough={{ borough_filter }}{% endif %}" class="page-link">Last »</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="no-results">
+            <h2>No art pieces found</h2>
+            <p>Try adjusting your search or filters.</p>
+            <a href="{% url 'loc_detail:index' %}" class="btn">View All</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
