@@ -1,12 +1,14 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}loc_detail{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/site.css' %}">
 </head>
+
 <body>
     <nav>
         <div class="nav-container">
@@ -14,26 +16,28 @@
             <div class="nav-links">
                 <a href="{% url 'loc_detail:index' %}">Browse Art</a>
                 {% if user.is_authenticated %}
-                    <span>Hello, {{ user.username }}</span>
-                    <a href="{% url 'accounts:logout' %}">Logout</a>
+                <span>Hello, {{ user.username }}</span>
+                <a href="{% url 'accounts:logout' %}">Logout</a>
                 {% else %}
-                    <a href="{% url 'accounts:login' %}">Login</a>
-                    <a href="{% url 'accounts:signup' %}">Sign Up</a>
+                <a href="{% url 'accounts:login' %}">Login</a>
+                <a href="{% url 'accounts:signup' %}">Sign Up</a>
                 {% endif %}
             </div>
         </div>
     </nav>
 
     {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-                <div class="message {{ message.tags }}">{{ message }}</div>
-            {% endfor %}
-        </div>
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
     {% endif %}
 
     <main>
         {% block content %}{% endblock %}
     </main>
 </body>
+<<<<<<< HEAD:templates/base.html=======>>>>>>> 3c59475 (Fix git mistakes):accounts/templates/base.html
+
 </html>
