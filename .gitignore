@@ -1,6 +1,9 @@
 .vscode
 .env
 venv/
+
+staticfiles/
+
 __pycache__/
 core/__pycache__/
 core/__pycache__/*
