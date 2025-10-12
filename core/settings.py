@@ -33,6 +33,7 @@ DEBUG = os.environ.get('DEBUG')
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
+    '172.31.41.137',
     'artinerary-dev.us-east-2.elasticbeanstalk.com'
     ]
 
@@ -82,6 +83,7 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+print(f"RDS_DB_NAME from environment: {os.environ.get('RDS_DB_NAME')}")
 
 if 'RDS_DB_NAME' in os.environ:
     DATABASES = {
