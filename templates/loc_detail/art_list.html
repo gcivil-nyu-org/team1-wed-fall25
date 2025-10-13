@@ -10,10 +10,36 @@
             York City</p>
     </div>
 
+    <div class="filters-section">
+        <form method="get" class="filters-form">
+            <div class="filter-group">
+                <input type="text" name="search" placeholder="Search by title, artist, or location..."
+                    value="{{ search_query }}" class="search-input">
+            </div>
+
+            <div class="filter-group">
+                <select name="borough" class="borough-select">
+                    <option value="">All Boroughs</option>
+                    {% for borough in boroughs %}
+                    <option value="{{ borough }}" {% if borough_filter == borough %}selected{% endif %}>
+                        {{ borough }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-filter">Filter</button>
+
+            {% if search_query or borough_filter %}
+            <a href="{% url 'loc_detail:index' %}" class="btn btn-clear">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+
     {% if page_obj %}
     <div class="art-grid">
         {% for art in page_obj %}
-        <a href="#" class="art-card">
+        <a href="{% url 'loc_detail:art_detail' art.id %}" class="art-card">
             <div class="art-card-header">
                 <h3 class="art-title">{{ art.title|default:"Untitled" }}</h3>
                 {% if art.borough %}

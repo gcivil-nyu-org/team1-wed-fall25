@@ -3,10 +3,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
-from .models import PublicArt
+from .models import PublicArt, ArtComment
 
 
-# @login_required
+@login_required
 def index(request):
     """Homepage with search and filter options"""
     # Get filter parameters
@@ -48,37 +48,37 @@ def index(request):
     return render(request, 'loc_detail/art_list.html', context)
 
 
-# @login_required
+@login_required
 def art_detail(request, art_id):
     """Detail page for a specific art piece"""
     art = get_object_or_404(PublicArt, id=art_id)
     
     # Handle comment submission
-    # if request.method == 'POST':
-    #     comment_text = request.POST.get('comment', '').strip()
-    #     if comment_text:
-    #         ArtComment.objects.create(
-    #             user=request.user,
-    #             art=art,
-    #             comment=comment_text
-    #         )
-    #         messages.success(request, 'Your comment has been added!')
-    #         return redirect('loc_detail:art_detail', art_id=art_id)
-    #     else:
-    #         messages.error(request, 'Comment cannot be empty.')
+    if request.method == 'POST':
+        comment_text = request.POST.get('comment', '').strip()
+        if comment_text:
+            ArtComment.objects.create(
+                user=request.user,
+                art=art,
+                comment=comment_text
+            )
+            messages.success(request, 'Your comment has been added!')
+            return redirect('loc_detail:art_detail', art_id=art_id)
+        else:
+            messages.error(request, 'Comment cannot be empty.')
     
     # Get all comments for this art piece
-    # comments = art.comments.all()
+    comments = art.comments.all()
     
     # Get related art pieces (same borough or same artist)
-    # related_art = PublicArt.objects.filter(
-    #     Q(borough=art.borough) | Q(artist_name=art.artist_name)
-    # ).exclude(id=art.id)[:4]
+    related_art = PublicArt.objects.filter(
+        Q(borough=art.borough) | Q(artist_name=art.artist_name)
+    ).exclude(id=art.id)[:4]
     
     context = {
         'art': art,
-        # 'comments': comments,
-        # 'related_art': related_art,
+        'comments': comments,
+        'related_art': related_art,
     }
     
     return render(request, 'loc_detail/art_detail.html', context)
