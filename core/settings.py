@@ -33,6 +33,7 @@ DEBUG = os.environ.get('DEBUG')
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
+    '172.31.41.137',
     'artinerary-dev.us-east-2.elasticbeanstalk.com'
     ]
 
@@ -86,12 +87,12 @@ WSGI_APPLICATION = 'core.wsgi.application'
 if 'RDS_DB_NAME' in os.environ:
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': os.environ['RDS_DB_NAME'],
-            'USER': os.environ['RDS_USERNAME'],
-            'PASSWORD': os.environ['RDS_PASSWORD'],
-            'HOST': os.environ['RDS_HOSTNAME'],
-            'PORT': os.environ['RDS_PORT'],
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('RDS_DB_NAME'),
+            'USER': os.environ.get('RDS_USERNAME'),
+            'PASSWORD': os.environ.get('RDS_PASSWORD'),
+            'HOST': os.environ.get('RDS_HOSTNAME'),
+            'PORT': os.environ.get('RDS_PORT', 5432),
         }
     }
 else:
@@ -141,8 +142,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = '/static/'
+# URL to use when referring to static files located in STATIC_ROOT
+STATIC_URL = 'static/'
+# the absolute path to the directory where collectstatic will collect static files for deployment
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# a list of directories where Django should look for static files
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
