@@ -12,8 +12,9 @@
 <body>
     <nav>
         <div class="nav-container">
-            <a href="/artinerary/" class="logo">Artinerary</a>
+            <a href="{% url 'loc_detail:index' %}" class="logo">Artinerary</a>
             <div class="nav-links">
+                <a href="{% url 'loc_detail:index' %}">Browse Art</a>
                 {% if user.is_authenticated %}
                 <span>Hello, {{ user.username }}</span>
                 <a href="{% url 'accounts:logout' %}">Logout</a>

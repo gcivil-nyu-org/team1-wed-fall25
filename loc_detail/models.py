@@ -40,3 +40,32 @@ class PublicArt(models.Model):
     
     def __str__(self):
         return f"{self.title or 'Untitled'} by {self.artist_name or 'Unknown'}"
+
+class UserFavoriteArt(models.Model):
+    """Track user's favorite art pieces"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorite_art')
+    art = models.ForeignKey(PublicArt, on_delete=models.CASCADE, related_name='favorited_by')
+    added_at = models.DateTimeField(auto_now_add=True)
+    notes = models.TextField(blank=True, null=True)
+    
+    class Meta:
+        unique_together = ['user', 'art']
+        ordering = ['-added_at']
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.art.title}"
+
+
+class ArtComment(models.Model):
+    """User comments on art pieces"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='art_comments')
+    art = models.ForeignKey(PublicArt, on_delete=models.CASCADE, related_name='comments')
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.user.username} on {self.art.title}"
