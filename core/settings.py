@@ -83,7 +83,6 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-print(f"RDS_DB_NAME from environment: {os.environ.get('RDS_DB_NAME')}")
 
 if 'RDS_DB_NAME' in os.environ:
     DATABASES = {
