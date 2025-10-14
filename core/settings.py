@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'accounts',
-    'loc_detail',
+    'loc_detail.apps.LocDetailConfig',
 ]
 
 MIDDLEWARE = [
