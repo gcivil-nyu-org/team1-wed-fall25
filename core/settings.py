@@ -34,7 +34,8 @@ DEBUG = os.environ.get('DEBUG')
 ALLOWED_HOSTS = [
     '127.0.0.1',
     '172.31.41.137',
-    'artinerary-dev.us-east-2.elasticbeanstalk.com'
+    'artinerary-dev.us-east-2.elasticbeanstalk.com',
+    'http://artinerary-prod.us-east-2.elasticbeanstalk.com/'
     ]
 
 
