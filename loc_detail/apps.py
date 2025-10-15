@@ -2,5 +2,5 @@ from django.apps import AppConfig
 
 
 class LocDetailConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'loc_detail'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "loc_detail"

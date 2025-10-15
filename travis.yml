@@ -1,0 +1,27 @@
+language: python
+python:
+  - "3.12"
+
+install:
+  - pip install -r requirements.txt
+
+script:
+  - black --check .
+  - flake8 .
+  - coverage run --source='.' manage.py test
+  - coverage report
+
+after_success:
+  - coveralls --service=travis-pro
+
+deploy:
+  provider: elasticbeanstalk
+  access_key_id: $AWS_ACCESS_KEY_ID
+  secret_access_key: $AWS_SECRET_ACCESS_KEY
+  bucket: elasticbeanstalk-us-east-2-661217967129
+  region: us-east-2
+  app: artinerary
+  env: artinerary-dev
+  edge: true # opt in to dpl v2
+  on:
+    branch: main
