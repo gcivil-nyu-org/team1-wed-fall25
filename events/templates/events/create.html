@@ -124,8 +124,8 @@
         
         <!-- Starting Location -->
         <div class="form-group">
-            <label for="{{ form.start_location.id_for_label }}">Starting Location *</label>
-            {{ form.start_location }}
+            <label for="id_start_location">Starting Location *</label>
+            <input type="hidden" name="start_location" id="id_start_location" required>
             {% if form.start_location.errors %}
                 <div class="error">{{ form.start_location.errors }}</div>
             {% endif %}

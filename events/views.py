@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.db import transaction
+from django.core.exceptions import ValidationError
 
 from .models import Event
 from .forms import EventForm, parse_locations, parse_invites
@@ -32,8 +33,13 @@ def create(request):
                 
             except ValueError as e:
                 messages.error(request, str(e))
+            except ValidationError as e:
+                # Show the actual validation error message
+                error_msg = e.message if hasattr(e, 'message') else str(e)
+                messages.error(request, error_msg)
             except Exception as e:
-                messages.error(request, 'An error occurred while creating the event.')
+                # Show the specific error during development
+                messages.error(request, f'An error occurred: {str(e)}')
     else:
         form = EventForm()
     
