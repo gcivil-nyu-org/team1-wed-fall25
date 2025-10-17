@@ -4,11 +4,15 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.db import transaction
 from django.core.exceptions import ValidationError
+from django.views.decorators.http import require_POST
+from django.core.paginator import Paginator
+from django.urls import reverse
 
-from .models import Event
+from .models import Event, EventInvite
 from .forms import EventForm, parse_locations, parse_invites
-from .services import create_event
-from .selectors import search_locations, search_users, public_event_pins
+from .services import create_event, join_event as join_event_service, accept_invite as accept_invite_service, decline_invite as decline_invite_service
+from .selectors import search_locations, search_users, public_event_pins, list_public_events, user_has_joined, list_user_invitations
+from .enums import InviteStatus
 
 
 @login_required
@@ -51,6 +55,121 @@ def detail(request, slug):
     """Event detail page (stub for Phase 1)"""
     event = get_object_or_404(Event, slug=slug)
     return render(request, 'events/detail.html', {'event': event})
+
+
+@login_required
+def index(request):
+    """Redirect to public events as default"""
+    return redirect('events:public')
+
+
+@login_required
+def public_events(request):
+    """Display public events with search, filter, and pagination"""
+    # Parse query params
+    query = request.GET.get('q', '').strip()
+    visibility_filter = request.GET.get('filter', '')  # 'open' or 'invite'
+    sort = request.GET.get('sort', 'start_time')  # 'start_time' or '-start_time'
+    
+    # Get events
+    events = list_public_events(
+        query=query if query else None,
+        visibility_filter=visibility_filter if visibility_filter else None,
+        order=sort
+    )
+    
+    # Add 'joined' attribute to each event
+    events_list = []
+    for event in events:
+        event.joined = user_has_joined(event, request.user)
+        events_list.append(event)
+    
+    # Pagination
+    paginator = Paginator(events_list, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'query': query,
+        'filter': visibility_filter,
+        'sort': sort,
+    }
+    
+    return render(request, 'events/public_events.html', context)
+
+
+@login_required
+@require_POST
+def join_event(request, slug):
+    """Join a public event"""
+    event = get_object_or_404(Event, slug=slug)
+    
+    try:
+        join_event_service(event=event, user=request.user)
+        messages.success(request, f'You have joined "{event.title}"!')
+    except ValueError as e:
+        messages.error(request, str(e))
+    
+    # Redirect back to public events with query params preserved
+    redirect_url = reverse('events:public')
+    query_params = request.GET.urlencode()
+    if query_params:
+        redirect_url += f'?{query_params}'
+    
+    return redirect(redirect_url)
+
+
+@login_required
+def invitations(request):
+    """Display pending invitations for current user"""
+    invites = list_user_invitations(request.user)
+    
+    return render(request, 'events/invitations.html', {
+        'invites': invites
+    })
+
+
+@login_required
+@require_POST
+def accept_invite(request, slug):
+    """Accept an invitation"""
+    event = get_object_or_404(Event, slug=slug)
+    invite = get_object_or_404(
+        EventInvite,
+        event=event,
+        invitee=request.user,
+        status=InviteStatus.PENDING
+    )
+    
+    try:
+        accept_invite_service(invite=invite)
+        messages.success(request, f'You have accepted the invitation to "{event.title}"!')
+        return redirect(event.get_absolute_url())
+    except Exception as e:
+        messages.error(request, 'Failed to accept invitation.')
+        return redirect('events:invitations')
+
+
+@login_required
+@require_POST
+def decline_invite(request, slug):
+    """Decline an invitation"""
+    event = get_object_or_404(Event, slug=slug)
+    invite = get_object_or_404(
+        EventInvite,
+        event=event,
+        invitee=request.user,
+        status=InviteStatus.PENDING
+    )
+    
+    try:
+        decline_invite_service(invite=invite)
+        messages.success(request, 'Invitation declined.')
+    except Exception as e:
+        messages.error(request, 'Failed to decline invitation.')
+    
+    return redirect('events:invitations')
 
 
 @login_required

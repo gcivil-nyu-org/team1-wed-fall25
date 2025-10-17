@@ -1,9 +1,10 @@
 from django.db import transaction
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from loc_detail.models import PublicArt
 
 from .models import Event, EventLocation, EventMembership, EventInvite
-from .enums import MembershipRole, InviteStatus
+from .enums import MembershipRole, InviteStatus, EventVisibility
 from .validators import validate_max_locations
 
 User = get_user_model()
@@ -80,4 +81,93 @@ def create_event(*, host, form, locations, invites):
         )
     
     return event
+
+
+@transaction.atomic
+def join_event(*, event, user):
+    """
+    Add user as attendee to event
+    
+    Business Rules:
+    - PUBLIC_OPEN: Anyone can join
+    - PUBLIC_INVITE: Must have pending invite
+    - PRIVATE: Not allowed
+    - Cannot join if already HOST or ATTENDEE
+    
+    Raises:
+        ValueError: If join not allowed
+    """
+    # Check if already joined
+    existing = EventMembership.objects.filter(
+        event=event,
+        user=user,
+        role__in=[MembershipRole.HOST, MembershipRole.ATTENDEE]
+    ).exists()
+    
+    if existing:
+        raise ValueError('You have already joined this event.')
+    
+    # Visibility checks
+    if event.visibility == EventVisibility.PRIVATE:
+        raise ValueError('This is a private event.')
+    
+    if event.visibility == EventVisibility.PUBLIC_INVITE:
+        # Must have invite
+        has_invite = EventInvite.objects.filter(
+            event=event,
+            invitee=user,
+            status=InviteStatus.PENDING
+        ).exists()
+        
+        if not has_invite:
+            raise ValueError('You must be invited to join this event.')
+    
+    # Create or update membership
+    EventMembership.objects.update_or_create(
+        event=event,
+        user=user,
+        defaults={'role': MembershipRole.ATTENDEE}
+    )
+
+
+@transaction.atomic
+def accept_invite(*, invite):
+    """
+    Accept an invitation
+    
+    - Updates invite status to ACCEPTED
+    - Creates/updates EventMembership to ATTENDEE
+    - Sets responded_at timestamp
+    """
+    invite.status = InviteStatus.ACCEPTED
+    invite.responded_at = timezone.now()
+    invite.save()
+    
+    # Update membership from INVITED to ATTENDEE
+    EventMembership.objects.update_or_create(
+        event=invite.event,
+        user=invite.invitee,
+        defaults={'role': MembershipRole.ATTENDEE}
+    )
+
+
+@transaction.atomic
+def decline_invite(*, invite):
+    """
+    Decline an invitation
+    
+    - Updates invite status to DECLINED
+    - Removes INVITED membership
+    - Sets responded_at timestamp
+    """
+    invite.status = InviteStatus.DECLINED
+    invite.responded_at = timezone.now()
+    invite.save()
+    
+    # Remove invited membership
+    EventMembership.objects.filter(
+        event=invite.event,
+        user=invite.invitee,
+        role=MembershipRole.INVITED
+    ).delete()
 
