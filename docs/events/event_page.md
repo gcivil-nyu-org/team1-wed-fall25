@@ -2,7 +2,7 @@
 
 *(Phase 3: Event Detail + Chat + Interaction Logic)*
 
----
+----
 
 ## **1️⃣ Overview**
 
