@@ -141,3 +141,45 @@ def api_favorite_toggle(request, art_id):
         'favorited': favorited,
         'message': message
     })
+
+
+@login_required
+def favorites(request):
+    """Display user's favorite art pieces"""
+    # Get user's favorite art pieces
+    favorite_art = UserFavoriteArt.objects.filter(user=request.user).select_related('art').order_by('-added_at')
+    
+    # Get filter parameters
+    search_query = request.GET.get('search', '')
+    borough_filter = request.GET.get('borough', '')
+    
+    # Apply search filter
+    if search_query:
+        favorite_art = favorite_art.filter(
+            Q(art__title__icontains=search_query) |
+            Q(art__artist_name__icontains=search_query) |
+            Q(art__description__icontains=search_query) |
+            Q(art__location__icontains=search_query)
+        )
+    
+    # Apply borough filter
+    if borough_filter:
+        favorite_art = favorite_art.filter(art__borough=borough_filter)
+    
+    # Get unique boroughs for filter dropdown (from user's favorites only)
+    boroughs = favorite_art.values_list('art__borough', flat=True).exclude(art__borough__isnull=True).exclude(art__borough='').distinct().order_by('art__borough')
+    
+    # Pagination
+    paginator = Paginator(favorite_art, 20)  # Show 20 favorites per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'boroughs': boroughs,
+        'search_query': search_query,
+        'borough_filter': borough_filter,
+        'total_count': favorite_art.count(),
+    }
+    
+    return render(request, 'loc_detail/favorites.html', context)
