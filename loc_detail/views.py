@@ -3,7 +3,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
-from .models import PublicArt, ArtComment
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from .models import PublicArt, ArtComment, UserFavoriteArt
 
 
 @login_required
@@ -75,10 +77,65 @@ def art_detail(request, art_id):
         Q(borough=art.borough) | Q(artist_name=art.artist_name)
     ).exclude(id=art.id)[:4]
     
+    # Check if user has favorited this art
+    is_favorited = UserFavoriteArt.objects.filter(user=request.user, art=art).exists()
+    
     context = {
         'art': art,
         'comments': comments,
         'related_art': related_art,
+        'is_favorited': is_favorited,
     }
     
     return render(request, 'loc_detail/art_detail.html', context)
+
+
+@login_required
+def api_all_points(request):
+    """API endpoint returning all public art points as compact JSON"""
+    # Fetch all art with valid coordinates
+    art_points = PublicArt.objects.filter(
+        latitude__isnull=False,
+        longitude__isnull=False
+    ).values('id', 'title', 'artist_name', 'borough', 'latitude', 'longitude')[:5000]
+    
+    # Compact format: {id, t(itle), a(rtist), b(orough), y(lat), x(lng)}
+    points = [
+        {
+            'id': art['id'],
+            't': art['title'] or 'Untitled',
+            'a': art['artist_name'] or 'Unknown',
+            'b': art['borough'] or '',
+            'y': float(art['latitude']),
+            'x': float(art['longitude'])
+        }
+        for art in art_points
+    ]
+    
+    return JsonResponse({'points': points})
+
+
+@login_required
+@require_POST
+def api_favorite_toggle(request, art_id):
+    """API endpoint to toggle favorite status for an art piece"""
+    art = get_object_or_404(PublicArt, id=art_id)
+    
+    # Check if already favorited
+    favorite = UserFavoriteArt.objects.filter(user=request.user, art=art).first()
+    
+    if favorite:
+        # Remove from favorites
+        favorite.delete()
+        favorited = False
+        message = "Removed from favorites"
+    else:
+        # Add to favorites
+        UserFavoriteArt.objects.create(user=request.user, art=art)
+        favorited = True
+        message = "Added to favorites"
+    
+    return JsonResponse({
+        'favorited': favorited,
+        'message': message
+    })
