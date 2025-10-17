@@ -190,7 +190,16 @@
      crossorigin=""></script>
 <!-- Leaflet MarkerCluster JS -->
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-<!-- Custom Map JS -->
-<script src="{% static 'js/home_map.js' %}"></script>
+<!-- Custom Map JS (ES6 Modules) -->
+<script type="module">
+    import { initializeMap } from "{% static 'js/map/init.js' %}";
+    
+    // Initialize map when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+        initializeMap().catch(error => {
+            console.error('Map initialization failed:', error);
+        });
+    });
+</script>
 {% endblock %}
 
