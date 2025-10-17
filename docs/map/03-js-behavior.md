@@ -276,6 +276,10 @@ home_map.js executes
   ↓
 Initialize Leaflet map
   ↓
+Request user location (browser prompt)
+  ├─ Allowed → Center on user at zoom 14, show blue dot
+  └─ Denied → Center on NYC at zoom 11, show message
+  ↓
 Fetch /loc_detail/api/points/all
   ↓
 Receive JSON: {points: [{id, t, a, b, y, x}, ...]}
