@@ -3,13 +3,38 @@
     'use strict';
 
     // Initialize map without fixed view - let geolocation set it
-    const map = L.map('map');
+    const map = L.map('map').setView([40.7831, -73.9712], 12);
 
-    // Add OpenStreetMap tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 19
-    }).addTo(map);
+    
+    // Define 4 different tile layer options (using free, no-API-key providers)
+    const baseMaps = {
+        "Vibrant": L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 20
+        }),
+        "Watercolor": L.tileLayer('https://stamen-tiles.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.jpg', {
+            attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 16
+        }),
+        "Streets": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19
+        }),
+        "Terrain": L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+            attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+            maxZoom: 17
+        })
+    };
+
+    // Add the default layer (Vibrant for colorful modern look)
+    baseMaps["Vibrant"].addTo(map);
+
+    // Add layer control to allow users to switch between styles
+    L.control.layers(baseMaps).addTo(map);
+
+    // Track geolocation state to prevent fitBounds from overriding user location
+    let userLocated = false;
 
     // Request user's current location
     map.locate({ setView: true, maxZoom: 14, enableHighAccuracy: true });
@@ -18,6 +43,7 @@
     let userMarker = null;
     let userCircle = null;
     map.on('locationfound', function(e) {
+        userLocated = true;
         const radius = e.accuracy / 2;
         
         // Create blue dot marker (Google Maps style)
@@ -38,13 +64,16 @@
             fillOpacity: 0.1,
             weight: 1
         }).addTo(map);
+
+        // Ensure user view wins over any later operations (like fitBounds)
+        map.setView(e.latlng, 14);
     });
 
     // Handle location error or denial
     map.on('locationerror', function(e) {
+        userLocated = false;
         console.log('Location access denied or unavailable:', e.message);
-        // Fall back to NYC center
-        map.setView([40.7128, -74.0060], 11);
+        // Keep Manhattan default (already set in initialization)
         
         // Show message to user
         const notice = document.getElementById('location-notice');
@@ -178,9 +207,18 @@
             // Add marker cluster to map
             map.addLayer(markers);
             
-            // Fit bounds to show all markers
-            if (data.points.length > 0) {
-                map.fitBounds(markers.getBounds(), { padding: [50, 50] });
+            // Only fit bounds if user hasn't been located AND markers are primarily in NYC
+            if (!userLocated && data.points.length > 0) {
+                const b = markers.getBounds();
+                const nycBounds = L.latLngBounds([40.4774, -74.2591], [40.9176, -73.7004]);
+                
+                // Only fit bounds if most markers are within NYC bounds (not just intersecting)
+                // Check if the center of all markers is within NYC
+                const center = b.getCenter();
+                if (nycBounds.contains(center)) {
+                    map.fitBounds(b, { padding: [50, 50], maxZoom: 14 });
+                }
+                // Otherwise, keep the Manhattan view set in initialization
             }
         })
         .catch(error => {
