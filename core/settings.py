@@ -164,6 +164,12 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
 ]
 
+<<<<<<< HEAD
 LOGIN_REDIRECT_URL = "/loc_detail/"
 LOGOUT_REDIRECT_URL = "/accounts/login/"
 LOGIN_URL = "/accounts/login/"
+=======
+LOGIN_REDIRECT_URL = '/artinerary/'
+LOGOUT_REDIRECT_URL = '/accounts/login/'
+LOGIN_URL = '/accounts/login/'
+>>>>>>> f516a5e (MAPS DONE -->> codebase refactor for maps - checked reviews for multiple accounts - favs working - unfavs working from everywhere - redirects changed)
