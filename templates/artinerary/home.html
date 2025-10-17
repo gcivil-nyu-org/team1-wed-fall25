@@ -127,6 +127,45 @@
         color: #1976d2;
         font-size: 14px;
     }
+    
+    /* Enhanced layer control styling */
+    .leaflet-control-layers {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        border: none;
+        padding: 10px;
+    }
+    
+    .leaflet-control-layers-expanded {
+        padding: 15px;
+        min-width: 160px;
+    }
+    
+    .leaflet-control-layers-toggle {
+        background-size: 22px 22px;
+        width: 42px;
+        height: 42px;
+    }
+    
+    .leaflet-control-layers label {
+        font-size: 14px;
+        padding: 5px 0;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+    
+    .leaflet-control-layers label:hover {
+        color: #4CAF50;
+    }
+    
+    .leaflet-control-layers-base {
+        margin-bottom: 5px;
+    }
+    
+    .leaflet-control-layers input {
+        margin-right: 8px;
+    }
 </style>
 {% endblock %}
 
