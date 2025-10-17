@@ -6,39 +6,40 @@ from .validators import validate_future_datetime
 class EventForm(forms.ModelForm):
     class Meta:
         model = Event
-        fields = ['title', 'start_time', 'start_location', 'visibility', 'description']
+        fields = ["title", "start_time", "start_location", "visibility", "description"]
         widgets = {
-            'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-            'description': forms.Textarea(attrs={'rows': 4, 'maxlength': 300}),
+            "start_time": forms.DateTimeInput(attrs={"type": "datetime-local"}),
+            "description": forms.Textarea(attrs={"rows": 4, "maxlength": 300}),
         }
-    
+
     def clean_title(self):
-        title = self.cleaned_data.get('title', '').strip()
+        title = self.cleaned_data.get("title", "").strip()
         if len(title) > 80:
-            raise forms.ValidationError('Title must be 80 characters or less.')
+            raise forms.ValidationError("Title must be 80 characters or less.")
         return title
-    
+
     def clean_start_time(self):
-        start_time = self.cleaned_data.get('start_time')
+        start_time = self.cleaned_data.get("start_time")
         if start_time:
             validate_future_datetime(start_time)
         return start_time
-    
+
     def clean_start_location(self):
-        location = self.cleaned_data.get('start_location')
+        location = self.cleaned_data.get("start_location")
         if location and (not location.latitude or not location.longitude):
-            raise forms.ValidationError('Selected location must have valid coordinates.')
+            raise forms.ValidationError(
+                "Selected location must have valid coordinates."
+            )
         return location
 
 
 def parse_locations(request):
     """Parse locations[] from POST data"""
-    locations = request.POST.getlist('locations[]')
+    locations = request.POST.getlist("locations[]")
     return [int(loc_id) for loc_id in locations if loc_id.isdigit()]
 
 
 def parse_invites(request):
     """Parse invites[] from POST data"""
-    invites = request.POST.getlist('invites[]')
+    invites = request.POST.getlist("invites[]")
     return [int(user_id) for user_id in invites if user_id.isdigit()]
-

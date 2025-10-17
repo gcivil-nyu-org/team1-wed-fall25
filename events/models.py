@@ -10,19 +10,20 @@ from .enums import EventVisibility, MembershipRole, InviteStatus, JoinRequestSta
 
 class Event(models.Model):
     """Core event model"""
+
     slug = models.SlugField(unique=True, max_length=100, db_index=True)
     title = models.CharField(max_length=80)
-    host = models.ForeignKey(User, on_delete=models.CASCADE, related_name='hosted_events')
+    host = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="hosted_events"
+    )
     visibility = models.CharField(
         max_length=20,
         choices=EventVisibility.choices,
-        default=EventVisibility.PUBLIC_OPEN
+        default=EventVisibility.PUBLIC_OPEN,
     )
     start_time = models.DateTimeField(db_index=True)
     start_location = models.ForeignKey(
-        PublicArt,
-        on_delete=models.PROTECT,
-        related_name='events'
+        PublicArt, on_delete=models.PROTECT, related_name="events"
     )
     description = models.TextField(blank=True)
     is_deleted = models.BooleanField(default=False)
@@ -31,12 +32,12 @@ class Event(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=['slug']),
-            models.Index(fields=['start_time']),
-            models.Index(fields=['visibility']),
-            models.Index(fields=['host', 'start_time']),
+            models.Index(fields=["slug"]),
+            models.Index(fields=["start_time"]),
+            models.Index(fields=["visibility"]),
+            models.Index(fields=["host", "start_time"]),
         ]
-        ordering = ['-start_time']
+        ordering = ["-start_time"]
 
     def __str__(self):
         return f"{self.title} by {self.host.username}"
@@ -49,22 +50,27 @@ class Event(models.Model):
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):
-        return reverse('events:detail', kwargs={'slug': self.slug})
+        return reverse("events:detail", kwargs={"slug": self.slug})
 
 
 class EventLocation(models.Model):
     """Ordered itinerary stops beyond the starting location"""
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='locations')
+
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="locations")
     location = models.ForeignKey(PublicArt, on_delete=models.PROTECT)
     order = models.PositiveSmallIntegerField()
     note = models.CharField(max_length=100, blank=True)
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['event', 'order'], name='uniq_event_location_order'),
-            models.UniqueConstraint(fields=['event', 'location'], name='uniq_event_location_pair')
+            models.UniqueConstraint(
+                fields=["event", "order"], name="uniq_event_location_order"
+            ),
+            models.UniqueConstraint(
+                fields=["event", "location"], name="uniq_event_location_pair"
+            ),
         ]
-        ordering = ['order']
+        ordering = ["order"]
 
     def __str__(self):
         return f"{self.event.title} - Stop {self.order}"
@@ -72,18 +78,25 @@ class EventLocation(models.Model):
 
 class EventMembership(models.Model):
     """Tracks who is in the event and their role"""
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='memberships')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='event_memberships')
+
+    event = models.ForeignKey(
+        Event, on_delete=models.CASCADE, related_name="memberships"
+    )
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="event_memberships"
+    )
     role = models.CharField(max_length=20, choices=MembershipRole.choices)
     joined_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['event', 'user'], name='uniq_event_user_membership')
+            models.UniqueConstraint(
+                fields=["event", "user"], name="uniq_event_user_membership"
+            )
         ]
         indexes = [
-            models.Index(fields=['event', 'role']),
-            models.Index(fields=['user']),
+            models.Index(fields=["event", "role"]),
+            models.Index(fields=["user"]),
         ]
 
     def __str__(self):
@@ -92,20 +105,29 @@ class EventMembership(models.Model):
 
 class EventInvite(models.Model):
     """Tracks invite lifecycle"""
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='invites')
-    invited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='sent_invites')
-    invitee = models.ForeignKey(User, on_delete=models.CASCADE, related_name='event_invitations')
-    status = models.CharField(max_length=20, choices=InviteStatus.choices, default=InviteStatus.PENDING)
+
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="invites")
+    invited_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, related_name="sent_invites"
+    )
+    invitee = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="event_invitations"
+    )
+    status = models.CharField(
+        max_length=20, choices=InviteStatus.choices, default=InviteStatus.PENDING
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     responded_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['event', 'invitee'], name='uniq_event_invitee')
+            models.UniqueConstraint(
+                fields=["event", "invitee"], name="uniq_event_invitee"
+            )
         ]
         indexes = [
-            models.Index(fields=['invitee', 'status']),
-            models.Index(fields=['event']),
+            models.Index(fields=["invitee", "status"]),
+            models.Index(fields=["event"]),
         ]
 
     def __str__(self):
@@ -114,16 +136,19 @@ class EventInvite(models.Model):
 
 class EventChatMessage(models.Model):
     """Chat messages for event attendees (Phase 3)"""
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='chat_messages')
+
+    event = models.ForeignKey(
+        Event, on_delete=models.CASCADE, related_name="chat_messages"
+    )
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     message = models.CharField(max_length=300)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:
         indexes = [
-            models.Index(fields=['event', '-created_at']),
+            models.Index(fields=["event", "-created_at"]),
         ]
-        ordering = ['created_at']
+        ordering = ["created_at"]
 
     def __str__(self):
         return f"{self.author.username}: {self.message[:50]}"
@@ -131,21 +156,29 @@ class EventChatMessage(models.Model):
 
 class EventJoinRequest(models.Model):
     """Visitors requesting to join PUBLIC_INVITE events (Phase 3)"""
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='join_requests')
+
+    event = models.ForeignKey(
+        Event, on_delete=models.CASCADE, related_name="join_requests"
+    )
     requester = models.ForeignKey(User, on_delete=models.CASCADE)
-    status = models.CharField(max_length=20, choices=JoinRequestStatus.choices, default=JoinRequestStatus.PENDING)
+    status = models.CharField(
+        max_length=20,
+        choices=JoinRequestStatus.choices,
+        default=JoinRequestStatus.PENDING,
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     decided_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['event', 'requester'], name='uniq_event_join_request')
+            models.UniqueConstraint(
+                fields=["event", "requester"], name="uniq_event_join_request"
+            )
         ]
         indexes = [
-            models.Index(fields=['event', 'status']),
-            models.Index(fields=['requester']),
+            models.Index(fields=["event", "status"]),
+            models.Index(fields=["requester"]),
         ]
 
     def __str__(self):
         return f"Join request by {self.requester.username} for {self.event.title}"
-

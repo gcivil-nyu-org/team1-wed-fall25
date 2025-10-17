@@ -1,5 +1,12 @@
 from django.contrib import admin
-from .models import Event, EventLocation, EventMembership, EventInvite, EventChatMessage, EventJoinRequest
+from .models import (
+    Event,
+    EventLocation,
+    EventMembership,
+    EventInvite,
+    EventChatMessage,
+    EventJoinRequest,
+)
 
 
 class EventLocationInline(admin.TabularInline):
@@ -15,22 +22,21 @@ class EventMembershipInline(admin.TabularInline):
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ['title', 'host', 'start_time', 'visibility', 'created_at']
-    list_filter = ['visibility', 'start_time', 'created_at']
-    search_fields = ['title', 'host__username']
-    readonly_fields = ['slug', 'created_at', 'updated_at']
+    list_display = ["title", "host", "start_time", "visibility", "created_at"]
+    list_filter = ["visibility", "start_time", "created_at"]
+    search_fields = ["title", "host__username"]
+    readonly_fields = ["slug", "created_at", "updated_at"]
     inlines = [EventLocationInline, EventMembershipInline]
 
 
 @admin.register(EventChatMessage)
 class EventChatMessageAdmin(admin.ModelAdmin):
-    list_display = ['event', 'author', 'message', 'created_at']
-    list_filter = ['event', 'created_at']
-    readonly_fields = ['created_at']
+    list_display = ["event", "author", "message", "created_at"]
+    list_filter = ["event", "created_at"]
+    readonly_fields = ["created_at"]
 
 
 @admin.register(EventJoinRequest)
 class EventJoinRequestAdmin(admin.ModelAdmin):
-    list_display = ['event', 'requester', 'status', 'created_at']
-    list_filter = ['status', 'event']
-
+    list_display = ["event", "requester", "status", "created_at"]
+    list_filter = ["status", "event"]

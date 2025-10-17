@@ -15,44 +15,101 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='PublicArt',
+            name="PublicArt",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('artist_name', models.CharField(blank=True, max_length=500, null=True)),
-                ('title', models.CharField(blank=True, max_length=500, null=True)),
-                ('description', models.TextField(blank=True, null=True)),
-                ('location', models.CharField(blank=True, max_length=500, null=True)),
-                ('borough', models.CharField(blank=True, max_length=100, null=True)),
-                ('latitude', models.DecimalField(blank=True, decimal_places=7, max_digits=10, null=True)),
-                ('longitude', models.DecimalField(blank=True, decimal_places=7, max_digits=10, null=True)),
-                ('medium', models.CharField(blank=True, max_length=300, null=True)),
-                ('dimensions', models.CharField(blank=True, max_length=300, null=True)),
-                ('year_created', models.CharField(blank=True, max_length=50, null=True)),
-                ('year_dedicated', models.CharField(blank=True, max_length=50, null=True)),
-                ('agency', models.CharField(blank=True, max_length=200, null=True)),
-                ('community_board', models.CharField(blank=True, max_length=100, null=True)),
-                ('external_id', models.CharField(blank=True, max_length=100, null=True, unique=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "artist_name",
+                    models.CharField(blank=True, max_length=500, null=True),
+                ),
+                ("title", models.CharField(blank=True, max_length=500, null=True)),
+                ("description", models.TextField(blank=True, null=True)),
+                ("location", models.CharField(blank=True, max_length=500, null=True)),
+                ("borough", models.CharField(blank=True, max_length=100, null=True)),
+                (
+                    "latitude",
+                    models.DecimalField(
+                        blank=True, decimal_places=7, max_digits=10, null=True
+                    ),
+                ),
+                (
+                    "longitude",
+                    models.DecimalField(
+                        blank=True, decimal_places=7, max_digits=10, null=True
+                    ),
+                ),
+                ("medium", models.CharField(blank=True, max_length=300, null=True)),
+                ("dimensions", models.CharField(blank=True, max_length=300, null=True)),
+                (
+                    "year_created",
+                    models.CharField(blank=True, max_length=50, null=True),
+                ),
+                (
+                    "year_dedicated",
+                    models.CharField(blank=True, max_length=50, null=True),
+                ),
+                ("agency", models.CharField(blank=True, max_length=200, null=True)),
+                (
+                    "community_board",
+                    models.CharField(blank=True, max_length=100, null=True),
+                ),
+                (
+                    "external_id",
+                    models.CharField(
+                        blank=True, max_length=100, null=True, unique=True
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'verbose_name': 'Public Art',
-                'verbose_name_plural': 'Public Art Pieces',
-                'ordering': ['title'],
+                "verbose_name": "Public Art",
+                "verbose_name_plural": "Public Art Pieces",
+                "ordering": ["title"],
             },
         ),
         migrations.CreateModel(
-            name='UserFavoriteArt',
+            name="UserFavoriteArt",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('added_at', models.DateTimeField(auto_now_add=True)),
-                ('notes', models.TextField(blank=True, null=True)),
-                ('art', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='favorited_by', to='loc_detail.publicart')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='favorite_art', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("added_at", models.DateTimeField(auto_now_add=True)),
+                ("notes", models.TextField(blank=True, null=True)),
+                (
+                    "art",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="favorited_by",
+                        to="loc_detail.publicart",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="favorite_art",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-added_at'],
-                'unique_together': {('user', 'art')},
+                "ordering": ["-added_at"],
+                "unique_together": {("user", "art")},
             },
         ),
     ]
