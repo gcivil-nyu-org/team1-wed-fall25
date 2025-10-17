@@ -8,7 +8,7 @@ class EmailOrUsernameModelBackend(ModelBackend):
             return None
 
         # Check if username contains @ (email)
-        if '@' in username:
+        if "@" in username:
             try:
                 user = User.objects.get(email__iexact=username)
             except User.DoesNotExist:
@@ -24,4 +24,3 @@ class EmailOrUsernameModelBackend(ModelBackend):
         if user.check_password(password):
             return user
         return None
-

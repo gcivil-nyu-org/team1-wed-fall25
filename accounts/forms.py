@@ -8,22 +8,21 @@ class SignupForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'password1', 'password2')
+        fields = ("username", "email", "password1", "password2")
 
     def clean_email(self):
-        email = self.cleaned_data.get('email')
+        email = self.cleaned_data.get("email")
         if User.objects.filter(email__iexact=email).exists():
-            raise forms.ValidationError('This email is already registered.')
+            raise forms.ValidationError("This email is already registered.")
         return email.lower()
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.email = self.cleaned_data['email']
+        user.email = self.cleaned_data["email"]
         if commit:
             user.save()
         return user
 
 
 class EmailOrUsernameAuthenticationForm(AuthenticationForm):
-    username = forms.CharField(label='Email or Username', max_length=254)
-
+    username = forms.CharField(label="Email or Username", max_length=254)
