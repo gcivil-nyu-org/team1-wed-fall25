@@ -6,4 +6,7 @@ app_name = "loc_detail"
 urlpatterns = [
     path("", views.index, name="index"),
     path("art/<int:art_id>/", views.art_detail, name="art_detail"),
+    # API endpoints
+    path("api/points/all", views.api_all_points, name="api_all_points"),
+    path("api/favorite/<int:art_id>/toggle", views.api_favorite_toggle, name="api_favorite_toggle"),
 ]
