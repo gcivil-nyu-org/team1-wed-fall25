@@ -7,6 +7,7 @@ import { MAP_CONFIG } from './config.js';
 import { createTileLayers, addLayerControl } from './layers.js';
 import { GeolocationManager } from './geolocation.js';
 import { MarkerManager } from './markers.js';
+import { EventMarkerManager } from './events.js';
 
 /**
  * Initialize and setup the Artinerary map
@@ -30,11 +31,17 @@ export async function initializeMap() {
         // 4. Initialize marker manager
         const markerManager = new MarkerManager(map, geoManager);
         
-        // 5. Request user location (async, non-blocking)
+        // 5. Initialize event marker manager
+        const eventMarkerManager = new EventMarkerManager(map);
+        
+        // 6. Request user location (async, non-blocking)
         geoManager.requestLocation();
         
-        // 6. Load art markers (async)
+        // 7. Load art markers (async)
         await markerManager.loadMarkers();
+        
+        // 8. Load event markers (async)
+        await eventMarkerManager.loadEventMarkers();
         
         console.log('Map initialized successfully');
         
@@ -42,7 +49,8 @@ export async function initializeMap() {
         return {
             map,
             geoManager,
-            markerManager
+            markerManager,
+            eventMarkerManager
         };
         
     } catch (error) {
