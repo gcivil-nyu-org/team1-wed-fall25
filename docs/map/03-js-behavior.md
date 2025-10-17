@@ -21,14 +21,67 @@ Uses Immediately Invoked Function Expression to avoid global namespace pollution
 
 ## Core Components
 
-### 1. Map Initialization
+### 1. Map Initialization with Geolocation
 ```javascript
-const map = L.map('map').setView([40.7128, -74.0060], 11);
+const map = L.map('map');
+map.locate({ setView: true, maxZoom: 14, enableHighAccuracy: true });
 ```
-- Centers on NYC coordinates: 40.7128°N, 74.0060°W
-- Initial zoom level: 11 (shows all of NYC)
+- Initializes map without fixed view
+- Requests user's current location via browser Geolocation API
+- If allowed: centers on user location at zoom 14
+- If denied: falls back to NYC coordinates (40.7128°N, 74.0060°W) at zoom 11
 
-### 2. Tile Layer (OpenStreetMap)
+### 2. User Location Detection
+
+**Location Found Handler:**
+```javascript
+map.on('locationfound', function(e) {
+    const radius = e.accuracy / 2;
+    
+    // Blue dot marker (Google Maps style)
+    const userIcon = L.divIcon({
+        className: 'user-location-marker',
+        html: '<div class="user-dot"></div>',
+        iconSize: [20, 20]
+    });
+    
+    userMarker = L.marker(e.latlng, { icon: userIcon }).addTo(map)
+        .bindPopup("You are here (±" + Math.round(radius) + " meters)")
+        .openPopup();
+    
+    L.circle(e.latlng, radius, {
+        color: '#4285F4',
+        fillColor: '#4285F4',
+        fillOpacity: 0.1,
+        weight: 1
+    }).addTo(map);
+});
+```
+- Creates animated blue dot marker at user location
+- Adds accuracy circle showing location precision
+- Opens popup showing accuracy radius
+
+**Location Error Handler:**
+```javascript
+map.on('locationerror', function(e) {
+    console.log('Location access denied or unavailable:', e.message);
+    map.setView([40.7128, -74.0060], 11);
+    
+    // Show friendly message
+    const notice = document.getElementById('location-notice');
+    const noticeText = document.getElementById('notice-text');
+    if (notice && noticeText) {
+        noticeText.textContent = 'Location access not available. Showing NYC area instead.';
+        notice.style.display = 'block';
+        setTimeout(() => notice.style.display = 'none', 5000);
+    }
+});
+```
+- Falls back to NYC center view
+- Displays temporary message to user
+- Auto-hides message after 5 seconds
+
+### 3. Tile Layer (OpenStreetMap)
 ```javascript
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -39,7 +92,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 - Max zoom: 19 (street level)
 - Proper attribution included
 
-### 3. Marker Clustering
+### 4. Marker Clustering
 ```javascript
 const markers = L.markerClusterGroup({
     maxClusterRadius: 50,
@@ -297,6 +350,12 @@ Fit map to show all markers
   - `const/let`
   - Arrow functions
   - Template literals
+  - Geolocation API (for user location feature)
+
+**Geolocation Requirements:**
+- HTTPS (required in production; localhost works for development)
+- User permission to access location
+- Supported by all modern desktop and mobile browsers
 
 ## Related Files
 - `templates/artinerary/home.html` - Template that loads this script
@@ -304,9 +363,19 @@ Fit map to show all markers
 - `loc_detail/models.py` - Data models (PublicArt, UserFavoriteArt)
 
 ## Testing Checklist
-- [ ] Map loads at correct center and zoom
+
+**Geolocation:**
+- [ ] Browser prompts for location permission on first load
+- [ ] If allowed: map centers on user location at zoom 14
+- [ ] Blue dot marker appears at user location with pulse animation
+- [ ] Accuracy circle shows around user location
+- [ ] "You are here" popup displays with accuracy radius
+- [ ] If denied: map falls back to NYC center at zoom 11
+- [ ] Location denial message appears and auto-hides after 5s
+
+**Map Functionality:**
 - [ ] Tiles load from OpenStreetMap
-- [ ] Points fetch successfully
+- [ ] Points fetch successfully from API
 - [ ] Markers appear on map
 - [ ] Clusters form with nearby markers
 - [ ] Clicking cluster zooms in
@@ -317,4 +386,10 @@ Fit map to show all markers
 - [ ] Alert shows on favorite toggle
 - [ ] CSRF token included in POST requests
 - [ ] Error messages display on failures
+
+**Cross-Browser:**
+- [ ] Works on Chrome/Edge (Chromium)
+- [ ] Works on Firefox
+- [ ] Works on Safari
+- [ ] Works on mobile browsers (iOS/Android)
 
