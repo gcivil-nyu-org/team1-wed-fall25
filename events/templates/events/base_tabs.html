@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="events-container">
+    <div class="events-header">
+        <h1>Events</h1>
+        <div class="tabs-nav">
+            <a href="{% url 'events:public' %}" 
+               class="tab {% if request.path == '/events/public/' %}active{% endif %}">
+                Public Events
+            </a>
+            <a href="{% url 'events:invitations' %}" 
+               class="tab {% if request.path == '/events/invitations/' %}active{% endif %}">
+                Invitations
+            </a>
+            <a href="{% url 'events:create' %}" class="btn-create">
+                + Create Event
+            </a>
+        </div>
+    </div>
+    
+    <div class="events-content">
+        {% block events_content %}{% endblock %}
+    </div>
+</div>
+
+<style>
+.events-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+.events-header {
+    margin-bottom: 2rem;
+}
+.tabs-nav {
+    display: flex;
+    gap: 1rem;
+    border-bottom: 2px solid #ddd;
+    align-items: center;
+}
+.tab {
+    padding: 0.75rem 1.5rem;
+    text-decoration: none;
+    color: #666;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+}
+.tab.active {
+    color: #007bff;
+    border-bottom-color: #007bff;
+}
+.btn-create {
+    margin-left: auto;
+    padding: 0.5rem 1rem;
+    background: #28a745;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+}
+.btn-create:hover {
+    background: #218838;
+}
+</style>
+{% endblock %}
+

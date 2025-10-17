@@ -19,6 +19,7 @@
                 <a href="{% url 'artinerary:index' %}">Map</a>
                 {% if user.is_authenticated %}
                 <a href="{% url 'loc_detail:favorites' %}">My Favorites</a>
+                <a href="{% url 'events:public' %}">Events</a>
                 <a href="{% url 'events:create' %}">Create Event</a>
                 <span>Hello, {{ user.username }}</span>
                 <a href="{% url 'accounts:logout' %}">Logout</a>
