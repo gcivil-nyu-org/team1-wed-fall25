@@ -2,14 +2,61 @@
 (function() {
     'use strict';
 
-    // Initialize map centered on NYC
-    const map = L.map('map').setView([40.7128, -74.0060], 11);
+    // Initialize map without fixed view - let geolocation set it
+    const map = L.map('map');
 
     // Add OpenStreetMap tiles
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         maxZoom: 19
     }).addTo(map);
+
+    // Request user's current location
+    map.locate({ setView: true, maxZoom: 14, enableHighAccuracy: true });
+
+    // Handle successful location detection
+    let userMarker = null;
+    let userCircle = null;
+    map.on('locationfound', function(e) {
+        const radius = e.accuracy / 2;
+        
+        // Create blue dot marker (Google Maps style)
+        const userIcon = L.divIcon({
+            className: 'user-location-marker',
+            html: '<div class="user-dot"></div>',
+            iconSize: [20, 20]
+        });
+        
+        userMarker = L.marker(e.latlng, { icon: userIcon }).addTo(map)
+            .bindPopup("You are here (±" + Math.round(radius) + " meters)")
+            .openPopup();
+        
+        // Add accuracy circle
+        userCircle = L.circle(e.latlng, radius, {
+            color: '#4285F4',
+            fillColor: '#4285F4',
+            fillOpacity: 0.1,
+            weight: 1
+        }).addTo(map);
+    });
+
+    // Handle location error or denial
+    map.on('locationerror', function(e) {
+        console.log('Location access denied or unavailable:', e.message);
+        // Fall back to NYC center
+        map.setView([40.7128, -74.0060], 11);
+        
+        // Show message to user
+        const notice = document.getElementById('location-notice');
+        const noticeText = document.getElementById('notice-text');
+        if (notice && noticeText) {
+            noticeText.textContent = 'Location access not available. Showing NYC area instead.';
+            notice.style.display = 'block';
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => notice.style.display = 'none', 5000);
+        }
+    });
 
     // Create marker cluster group
     const markers = L.markerClusterGroup({
