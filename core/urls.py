@@ -21,5 +21,6 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('artinerary/', include("artinerary.urls")),
     path('loc_detail/', include("loc_detail.urls")),
+    path('events/', include(('events.urls', 'events'), namespace='events')),
     path('admin/', admin.site.urls),
 ]

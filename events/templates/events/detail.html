@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ event.title }} - Artinerary{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 2rem auto; padding: 2rem;">
+    <h1>{{ event.title }}</h1>
+    <p><strong>Host:</strong> {{ event.host.username }}</p>
+    <p><strong>Date:</strong> {{ event.start_time|date:"F j, Y, g:i A" }}</p>
+    <p><strong>Location:</strong> {{ event.start_location.title }}</p>
+    
+    {% if event.description %}
+    <p><strong>Description:</strong></p>
+    <p>{{ event.description }}</p>
+    {% endif %}
+    
+    <div style="margin-top: 2rem; padding: 1rem; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 4px;">
+        <strong>Event created successfully!</strong>
+    </div>
+</div>
+{% endblock %}
+

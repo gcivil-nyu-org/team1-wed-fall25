@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'accounts',
     'loc_detail.apps.LocDetailConfig',
+    'events.apps.EventsConfig',
 ]
 
 MIDDLEWARE = [
