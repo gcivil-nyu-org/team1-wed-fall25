@@ -2,6 +2,11 @@ language: python
 python:
   - "3.12"
 
+env:
+  global:
+    - SECRET_KEY="test-secret-key-for-travis-ci-only-not-for-production"
+    - DEBUG=True
+
 install:
   - pip install -r requirements.txt
   - pip install -r requirements-dev.txt
