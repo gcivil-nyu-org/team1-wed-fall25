@@ -553,6 +553,11 @@ class ChatMessageTests(TestCase):
         from .services import post_chat_message
         from .models import EventChatMessage
 
+        # Create host membership (host needs to be a member to post)
+        EventMembership.objects.create(
+            event=self.event, user=self.host, role=MembershipRole.HOST
+        )
+
         # Post 25 messages
         for i in range(25):
             post_chat_message(event=self.event, user=self.host, message=f"Message {i}")
