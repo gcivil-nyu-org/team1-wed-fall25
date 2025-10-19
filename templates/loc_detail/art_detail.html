@@ -2,6 +2,37 @@
 
 {% block title %}{{ art.title|default:"Untitled" }} - Artinerary{% endblock %}
 
+{% block extra_head %}
+<style>
+    .favorite-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background-color: #fff;
+        border: 2px solid #e74c3c;
+        color: #e74c3c;
+        padding: 10px 20px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+    }
+    .favorite-button:hover {
+        background-color: #e74c3c;
+        color: white;
+    }
+    .favorite-button.favorited {
+        background-color: #e74c3c;
+        color: white;
+    }
+    .favorite-button .heart {
+        font-size: 20px;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="art-detail-container">
     <div class="breadcrumb">
@@ -16,6 +47,17 @@
                     <span class="detail-badge">{{ art.borough }}</span>
                 {% endif %}
             </div>
+
+            <!-- Favorite Button -->
+            <button 
+                id="favorite-button" 
+                class="favorite-button {% if is_favorited %}favorited{% endif %}"
+                data-art-id="{{ art.id }}"
+                data-favorited="{{ is_favorited|yesno:'true,false' }}"
+            >
+                <span class="heart">&#10084;</span>
+                <span id="favorite-text">{% if is_favorited %}Remove from Favorites{% else %}Add to Favorites{% endif %}</span>
+            </button>
 
             <div class="detail-section">
                 <h2>Artist Information</h2>
@@ -180,4 +222,63 @@
         </div>
     </div>
 </div>
+
+<script>
+    // CSRF token helper
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    const csrftoken = getCookie('csrftoken');
+
+    // Favorite button functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const favoriteBtn = document.getElementById('favorite-button');
+        const favoriteText = document.getElementById('favorite-text');
+        
+        if (favoriteBtn) {
+            favoriteBtn.addEventListener('click', function() {
+                const artId = this.getAttribute('data-art-id');
+                const isFavorited = this.getAttribute('data-favorited') === 'true';
+                
+                fetch(`/loc_detail/api/favorite/${artId}/toggle`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.favorited) {
+                        favoriteBtn.classList.add('favorited');
+                        favoriteText.textContent = 'Remove from Favorites';
+                        favoriteBtn.setAttribute('data-favorited', 'true');
+                        alert('Location added to favourites');
+                    } else {
+                        favoriteBtn.classList.remove('favorited');
+                        favoriteText.textContent = 'Add to Favorites';
+                        favoriteBtn.setAttribute('data-favorited', 'false');
+                        alert('Location removed from favourites');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error toggling favorite:', error);
+                    alert('Failed to update favorites. Please try again.');
+                });
+            });
+        }
+    });
+</script>
 {% endblock %}
