@@ -1,0 +1,3 @@
+black==25.9.0
+coverage==7.10.7
+coveralls
