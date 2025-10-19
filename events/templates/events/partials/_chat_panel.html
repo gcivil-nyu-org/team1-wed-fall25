@@ -1,0 +1,117 @@
+<div class="chat-panel" id="chat">
+    <h2>Event Chat</h2>
+    <p class="chat-info">Only the latest 20 messages are shown.</p>
+    
+    <!-- Messages -->
+    <div class="chat-messages">
+        {% if chat_messages %}
+            {% for msg in chat_messages %}
+            <div class="chat-message {% if msg.author == request.user %}own-message{% endif %}">
+                <div class="message-author">
+                    <strong>{{ msg.author.username }}</strong>
+                    {% if msg.author == event.host %}
+                    <span class="host-badge">Host</span>
+                    {% endif %}
+                </div>
+                <div class="message-content">{{ msg.message }}</div>
+                <div class="message-time">{{ msg.created_at|date:"M j, g:i A" }}</div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <p class="no-messages">No messages yet. Start the conversation!</p>
+        {% endif %}
+    </div>
+    
+    <!-- Message Form -->
+    <form method="post" action="{% url 'events:chat_send' event.slug %}" class="chat-form">
+        {% csrf_token %}
+        <textarea 
+            name="message" 
+            placeholder="Type your message..." 
+            maxlength="300" 
+            rows="3"
+            required></textarea>
+        <button type="submit" class="btn-send">Send</button>
+    </form>
+</div>
+
+<style>
+.chat-panel {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    height: 600px;
+}
+.chat-info {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 1rem;
+}
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+.chat-message {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+.chat-message.own-message {
+    background: #e3f2fd;
+}
+.message-author {
+    margin-bottom: 0.25rem;
+}
+.host-badge {
+    background: #007bff;
+    color: white;
+    padding: 0.1rem 0.4rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+}
+.message-content {
+    margin: 0.5rem 0;
+    color: #333;
+}
+.message-time {
+    font-size: 0.75rem;
+    color: #999;
+}
+.no-messages {
+    text-align: center;
+    color: #999;
+    padding: 2rem;
+}
+.chat-form {
+    display: flex;
+    gap: 0.5rem;
+}
+.chat-form textarea {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    resize: none;
+}
+.btn-send {
+    padding: 0.5rem 1.5rem;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.btn-send:hover {
+    background: #0056b3;
+}
+</style>
+
