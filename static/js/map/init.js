@@ -31,7 +31,6 @@ export async function initializeMap() {
         // 4. Initialize marker manager
         const markerManager = new MarkerManager(map, geoManager);
         
-<<<<<<< HEAD
         // 5. Initialize event marker manager
         const eventMarkerManager = new EventMarkerManager(map);
         
@@ -44,26 +43,14 @@ export async function initializeMap() {
         // 8. Load event markers (async)
         await eventMarkerManager.loadEventMarkers();
         
-=======
-        // 5. Request user location (async, non-blocking)
-        geoManager.requestLocation();
-        
-        // 6. Load art markers (async)
-        await markerManager.loadMarkers();
-        
->>>>>>> origin/develop
         console.log('Map initialized successfully');
         
         // Return instances for potential external use
         return {
             map,
             geoManager,
-<<<<<<< HEAD
             markerManager,
             eventMarkerManager
-=======
-            markerManager
->>>>>>> origin/develop
         };
         
     } catch (error) {
