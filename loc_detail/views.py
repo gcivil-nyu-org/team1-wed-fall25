@@ -79,13 +79,17 @@ def art_detail(request, art_id):
         Q(borough=art.borough) | Q(artist_name=art.artist_name)
     ).exclude(id=art.id)[:4]
 
+<<<<<<< HEAD
     # Check if user has favorited this art
     is_favorited = UserFavoriteArt.objects.filter(user=request.user, art=art).exists()
 
+=======
+>>>>>>> origin/develop
     context = {
         "art": art,
         "comments": comments,
         "related_art": related_art,
+<<<<<<< HEAD
         "is_favorited": is_favorited,
     }
 
@@ -189,3 +193,8 @@ def favorites(request):
     }
 
     return render(request, "loc_detail/favorites.html", context)
+=======
+    }
+
+    return render(request, "loc_detail/art_detail.html", context)
+>>>>>>> origin/develop

@@ -37,7 +37,11 @@ class Command(BaseCommand):
         else:
             params["$limit"] = 50000  # Maximum safe limit
 
+<<<<<<< HEAD
         self.stdout.write(self.style.WARNING(f"Fetching data from NYC Open Data..."))
+=======
+        self.stdout.write(self.style.WARNING("Fetching data from NYC Open Data..."))
+>>>>>>> origin/develop
 
         try:
             response = requests.get(base_url, params=params, timeout=60)
@@ -171,7 +175,11 @@ class Command(BaseCommand):
                         )
 
             # Print summary
+<<<<<<< HEAD
             self.stdout.write(self.style.SUCCESS(f"\n✓ Import completed successfully!"))
+=======
+            self.stdout.write(self.style.SUCCESS("\n✓ Import completed successfully!"))
+>>>>>>> origin/develop
             self.stdout.write(f"  Created: {created_count}")
             self.stdout.write(f"  Updated: {updated_count}")
             self.stdout.write(f"  Skipped: {skipped_count}")
