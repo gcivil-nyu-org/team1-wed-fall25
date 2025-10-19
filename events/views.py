@@ -62,9 +62,56 @@ def create(request):
 
 @login_required
 def detail(request, slug):
-    """Event detail page (stub for Phase 1)"""
-    event = get_object_or_404(Event, slug=slug)
-    return render(request, "events/detail.html", {"event": event})
+    """
+    Event detail page with dynamic content based on user role
+
+    Context varies by role:
+    - HOST/ATTENDEE: Full details + chat + members + join requests (host only)
+    - VISITOR: Read-only details + join/request button
+    """
+    from .selectors import (
+        get_event_detail,
+        user_role_in_event,
+        list_event_attendees,
+        list_chat_messages,
+        get_join_request,
+        list_pending_join_requests,
+    )
+
+    try:
+        event = get_event_detail(slug)
+    except Event.DoesNotExist:
+        messages.error(request, "Event not found.")
+        return redirect("events:public")
+
+    user_role = user_role_in_event(event, request.user)
+
+    # Get additional locations (ordered stops)
+    additional_locations = event.locations.all().order_by("order")
+
+    # Get attendees list
+    attendees = list_event_attendees(event)
+
+    context = {
+        "event": event,
+        "user_role": user_role,
+        "additional_locations": additional_locations,
+        "attendees": attendees,
+    }
+
+    # Participant-specific data
+    if user_role in ["HOST", "ATTENDEE"]:
+        context["chat_messages"] = list_chat_messages(event, limit=20)
+
+        # Host-specific data
+        if user_role == "HOST":
+            context["join_requests"] = list_pending_join_requests(event)
+
+    # Visitor-specific data
+    if user_role == "VISITOR":
+        context["join_request"] = get_join_request(event, request.user)
+
+    return render(request, "events/detail.html", context)
 
 
 @login_required
@@ -233,3 +280,93 @@ def api_event_pins(request):
     ]
 
     return JsonResponse({"points": points})
+
+
+# PHASE 3 VIEWS
+
+
+@login_required
+@require_POST
+def chat_send(request, slug):
+    """Send a chat message"""
+    from .services import post_chat_message as post_chat_service
+
+    event = get_object_or_404(Event, slug=slug)
+    message = request.POST.get("message", "").strip()
+
+    try:
+        post_chat_service(event=event, user=request.user, message=message)
+        messages.success(request, "Message sent!")
+    except ValueError as e:
+        messages.error(request, str(e))
+
+    return redirect(event.get_absolute_url() + "#chat")
+
+
+@login_required
+@require_POST
+def request_join_view(request, slug):
+    """Request to join a PUBLIC_INVITE event"""
+    from .services import request_join as request_join_service
+
+    event = get_object_or_404(Event, slug=slug)
+
+    try:
+        request_join_service(event=event, user=request.user)
+        messages.success(request, "Join request sent to host!")
+    except ValueError as e:
+        messages.error(request, str(e))
+
+    return redirect(event.get_absolute_url())
+
+
+@login_required
+@require_POST
+def approve_request(request, slug, request_id):
+    """Host approves a join request"""
+    from .services import approve_join_request as approve_service
+    from .models import EventJoinRequest
+
+    event = get_object_or_404(Event, slug=slug)
+
+    # Verify user is host
+    if event.host != request.user:
+        messages.error(request, "Only the host can manage join requests.")
+        return redirect(event.get_absolute_url())
+
+    join_request = get_object_or_404(EventJoinRequest, id=request_id, event=event)
+
+    try:
+        approve_service(join_request=join_request)
+        messages.success(
+            request, f"{join_request.requester.username} has been added to the event!"
+        )
+    except Exception:
+        messages.error(request, "Failed to approve request.")
+
+    return redirect(event.get_absolute_url())
+
+
+@login_required
+@require_POST
+def decline_request(request, slug, request_id):
+    """Host declines a join request"""
+    from .services import decline_join_request as decline_service
+    from .models import EventJoinRequest
+
+    event = get_object_or_404(Event, slug=slug)
+
+    # Verify user is host
+    if event.host != request.user:
+        messages.error(request, "Only the host can manage join requests.")
+        return redirect(event.get_absolute_url())
+
+    join_request = get_object_or_404(EventJoinRequest, id=request_id, event=event)
+
+    try:
+        decline_service(join_request=join_request)
+        messages.success(request, "Join request declined.")
+    except Exception:
+        messages.error(request, "Failed to decline request.")
+
+    return redirect(event.get_absolute_url())

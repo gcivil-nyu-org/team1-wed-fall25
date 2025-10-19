@@ -156,3 +156,122 @@ def decline_invite(*, invite):
     EventMembership.objects.filter(
         event=invite.event, user=invite.invitee, role=MembershipRole.INVITED
     ).delete()
+
+
+# PHASE 3 SERVICES
+
+
+@transaction.atomic
+def post_chat_message(*, event, user, message):
+    """
+    Post a chat message and enforce 20-message retention
+
+    Business Rules:
+    - User must be HOST or ATTENDEE
+    - Message length: 1-300 chars
+    - Auto-delete oldest messages beyond 20 per event
+
+    Raises:
+        ValueError: If user not authorized or message invalid
+    """
+    from .models import EventChatMessage
+
+    # Check permission
+    is_member = EventMembership.objects.filter(
+        event=event, user=user, role__in=[MembershipRole.HOST, MembershipRole.ATTENDEE]
+    ).exists()
+
+    if not is_member:
+        raise ValueError("Only event members can post messages.")
+
+    # Validate message
+    message = message.strip()
+    if not message or len(message) > 300:
+        raise ValueError("Message must be 1-300 characters.")
+
+    # Create message
+    EventChatMessage.objects.create(event=event, author=user, message=message)
+
+    # Enforce retention: keep only latest 20 messages
+    messages = EventChatMessage.objects.filter(event=event).order_by("-created_at")
+    if messages.count() > 20:
+        old_messages = messages[20:]
+        EventChatMessage.objects.filter(id__in=[m.id for m in old_messages]).delete()
+
+
+@transaction.atomic
+def request_join(*, event, user):
+    """
+    Create a join request for PUBLIC_INVITE event
+
+    Business Rules:
+    - Only for PUBLIC_INVITE events
+    - User must not already be member or invited
+    - Idempotent: no-op if request exists
+
+    Raises:
+        ValueError: If not allowed
+    """
+    from .models import EventJoinRequest, EventInvite
+    from .enums import JoinRequestStatus
+
+    # Check event visibility
+    if event.visibility != EventVisibility.PUBLIC_INVITE:
+        raise ValueError("Join requests only allowed for invite-only events.")
+
+    # Check if already member
+    is_member = EventMembership.objects.filter(event=event, user=user).exists()
+
+    if is_member:
+        raise ValueError("You are already a member of this event.")
+
+    # Check if already invited
+    has_invite = EventInvite.objects.filter(
+        event=event, invitee=user, status=InviteStatus.PENDING
+    ).exists()
+
+    if has_invite:
+        raise ValueError("You already have an invitation to this event.")
+
+    # Create request (idempotent)
+    EventJoinRequest.objects.get_or_create(
+        event=event, requester=user, defaults={"status": JoinRequestStatus.PENDING}
+    )
+
+
+@transaction.atomic
+def approve_join_request(*, join_request):
+    """
+    Approve a join request and add user as attendee
+
+    - Updates request status to APPROVED
+    - Creates EventMembership with ATTENDEE role
+    - Sets decided_at timestamp
+    """
+    from .enums import JoinRequestStatus
+
+    join_request.status = JoinRequestStatus.APPROVED
+    join_request.decided_at = timezone.now()
+    join_request.save()
+
+    # Add user as attendee
+    EventMembership.objects.get_or_create(
+        event=join_request.event,
+        user=join_request.requester,
+        defaults={"role": MembershipRole.ATTENDEE},
+    )
+
+
+@transaction.atomic
+def decline_join_request(*, join_request):
+    """
+    Decline a join request
+
+    - Updates request status to DECLINED
+    - Sets decided_at timestamp
+    """
+    from .enums import JoinRequestStatus
+
+    join_request.status = JoinRequestStatus.DECLINED
+    join_request.decided_at = timezone.now()
+    join_request.save()

@@ -110,3 +110,118 @@ def list_user_invitations(user):
         .select_related("event", "event__host", "event__start_location")
         .order_by("created_at")
     )
+
+
+# PHASE 3 SELECTORS
+
+
+def get_event_detail(slug):
+    """
+    Get event with all related data for detail page
+
+    Returns:
+        Event object with prefetched relationships
+    """
+    from .models import Event
+
+    return (
+        Event.objects.select_related("host", "start_location")
+        .prefetch_related("locations__location", "memberships__user")
+        .get(slug=slug, is_deleted=False)
+    )
+
+
+def user_role_in_event(event, user):
+    """
+    Determine user's role in event
+
+    Returns:
+        'HOST' | 'ATTENDEE' | 'VISITOR'
+    """
+    from .models import EventMembership
+    from .enums import MembershipRole
+
+    if event.host == user:
+        return "HOST"
+
+    membership = EventMembership.objects.filter(
+        event=event, user=user, role__in=[MembershipRole.ATTENDEE]
+    ).first()
+
+    if membership:
+        return "ATTENDEE"
+
+    return "VISITOR"
+
+
+def list_event_attendees(event):
+    """
+    Get all attendees (HOST + ATTENDEE roles)
+
+    Returns:
+        QuerySet of EventMembership objects with user info
+    """
+    from .models import EventMembership
+    from .enums import MembershipRole
+
+    return (
+        EventMembership.objects.filter(
+            event=event, role__in=[MembershipRole.HOST, MembershipRole.ATTENDEE]
+        )
+        .select_related("user")
+        .order_by("joined_at")
+    )
+
+
+def list_chat_messages(event, limit=20):
+    """
+    Get latest chat messages for event
+
+    Args:
+        event: Event object
+        limit: Max messages to return (default 20)
+
+    Returns:
+        List of EventChatMessage ordered oldest first
+    """
+    from .models import EventChatMessage
+
+    # Get latest N messages in descending order, then reverse to oldest-first
+    messages = list(
+        EventChatMessage.objects.filter(event=event)
+        .select_related("author")
+        .order_by("-created_at")[:limit]
+    )
+    return messages[::-1]  # Reverse to show oldest first
+
+
+def get_join_request(event, user):
+    """
+    Get user's pending join request for event (if exists)
+
+    Returns:
+        EventJoinRequest or None
+    """
+    from .models import EventJoinRequest
+    from .enums import JoinRequestStatus
+
+    return EventJoinRequest.objects.filter(
+        event=event, requester=user, status=JoinRequestStatus.PENDING
+    ).first()
+
+
+def list_pending_join_requests(event):
+    """
+    Get pending join requests for event (host only)
+
+    Returns:
+        QuerySet of EventJoinRequest objects
+    """
+    from .models import EventJoinRequest
+    from .enums import JoinRequestStatus
+
+    return (
+        EventJoinRequest.objects.filter(event=event, status=JoinRequestStatus.PENDING)
+        .select_related("requester")
+        .order_by("created_at")
+    )

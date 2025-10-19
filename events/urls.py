@@ -14,7 +14,20 @@ urlpatterns = [
     path("<slug:slug>/join/", views.join_event, name="join"),
     path("<slug:slug>/accept/", views.accept_invite, name="accept"),
     path("<slug:slug>/decline/", views.decline_invite, name="decline"),
-    # DETAIL (stub for Phase 1, full in Phase 3)
+    # CHAT & REQUESTS (Phase 3)
+    path("<slug:slug>/chat/send/", views.chat_send, name="chat_send"),
+    path("<slug:slug>/request/", views.request_join_view, name="request_join"),
+    path(
+        "<slug:slug>/request/<int:request_id>/approve/",
+        views.approve_request,
+        name="approve_request",
+    ),
+    path(
+        "<slug:slug>/request/<int:request_id>/decline/",
+        views.decline_request,
+        name="decline_request",
+    ),
+    # DETAIL (Phase 3 - fully implemented)
     path("<slug:slug>/", views.detail, name="detail"),
     # HELPER APIs (autocomplete for create form & map pins)
     path(
