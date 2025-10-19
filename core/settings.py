@@ -107,6 +107,14 @@ elif "RDS_DB_NAME" in os.environ:
             "PORT": os.environ.get("RDS_PORT", 5432),
         }
     }
+elif "test" in sys.argv:
+    # Use SQLite for testing to avoid PostgreSQL permission issues
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "test_db.sqlite3",
+        }
+    }
 else:
     DATABASES = {
         "default": {

@@ -10,7 +10,7 @@ urlpatterns = [
     # API endpoints
     path("api/points/all", views.api_all_points, name="api_all_points"),
     path(
-        "api/favorite/<int:art_id>/toggle",  # noqa: E501
+        "api/favorite/<int:art_id>/toggle",
         views.api_favorite_toggle,
         name="api_favorite_toggle",
     ),
