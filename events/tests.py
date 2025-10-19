@@ -4,7 +4,7 @@ from django.utils import timezone
 from datetime import timedelta
 
 from loc_detail.models import PublicArt
-from .models import Event, EventLocation, EventMembership, EventInvite
+from .models import Event, EventMembership, EventInvite
 from .enums import EventVisibility, MembershipRole, InviteStatus
 from .services import create_event, join_event, accept_invite, decline_invite
 from .selectors import list_public_events, user_has_joined, list_user_invitations

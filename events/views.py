@@ -2,7 +2,6 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
-from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.views.decorators.http import require_POST
 from django.core.paginator import Paginator
@@ -154,7 +153,7 @@ def accept_invite(request, slug):
             request, f'You have accepted the invitation to "{event.title}"!'
         )
         return redirect(event.get_absolute_url())
-    except Exception as e:
+    except Exception:
         messages.error(request, "Failed to accept invitation.")
         return redirect("events:invitations")
 
@@ -171,7 +170,7 @@ def decline_invite(request, slug):
     try:
         decline_invite_service(invite=invite)
         messages.success(request, "Invitation declined.")
-    except Exception as e:
+    except Exception:
         messages.error(request, "Failed to decline invitation.")
 
     return redirect("events:invitations")

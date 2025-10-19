@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from loc_detail.models import PublicArt
 
-from .models import Event, EventLocation, EventMembership, EventInvite
+from .models import EventLocation, EventMembership, EventInvite
 from .enums import MembershipRole, InviteStatus, EventVisibility
 from .validators import validate_max_locations
 

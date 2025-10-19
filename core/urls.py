@@ -22,9 +22,6 @@ urlpatterns = [
     path("accounts/", include("accounts.urls")),
     path("artinerary/", include("artinerary.urls")),
     path("loc_detail/", include("loc_detail.urls")),
-<<<<<<< HEAD
     path("events/", include(("events.urls", "events"), namespace="events")),
-=======
->>>>>>> origin/develop
     path("admin/", admin.site.urls),
 ]

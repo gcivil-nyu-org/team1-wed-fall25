@@ -3,7 +3,6 @@ from .models import (
     Event,
     EventLocation,
     EventMembership,
-    EventInvite,
     EventChatMessage,
     EventJoinRequest,
 )
