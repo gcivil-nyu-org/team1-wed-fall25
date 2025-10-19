@@ -1,0 +1,15 @@
+.vscode
+.env
+venv/
+
+staticfiles/
+
+__pycache__/
+core/__pycache__/
+core/__pycache__/*
+artinerary/__pycache__/*
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
