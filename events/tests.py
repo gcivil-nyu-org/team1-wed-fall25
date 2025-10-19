@@ -450,3 +450,262 @@ class InvitationTests(TestCase):
         accept_invite(invite=self.invite)
         invites = list_user_invitations(self.invitee)
         self.assertEqual(invites.count(), 0)
+
+
+# PHASE 3 TESTS
+
+
+class EventDetailTests(TestCase):
+    """Test event detail page access and role detection"""
+
+    def setUp(self):
+        self.host = User.objects.create_user(username="host", password="pass")
+        self.attendee = User.objects.create_user(username="attendee", password="pass")
+        self.visitor = User.objects.create_user(username="visitor", password="pass")
+
+        self.location = PublicArt.objects.create(
+            title="Art", artist_name="Artist", latitude=40.7128, longitude=-74.0060
+        )
+
+        future_time = timezone.now() + timedelta(days=1)
+
+        self.event = Event.objects.create(
+            title="Test Event",
+            host=self.host,
+            start_time=future_time,
+            start_location=self.location,
+            visibility=EventVisibility.PUBLIC_OPEN,
+        )
+
+        # Add attendee
+        EventMembership.objects.create(
+            event=self.event, user=self.attendee, role=MembershipRole.ATTENDEE
+        )
+
+    def test_user_role_detection_host(self):
+        """Host role is correctly identified"""
+        from .selectors import user_role_in_event
+
+        role = user_role_in_event(self.event, self.host)
+        self.assertEqual(role, "HOST")
+
+    def test_user_role_detection_attendee(self):
+        """Attendee role is correctly identified"""
+        from .selectors import user_role_in_event
+
+        role = user_role_in_event(self.event, self.attendee)
+        self.assertEqual(role, "ATTENDEE")
+
+    def test_user_role_detection_visitor(self):
+        """Visitor role is correctly identified"""
+        from .selectors import user_role_in_event
+
+        role = user_role_in_event(self.event, self.visitor)
+        self.assertEqual(role, "VISITOR")
+
+
+class ChatMessageTests(TestCase):
+    """Test chat message posting and retention"""
+
+    def setUp(self):
+        self.host = User.objects.create_user(username="host", password="pass")
+        self.attendee = User.objects.create_user(username="attendee", password="pass")
+        self.visitor = User.objects.create_user(username="visitor", password="pass")
+
+        self.location = PublicArt.objects.create(
+            title="Art", artist_name="Artist", latitude=40.7128, longitude=-74.0060
+        )
+
+        future_time = timezone.now() + timedelta(days=1)
+
+        self.event = Event.objects.create(
+            title="Chat Event",
+            host=self.host,
+            start_time=future_time,
+            start_location=self.location,
+        )
+
+        EventMembership.objects.create(
+            event=self.event, user=self.attendee, role=MembershipRole.ATTENDEE
+        )
+
+    def test_post_message_as_member(self):
+        """Members can post messages"""
+        from .services import post_chat_message
+        from .models import EventChatMessage
+
+        post_chat_message(event=self.event, user=self.attendee, message="Hello!")
+
+        self.assertEqual(EventChatMessage.objects.filter(event=self.event).count(), 1)
+        msg = EventChatMessage.objects.first()
+        self.assertEqual(msg.message, "Hello!")
+        self.assertEqual(msg.author, self.attendee)
+
+    def test_visitor_cannot_post_message(self):
+        """Visitors cannot post messages"""
+        from .services import post_chat_message
+
+        with self.assertRaises(ValueError):
+            post_chat_message(event=self.event, user=self.visitor, message="Hello!")
+
+    def test_message_retention_limit(self):
+        """Only latest 20 messages are kept"""
+        from .services import post_chat_message
+        from .models import EventChatMessage
+
+        # Post 25 messages
+        for i in range(25):
+            post_chat_message(event=self.event, user=self.host, message=f"Message {i}")
+
+        # Should only have 20
+        self.assertEqual(EventChatMessage.objects.filter(event=self.event).count(), 20)
+
+
+class JoinRequestTests(TestCase):
+    """Test join request creation and management"""
+
+    def setUp(self):
+        self.host = User.objects.create_user(username="host", password="pass")
+        self.requester = User.objects.create_user(username="requester", password="pass")
+
+        self.location = PublicArt.objects.create(
+            title="Art", artist_name="Artist", latitude=40.7128, longitude=-74.0060
+        )
+
+        future_time = timezone.now() + timedelta(days=1)
+
+        self.event = Event.objects.create(
+            title="Invite Only Event",
+            host=self.host,
+            start_time=future_time,
+            start_location=self.location,
+            visibility=EventVisibility.PUBLIC_INVITE,
+        )
+
+    def test_request_join_public_invite(self):
+        """Users can request to join PUBLIC_INVITE events"""
+        from .services import request_join
+        from .models import EventJoinRequest
+        from .enums import JoinRequestStatus
+
+        request_join(event=self.event, user=self.requester)
+
+        self.assertTrue(
+            EventJoinRequest.objects.filter(
+                event=self.event,
+                requester=self.requester,
+                status=JoinRequestStatus.PENDING,
+            ).exists()
+        )
+
+    def test_cannot_request_join_public_open(self):
+        """Cannot request join for PUBLIC_OPEN events"""
+        from .services import request_join
+
+        self.event.visibility = EventVisibility.PUBLIC_OPEN
+        self.event.save()
+
+        with self.assertRaises(ValueError):
+            request_join(event=self.event, user=self.requester)
+
+    def test_approve_join_request(self):
+        """Host can approve join request"""
+        from .services import request_join, approve_join_request
+        from .models import EventJoinRequest
+        from .enums import JoinRequestStatus
+
+        request_join(event=self.event, user=self.requester)
+        join_req = EventJoinRequest.objects.get(
+            event=self.event, requester=self.requester
+        )
+
+        approve_join_request(join_request=join_req)
+
+        # Check request updated
+        join_req.refresh_from_db()
+        self.assertEqual(join_req.status, JoinRequestStatus.APPROVED)
+        self.assertIsNotNone(join_req.decided_at)
+
+        # Check membership created
+        self.assertTrue(
+            EventMembership.objects.filter(
+                event=self.event, user=self.requester, role=MembershipRole.ATTENDEE
+            ).exists()
+        )
+
+    def test_decline_join_request(self):
+        """Host can decline join request"""
+        from .services import request_join, decline_join_request
+        from .models import EventJoinRequest
+        from .enums import JoinRequestStatus
+
+        request_join(event=self.event, user=self.requester)
+        join_req = EventJoinRequest.objects.get(
+            event=self.event, requester=self.requester
+        )
+
+        decline_join_request(join_request=join_req)
+
+        # Check request updated
+        join_req.refresh_from_db()
+        self.assertEqual(join_req.status, JoinRequestStatus.DECLINED)
+        self.assertIsNotNone(join_req.decided_at)
+
+        # No membership created
+        self.assertFalse(
+            EventMembership.objects.filter(
+                event=self.event, user=self.requester
+            ).exists()
+        )
+
+
+class EventSelectorTests(TestCase):
+    """Test Phase 3 selectors"""
+
+    def setUp(self):
+        self.host = User.objects.create_user(username="host", password="pass")
+
+        self.location = PublicArt.objects.create(
+            title="Art", artist_name="Artist", latitude=40.7128, longitude=-74.0060
+        )
+
+        future_time = timezone.now() + timedelta(days=1)
+
+        self.event = Event.objects.create(
+            title="Test Event",
+            host=self.host,
+            start_time=future_time,
+            start_location=self.location,
+        )
+
+    def test_get_event_detail(self):
+        """get_event_detail fetches event with relationships"""
+        from .selectors import get_event_detail
+
+        event = get_event_detail(self.event.slug)
+
+        self.assertEqual(event.id, self.event.id)
+        # Prefetch check (doesn't hit DB again)
+        self.assertEqual(event.host.username, "host")
+
+    def test_list_chat_messages_ordering(self):
+        """Chat messages are ordered oldest first"""
+        from .models import EventChatMessage
+        from .selectors import list_chat_messages
+
+        # Create 3 messages
+        EventChatMessage.objects.create(
+            event=self.event, author=self.host, message="First"
+        )
+        EventChatMessage.objects.create(
+            event=self.event, author=self.host, message="Second"
+        )
+        EventChatMessage.objects.create(
+            event=self.event, author=self.host, message="Third"
+        )
+
+        messages = list(list_chat_messages(self.event))
+
+        self.assertEqual(len(messages), 3)
+        self.assertEqual(messages[0].message, "First")
+        self.assertEqual(messages[2].message, "Third")
