@@ -8,7 +8,7 @@ from django.views.decorators.http import require_POST
 from .models import PublicArt, ArtComment, UserFavoriteArt
 
 
-@login_required
+# @login_required
 def index(request):
     """Homepage with search and filter options"""
     # Get filter parameters
@@ -92,7 +92,7 @@ def art_detail(request, art_id):
     return render(request, "loc_detail/art_detail.html", context)
 
 
-@login_required
+# @login_required
 def api_all_points(request):
     """API endpoint returning all public art points as compact JSON"""
     # Fetch all art with valid coordinates

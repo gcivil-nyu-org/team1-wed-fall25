@@ -19,32 +19,32 @@ export async function initializeMap() {
             MAP_CONFIG.defaultCenter,
             MAP_CONFIG.defaultZoom
         );
-        
+
         // 2. Setup tile layers and layer control
         const tileLayers = createTileLayers();
         addLayerControl(map, tileLayers);
-        
+
         // 3. Initialize geolocation manager
         const geoManager = new GeolocationManager(map);
-        
+
         // 4. Initialize marker manager
         const markerManager = new MarkerManager(map, geoManager);
-        
+
         // 5. Request user location (async, non-blocking)
         geoManager.requestLocation();
-        
+
         // 6. Load art markers (async)
         await markerManager.loadMarkers();
-        
-        console.log('Map initialized successfully');
-        
+
+        // console.log('Map initialized successfully');
+
         // Return instances for potential external use
         return {
             map,
             geoManager,
             markerManager
         };
-        
+
     } catch (error) {
         console.error('Failed to initialize map:', error);
         throw error;
