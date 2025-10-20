@@ -31,3 +31,14 @@ deploy:
     edge: true # opt in to dpl v2
     on:
       branch: develop
+      
+  - provider: elasticbeanstalk
+    access_key_id: $AWS_ACCESS_KEY_ID
+    secret_access_key: $AWS_SECRET_ACCESS_KEY
+    bucket: elasticbeanstalk-us-east-2-661217967129
+    region: us-east-2
+    app: artinerary
+    env: artinerary-prod
+    edge: true # opt in to dpl v2
+    on:
+      branch: main
