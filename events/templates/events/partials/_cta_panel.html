@@ -1,0 +1,108 @@
+<div class="cta-panel">
+    <h2>Join This Event</h2>
+    
+    {% if event.visibility == 'PUBLIC_OPEN' %}
+        <p>This is a public event. Anyone can join!</p>
+        <form method="post" action="{% url 'events:join' event.slug %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-join">Join Event</button>
+        </form>
+    
+    {% elif event.visibility == 'PUBLIC_INVITE' %}
+        <p>This event is invite-only. Request to join and the host will review your request.</p>
+        
+        {% if join_request %}
+            <div class="request-status">
+                <span class="badge-pending">Request Pending</span>
+                <p>You've requested to join. The host will notify you when they respond.</p>
+            </div>
+        {% else %}
+            <form method="post" action="{% url 'events:request_join' event.slug %}">
+                {% csrf_token %}
+                <button type="submit" class="btn-request">Request to Join</button>
+            </form>
+        {% endif %}
+    
+    {% else %}
+        <div class="private-notice">
+            <p><strong>Private Event</strong></p>
+            <p>This is a private event. You must be invited by the host to join.</p>
+        </div>
+    {% endif %}
+    
+    <!-- Event Preview Info -->
+    <div class="event-preview">
+        <h3>What to Expect</h3>
+        <p><strong>When:</strong> {{ event.start_time|date:"F j, Y at g:i A" }}</p>
+        <p><strong>Starting at:</strong> {{ event.start_location.title }}</p>
+        {% if additional_locations %}
+        <p><strong>Stops:</strong> {{ additional_locations.count|add:"1" }} location{{ additional_locations.count|add:"1"|pluralize }}</p>
+        {% endif %}
+        <p><strong>Attendees:</strong> {{ attendees.count }} joined</p>
+    </div>
+</div>
+
+<style>
+.cta-panel {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.btn-join, .btn-request {
+    width: 100%;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 1rem;
+}
+.btn-join {
+    background: #28a745;
+    color: white;
+}
+.btn-join:hover {
+    background: #218838;
+}
+.btn-request {
+    background: #007bff;
+    color: white;
+}
+.btn-request:hover {
+    background: #0056b3;
+}
+.request-status {
+    padding: 1rem;
+    background: #fff3cd;
+    border-radius: 4px;
+    margin-top: 1rem;
+}
+.badge-pending {
+    background: #ffc107;
+    color: #856404;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+}
+.private-notice {
+    padding: 1rem;
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    color: #721c24;
+    margin-top: 1rem;
+}
+.event-preview {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid #eee;
+}
+.event-preview h3 {
+    margin-top: 0;
+}
+.event-preview p {
+    margin: 0.5rem 0;
+}
+</style>
+

@@ -1,0 +1,214 @@
+{% extends 'events/base_tabs.html' %}
+
+{% block events_content %}
+<div class="public-events">
+    <!-- Search and filters -->
+    <form method="get" class="filters">
+        <input type="text" name="q" value="{{ query }}" placeholder="Search events...">
+        
+        <select name="filter">
+            <option value="">All Types</option>
+            <option value="open" {% if filter == 'open' %}selected{% endif %}>Open to All</option>
+            <option value="invite" {% if filter == 'invite' %}selected{% endif %}>Invite Only</option>
+        </select>
+        
+        <select name="sort">
+            <option value="start_time" {% if sort == 'start_time' %}selected{% endif %}>Soonest First</option>
+            <option value="-start_time" {% if sort == '-start_time' %}selected{% endif %}>Latest First</option>
+        </select>
+        
+        <button type="submit">Apply</button>
+    </form>
+    
+    <!-- Events grid -->
+    {% if page_obj.object_list %}
+    <div class="events-grid">
+        {% for event in page_obj %}
+        <div class="event-card">
+            <h3>{{ event.title }}</h3>
+            <p><strong>Host:</strong> {{ event.host.username }}</p>
+            <p><strong>When:</strong> {{ event.start_time|date:"F j, Y g:i A" }}</p>
+            <p><strong>Where:</strong> {{ event.start_location.title }}</p>
+            
+            <span class="visibility-badge {% if event.visibility == 'PUBLIC_OPEN' %}badge-open{% else %}badge-invite{% endif %}">
+                {% if event.visibility == 'PUBLIC_OPEN' %}Open{% else %}Invite Only{% endif %}
+            </span>
+            
+            <div class="card-actions">
+                {% if event.joined %}
+                <button class="btn-joined" disabled>Joined ✓</button>
+                {% else %}
+                <form method="post" action="{% url 'events:join' event.slug %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-join">Join</button>
+                </form>
+                {% endif %}
+                <a href="{% url 'events:detail' event.slug %}" class="btn-view">View</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}&q={{ query }}&filter={{ filter }}&sort={{ sort }}">Previous</a>
+        {% endif %}
+        
+        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}&q={{ query }}&filter={{ filter }}&sort={{ sort }}">Next</a>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <div class="empty-state">
+        <p>No public events yet. Be the first to create one!</p>
+        <a href="{% url 'events:create' %}" class="btn-create-first">Create Event</a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.filters {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+.filters input, .filters select {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+.filters input {
+    flex: 1;
+    min-width: 200px;
+}
+.filters button {
+    padding: 0.5rem 1.5rem;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.filters button:hover {
+    background: #0056b3;
+}
+.events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+.event-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 1.5rem;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.event-card h3 {
+    margin-top: 0;
+    color: #333;
+}
+.event-card p {
+    margin: 0.5rem 0;
+    color: #666;
+}
+.visibility-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    margin: 0.5rem 0;
+}
+.badge-open {
+    background: #d4edda;
+    color: #155724;
+}
+.badge-invite {
+    background: #fff3cd;
+    color: #856404;
+}
+.card-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+.btn-join, .btn-view, .btn-joined {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 0.9rem;
+}
+.btn-join {
+    background: #007bff;
+    color: white;
+}
+.btn-join:hover {
+    background: #0056b3;
+}
+.btn-joined {
+    background: #6c757d;
+    color: white;
+    cursor: not-allowed;
+}
+.btn-view {
+    background: #6c757d;
+    color: white;
+}
+.btn-view:hover {
+    background: #5a6268;
+}
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+.empty-state p {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 1rem;
+}
+.btn-create-first {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: #28a745;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+}
+.btn-create-first:hover {
+    background: #218838;
+}
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+.pagination a {
+    padding: 0.5rem 1rem;
+    background: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+}
+.pagination a:hover {
+    background: #0056b3;
+}
+.pagination span {
+    color: #666;
+}
+</style>
+{% endblock %}
+

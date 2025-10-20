@@ -1,0 +1,206 @@
+<div class="details-panel">
+    <h2>Event Details</h2>
+    
+    <!-- Date & Time -->
+    <div class="detail-section">
+        <h3>When</h3>
+        <p><strong>Date:</strong> {{ event.start_time|date:"F j, Y" }}</p>
+        <p><strong>Time:</strong> {{ event.start_time|date:"g:i A" }}</p>
+    </div>
+    
+    <!-- Start Location -->
+    <div class="detail-section">
+        <h3>Starting Point</h3>
+        <p>
+            <a href="{% url 'loc_detail:art_detail' event.start_location.id %}">
+                {{ event.start_location.title }}
+            </a>
+        </p>
+        {% if event.start_location.artist_name %}
+        <p class="artist">by {{ event.start_location.artist_name }}</p>
+        {% endif %}
+    </div>
+    
+    <!-- Additional Locations (Itinerary) -->
+    {% if additional_locations %}
+    <div class="detail-section">
+        <h3>Itinerary ({{ additional_locations.count }} more stop{{ additional_locations.count|pluralize }})</h3>
+        <ol class="itinerary-list">
+            {% for stop in additional_locations %}
+            <li>
+                <a href="{% url 'loc_detail:art_detail' stop.location.id %}">
+                    {{ stop.location.title }}
+                </a>
+            </li>
+            {% endfor %}
+        </ol>
+    </div>
+    {% endif %}
+    
+    <!-- Description -->
+    {% if event.description %}
+    <div class="detail-section">
+        <h3>Description</h3>
+        <p>{{ event.description }}</p>
+    </div>
+    {% endif %}
+    
+    <!-- Visibility -->
+    <div class="detail-section">
+        <h3>Event Type</h3>
+        <span class="visibility-badge {% if event.visibility == 'PUBLIC_OPEN' %}badge-open{% elif event.visibility == 'PUBLIC_INVITE' %}badge-invite{% else %}badge-private{% endif %}">
+            {% if event.visibility == 'PUBLIC_OPEN' %}
+                Public - Open to All
+            {% elif event.visibility == 'PUBLIC_INVITE' %}
+                Public - Invite Only
+            {% else %}
+                Private
+            {% endif %}
+        </span>
+    </div>
+    
+    <!-- Attendees List -->
+    <div class="detail-section">
+        <h3>Attendees ({{ attendees.count }})</h3>
+        <ul class="attendees-list">
+            {% for membership in attendees %}
+            <li>
+                <strong>{{ membership.user.username }}</strong>
+                {% if membership.role == 'HOST' %}
+                <span class="role-badge host">Host</span>
+                {% endif %}
+                {% if user_role == 'HOST' %}
+                <span class="email">({{ membership.user.email }})</span>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    
+    <!-- Host-only: Join Requests -->
+    {% if user_role == 'HOST' and join_requests %}
+    <div class="detail-section join-requests">
+        <h3>Pending Join Requests ({{ join_requests.count }})</h3>
+        {% for req in join_requests %}
+        <div class="join-request-item">
+            <strong>{{ req.requester.username }}</strong>
+            <span class="request-date">{{ req.created_at|date:"M j, g:i A" }}</span>
+            <div class="request-actions">
+                <form method="post" action="{% url 'events:approve_request' event.slug req.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-approve">Approve</button>
+                </form>
+                <form method="post" action="{% url 'events:decline_request' event.slug req.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-decline">Decline</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.details-panel {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.detail-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #eee;
+}
+.detail-section:last-child {
+    border-bottom: none;
+}
+.detail-section h3 {
+    margin-top: 0;
+    color: #555;
+    font-size: 1rem;
+}
+.itinerary-list {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+.itinerary-list li {
+    margin-bottom: 0.5rem;
+}
+.attendees-list {
+    list-style: none;
+    padding: 0;
+}
+.attendees-list li {
+    padding: 0.5rem 0;
+}
+.role-badge {
+    font-size: 0.85rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 10px;
+}
+.role-badge.host {
+    background: #007bff;
+    color: white;
+}
+.email {
+    font-size: 0.9rem;
+    color: #999;
+}
+.visibility-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+}
+.badge-open {
+    background: #d4edda;
+    color: #155724;
+}
+.badge-invite {
+    background: #fff3cd;
+    color: #856404;
+}
+.badge-private {
+    background: #f8d7da;
+    color: #721c24;
+}
+.join-request-item {
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+.request-date {
+    font-size: 0.85rem;
+    color: #666;
+    margin-left: 0.5rem;
+}
+.request-actions {
+    margin-top: 0.5rem;
+}
+.btn-approve, .btn-decline {
+    padding: 0.25rem 0.75rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-right: 0.5rem;
+}
+.btn-approve {
+    background: #28a745;
+    color: white;
+}
+.btn-approve:hover {
+    background: #218838;
+}
+.btn-decline {
+    background: #dc3545;
+    color: white;
+}
+.btn-decline:hover {
+    background: #c82333;
+}
+</style>
+

@@ -38,6 +38,7 @@ ALLOWED_HOSTS = [
     "172.31.41.137",
     "artinerary-dev.us-east-2.elasticbeanstalk.com",
     "artinerary-prod.us-east-2.elasticbeanstalk.com",
+    "localhost",
 ]
 
 
@@ -52,6 +53,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "accounts",
     "loc_detail.apps.LocDetailConfig",
+    "events.apps.EventsConfig",
 ]
 
 MIDDLEWARE = [
@@ -162,7 +164,7 @@ USE_TZ = True
 
 # URL to use when referring to static files located in STATIC_ROOT
 STATIC_URL = "static/"
-# abs path to directory where collectstatic will collect static files for deployment
+# Path where collectstatic will collect static files for deployment
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 # a list of directories where Django should look for static files
 STATICFILES_DIRS = [
