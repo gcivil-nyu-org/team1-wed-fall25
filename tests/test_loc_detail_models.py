@@ -2,6 +2,7 @@
 Unit tests for loc_detail models
 Tests PublicArt, UserFavoriteArt, and ArtComment models
 """
+
 from django.test import TestCase
 from django.contrib.auth.models import User
 from django.db import IntegrityError
@@ -28,7 +29,7 @@ class PublicArtModelTests(TestCase):
             year_dedicated="2021",
             agency="NYC Parks",
             community_board="CB5",
-            external_id="TEST001"
+            external_id="TEST001",
         )
 
     def test_create_public_art(self):
@@ -70,8 +71,7 @@ class PublicArtModelTests(TestCase):
     def test_public_art_coordinates_precision(self):
         """Test latitude and longitude precision"""
         art = PublicArt.objects.create(
-            latitude=Decimal("40.7128758"),
-            longitude=Decimal("-74.0059945")
+            latitude=Decimal("40.7128758"), longitude=Decimal("-74.0059945")
         )
         self.assertEqual(art.latitude, Decimal("40.7128758"))
         self.assertEqual(art.longitude, Decimal("-74.0059945"))
@@ -81,8 +81,8 @@ class PublicArtModelTests(TestCase):
         PublicArt.objects.create(title="Zebra Art")
         PublicArt.objects.create(title="Alpha Art")
         PublicArt.objects.create(title="Beta Art")
-        
-        art_list = list(PublicArt.objects.all().values_list('title', flat=True))
+
+        art_list = list(PublicArt.objects.all().values_list("title", flat=True))
         # Filter out None values and sort
         art_list = [title for title in art_list if title]
         self.assertEqual(art_list[0], "Alpha Art")
@@ -100,21 +100,16 @@ class UserFavoriteArtModelTests(TestCase):
     def setUp(self):
         """Set up test data"""
         self.user = User.objects.create_user(
-            username="testuser",
-            email="test@example.com",
-            password="testpass123"
+            username="testuser", email="test@example.com", password="testpass123"
         )
         self.art = PublicArt.objects.create(
-            title="Favorite Art",
-            artist_name="Favorite Artist"
+            title="Favorite Art", artist_name="Favorite Artist"
         )
 
     def test_create_favorite(self):
         """Test creating a favorite"""
         favorite = UserFavoriteArt.objects.create(
-            user=self.user,
-            art=self.art,
-            notes="This is amazing!"
+            user=self.user, art=self.art, notes="This is amazing!"
         )
         self.assertEqual(favorite.user, self.user)
         self.assertEqual(favorite.art, self.art)
@@ -122,10 +117,7 @@ class UserFavoriteArtModelTests(TestCase):
 
     def test_favorite_str_method(self):
         """Test string representation of UserFavoriteArt"""
-        favorite = UserFavoriteArt.objects.create(
-            user=self.user,
-            art=self.art
-        )
+        favorite = UserFavoriteArt.objects.create(user=self.user, art=self.art)
         expected = f"{self.user.username} - {self.art.title}"
         self.assertEqual(str(favorite), expected)
 
@@ -138,13 +130,11 @@ class UserFavoriteArtModelTests(TestCase):
     def test_favorite_multiple_users(self):
         """Test that multiple users can favorite the same art"""
         user2 = User.objects.create_user(
-            username="testuser2",
-            email="test2@example.com",
-            password="testpass123"
+            username="testuser2", email="test2@example.com", password="testpass123"
         )
         favorite1 = UserFavoriteArt.objects.create(user=self.user, art=self.art)
         favorite2 = UserFavoriteArt.objects.create(user=user2, art=self.art)
-        
+
         self.assertIsNotNone(favorite1)
         self.assertIsNotNone(favorite2)
         self.assertEqual(self.art.favorited_by.count(), 2)
@@ -172,11 +162,11 @@ class UserFavoriteArtModelTests(TestCase):
         """Test that favorites are ordered by added_at descending"""
         art2 = PublicArt.objects.create(title="Second Art")
         art3 = PublicArt.objects.create(title="Third Art")
-        
-        fav1 = UserFavoriteArt.objects.create(user=self.user, art=self.art)
-        fav2 = UserFavoriteArt.objects.create(user=self.user, art=art2)
+
+        UserFavoriteArt.objects.create(user=self.user, art=self.art)
+        UserFavoriteArt.objects.create(user=self.user, art=art2)
         fav3 = UserFavoriteArt.objects.create(user=self.user, art=art3)
-        
+
         favorites = list(UserFavoriteArt.objects.all())
         # Most recent should be first, verify ordering exists
         self.assertEqual(len(favorites), 3)
@@ -190,21 +180,16 @@ class ArtCommentModelTests(TestCase):
     def setUp(self):
         """Set up test data"""
         self.user = User.objects.create_user(
-            username="commenter",
-            email="commenter@example.com",
-            password="testpass123"
+            username="commenter", email="commenter@example.com", password="testpass123"
         )
         self.art = PublicArt.objects.create(
-            title="Commented Art",
-            artist_name="Art Artist"
+            title="Commented Art", artist_name="Art Artist"
         )
 
     def test_create_comment(self):
         """Test creating a comment"""
         comment = ArtComment.objects.create(
-            user=self.user,
-            art=self.art,
-            comment="This is a beautiful piece!"
+            user=self.user, art=self.art, comment="This is a beautiful piece!"
         )
         self.assertEqual(comment.user, self.user)
         self.assertEqual(comment.art, self.art)
@@ -213,9 +198,7 @@ class ArtCommentModelTests(TestCase):
     def test_comment_str_method(self):
         """Test string representation of ArtComment"""
         comment = ArtComment.objects.create(
-            user=self.user,
-            art=self.art,
-            comment="Great work!"
+            user=self.user, art=self.art, comment="Great work!"
         )
         expected = f"{self.user.username} on {self.art.title}"
         self.assertEqual(str(comment), expected)
@@ -223,31 +206,21 @@ class ArtCommentModelTests(TestCase):
     def test_comment_timestamps(self):
         """Test that timestamps are set"""
         comment = ArtComment.objects.create(
-            user=self.user,
-            art=self.art,
-            comment="Test comment"
+            user=self.user, art=self.art, comment="Test comment"
         )
         self.assertIsNotNone(comment.created_at)
         self.assertIsNotNone(comment.updated_at)
 
     def test_comment_ordering(self):
         """Test that comments are ordered by created_at descending"""
-        comment1 = ArtComment.objects.create(
-            user=self.user,
-            art=self.art,
-            comment="First comment"
-        )
-        comment2 = ArtComment.objects.create(
-            user=self.user,
-            art=self.art,
-            comment="Second comment"
+        ArtComment.objects.create(user=self.user, art=self.art, comment="First comment")
+        ArtComment.objects.create(
+            user=self.user, art=self.art, comment="Second comment"
         )
         comment3 = ArtComment.objects.create(
-            user=self.user,
-            art=self.art,
-            comment="Third comment"
+            user=self.user, art=self.art, comment="Third comment"
         )
-        
+
         comments = list(ArtComment.objects.all())
         # Verify all comments are created
         self.assertEqual(len(comments), 3)
@@ -256,51 +229,33 @@ class ArtCommentModelTests(TestCase):
 
     def test_comment_cascade_delete_user(self):
         """Test that comments are deleted when user is deleted"""
-        ArtComment.objects.create(
-            user=self.user,
-            art=self.art,
-            comment="Test"
-        )
+        ArtComment.objects.create(user=self.user, art=self.art, comment="Test")
         self.assertEqual(ArtComment.objects.count(), 1)
         self.user.delete()
         self.assertEqual(ArtComment.objects.count(), 0)
 
     def test_comment_cascade_delete_art(self):
         """Test that comments are deleted when art is deleted"""
-        ArtComment.objects.create(
-            user=self.user,
-            art=self.art,
-            comment="Test"
-        )
+        ArtComment.objects.create(user=self.user, art=self.art, comment="Test")
         self.assertEqual(ArtComment.objects.count(), 1)
         self.art.delete()
         self.assertEqual(ArtComment.objects.count(), 0)
 
     def test_multiple_comments_same_user(self):
         """Test that a user can make multiple comments on the same art"""
-        comment1 = ArtComment.objects.create(
-            user=self.user,
-            art=self.art,
-            comment="First comment"
+        ArtComment.objects.create(user=self.user, art=self.art, comment="First comment")
+        ArtComment.objects.create(
+            user=self.user, art=self.art, comment="Second comment"
         )
-        comment2 = ArtComment.objects.create(
-            user=self.user,
-            art=self.art,
-            comment="Second comment"
-        )
-        
+
         self.assertEqual(self.art.comments.count(), 2)
 
     def test_related_name_access(self):
         """Test accessing comments through related names"""
-        ArtComment.objects.create(
-            user=self.user,
-            art=self.art,
-            comment="User comment"
-        )
-        
+        ArtComment.objects.create(user=self.user, art=self.art, comment="User comment")
+
         # Access through user's related name
         self.assertEqual(self.user.art_comments.count(), 1)
-        
+
         # Access through art's related name
         self.assertEqual(self.art.comments.count(), 1)
