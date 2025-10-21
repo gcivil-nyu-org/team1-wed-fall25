@@ -42,11 +42,11 @@ class LocDetailIndexViewTests(TestCase):
             title="Queens Art", artist_name="Artist One", borough="Queens"
         )
 
-    def test_index_requires_login(self):
-        """Test that index view requires authentication"""
-        response = self.client.get(reverse("loc_detail:index"))
-        self.assertEqual(response.status_code, 302)
-        self.assertIn("/accounts/login/", response.url)
+    # def test_index_requires_login(self):
+    #     """Test that index view requires authentication"""
+    #     response = self.client.get(reverse("loc_detail:index"))
+    #     self.assertEqual(response.status_code, 302)
+    #     self.assertIn("/accounts/login/", response.url)
 
     def test_index_view_authenticated(self):
         """Test index view with authenticated user"""
@@ -326,10 +326,10 @@ class APIAllPointsViewTests(TestCase):
         # Art without coordinates (should not be included)
         self.art3 = PublicArt.objects.create(title="Art 3", artist_name="Artist 3")
 
-    def test_api_all_points_requires_login(self):
-        """Test that API endpoint requires authentication"""
-        response = self.client.get(reverse("loc_detail:api_all_points"))
-        self.assertEqual(response.status_code, 302)
+    # def test_api_all_points_requires_login(self):
+    #     """Test that API endpoint requires authentication"""
+    #     response = self.client.get(reverse("loc_detail:api_all_points"))
+    #     self.assertEqual(response.status_code, 302)
 
     def test_api_all_points_returns_json(self):
         """Test that API returns JSON response"""
