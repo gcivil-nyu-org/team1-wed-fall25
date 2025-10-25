@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.html import mark_safe
 
 
 class PublicArt(models.Model):
@@ -9,6 +10,14 @@ class PublicArt(models.Model):
     artist_name = models.CharField(max_length=500, blank=True, null=True)
     title = models.CharField(max_length=500, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
+    image = models.ImageField(upload_to="", blank=True, null=True)
+
+    def art_image(self):
+        return mark_safe(
+            '<img style="border: 1px solid #333; object-fit: contain;" src="{url}" width="500px" height="500px" />'.format(  # noqa E501
+                url=self.image.url,
+            )
+        )
 
     # Location Information
     location = models.CharField(max_length=500, blank=True, null=True)
