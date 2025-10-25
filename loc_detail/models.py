@@ -93,7 +93,3 @@ class ArtComment(models.Model):
 
     def __str__(self):
         return f"{self.user.username} on {self.art.title}"
-
-
-# class Photo(models.Model):
-#     image = models.ImageField(upload_to='photos/')

@@ -140,7 +140,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
-MEDIA_URL = "/media/"
+
 MEDIA_ROOT = BASE_DIR / "media"
 STATICFILES_LOCATION = "static"
 MEDIAFILES_LOCATION = "media"
@@ -148,8 +148,7 @@ MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{MEDIAFILES_LOCATION}/"
 
 # Use local static files if local, use static files in S3 otherwise
 # Use S3 media files all the time
-IS_LOCAL = os.environ.get("IS_LOCAL", "True")
-if IS_LOCAL:
+if DEBUG:
     STATIC_URL = "static/"
     STORAGES = {
         "default": {"BACKEND": "core.custom_storage.MediaStorage"},
