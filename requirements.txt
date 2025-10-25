@@ -1,13 +1,10 @@
 argcomplete==3.6.2
 asgiref==3.9.2
-black==25.9.0
 boto3==1.40.58
 botocore==1.40.58
 certifi==2025.10.5
 charset-normalizer==3.4.3
 click==8.3.0
-coverage==7.10.7
-coveralls==1.8.0
 distlib==0.4.0
 Django==5.2.7
 django-storages==1.14.6
