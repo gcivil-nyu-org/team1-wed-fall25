@@ -7,13 +7,79 @@
 <div class="event-detail-container">
     <!-- Header -->
     <div class="event-header">
-        <h1>{{ event.title }}</h1>
-        <p class="event-host">
-            Hosted by <strong>{{ event.host.username }}</strong>
-            {% if user_role == 'HOST' %}
-            <span class="badge badge-host">You are the host</span>
-            {% endif %}
-        </p>
+        <div class="header-content">
+            <div class="header-text">
+                <h1>{{ event.title }}</h1>
+                <p class="event-host">
+                    Hosted by <strong>{{ event.host.username }}</strong>
+                    {% if user_role == 'HOST' %}
+                    <span class="badge badge-host">You are the host</span>
+                    {% endif %}
+                </p>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="header-actions">
+                <!-- Favorite Button (for all users) -->
+                {% if is_favorited %}
+                <form method="post" action="{% url 'events:unfavorite' event.slug %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-favorite favorited">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                        </svg>
+                        Favorited
+                    </button>
+                </form>
+                {% else %}
+                <form method="post" action="{% url 'events:favorite' event.slug %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-favorite">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.565.565 0 0 0-.163-.505L1.71 6.745l4.052-.576a.525.525 0 0 0 .393-.288L8 2.223l1.847 3.658a.525.525 0 0 0 .393.288l4.052.575-2.906 2.77a.565.565 0 0 0-.163.506l.694 3.957-3.686-1.894a.503.503 0 0 0-.461 0z"/>
+                        </svg>
+                        Favorite
+                    </button>
+                </form>
+                {% endif %}
+                
+                {% if user_role == 'HOST' %}
+                    <!-- Host Actions -->
+                    <a href="{% url 'events:update' event.slug %}" class="btn btn-edit">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+                        </svg>
+                        Edit Event
+                    </a>
+                    <button onclick="confirmDelete()" class="btn btn-delete">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                            <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                        </svg>
+                        Delete Event
+                    </button>
+                    
+                    <!-- Hidden delete form -->
+                    <form id="deleteForm" method="post" action="{% url 'events:delete' event.slug %}" style="display: none;">
+                        {% csrf_token %}
+                    </form>
+                {% elif user_role == 'ATTENDEE' %}
+                    <!-- Attendee Actions -->
+                    <button onclick="confirmLeave()" class="btn btn-leave">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"/>
+                            <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
+                        </svg>
+                        Leave Event
+                    </button>
+                    
+                    <!-- Hidden leave form -->
+                    <form id="leaveForm" method="post" action="{% url 'events:leave' event.slug %}" style="display: none;">
+                        {% csrf_token %}
+                    </form>
+                {% endif %}
+            </div>
+        </div>
     </div>
 
     <!-- Two-column layout -->
@@ -35,6 +101,10 @@
 </div>
 
 <style>
+body {
+    background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+    min-height: 100vh;
+}
 .event-detail-container {
     max-width: 1200px;
     margin: 2rem auto;
@@ -42,33 +112,317 @@
 }
 .event-header {
     margin-bottom: 2rem;
-    border-bottom: 2px solid #ddd;
-    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 1.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem;
+}
+.header-text {
+    flex: 1;
 }
 .event-header h1 {
     margin: 0;
-    color: #333;
+    color: #ffffff;
+    font-size: 2.25rem;
+    font-weight: 400;
+    letter-spacing: 0.5px;
 }
 .event-host {
-    color: #666;
-    margin-top: 0.5rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 0.75rem;
+    font-size: 0.95rem;
+    font-weight: 300;
+}
+.event-host strong {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 400;
 }
 .badge-host {
-    background: #007bff;
-    color: white;
-    padding: 0.25rem 0.5rem;
-    border-radius: 12px;
-    font-size: 0.85rem;
+    background: rgba(102, 126, 234, 0.15);
+    color: #8b9cff;
+    padding: 0.35rem 0.85rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 400;
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    letter-spacing: 0.3px;
+}
+.header-actions {
+    display: flex;
+    gap: 0.625rem;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.125rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 400;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    letter-spacing: 0.3px;
+}
+.btn:hover {
+    transform: translateY(-2px);
+}
+.btn svg {
+    flex-shrink: 0;
+}
+.btn-edit {
+    background: rgba(102, 126, 234, 0.15);
+    color: #8b9cff;
+    border: 1px solid rgba(102, 126, 234, 0.3);
+}
+.btn-edit:hover {
+    background: rgba(102, 126, 234, 0.25);
+    border-color: rgba(102, 126, 234, 0.5);
+}
+.btn-delete {
+    background: rgba(235, 51, 73, 0.15);
+    color: #ff6b7a;
+    border: 1px solid rgba(235, 51, 73, 0.3);
+}
+.btn-delete:hover {
+    background: rgba(235, 51, 73, 0.25);
+    border-color: rgba(235, 51, 73, 0.5);
+}
+.btn-leave {
+    background: rgba(250, 112, 154, 0.15);
+    color: #ffb3c6;
+    border: 1px solid rgba(250, 112, 154, 0.3);
+}
+.btn-leave:hover {
+    background: rgba(250, 112, 154, 0.25);
+    border-color: rgba(250, 112, 154, 0.5);
+}
+.btn-favorite {
+    background: rgba(250, 112, 154, 0.1);
+    color: #ffb3c6;
+    border: 1px solid rgba(250, 112, 154, 0.3);
+}
+.btn-favorite:hover {
+    background: rgba(250, 112, 154, 0.2);
+    border-color: rgba(250, 112, 154, 0.5);
+}
+.btn-favorite.favorited {
+    background: rgba(17, 153, 142, 0.1);
+    color: #5affe8;
+    border: 1px solid rgba(17, 153, 142, 0.3);
+}
+.btn-favorite.favorited:hover {
+    background: rgba(17, 153, 142, 0.2);
+    border-color: rgba(17, 153, 142, 0.5);
 }
 .event-content {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 2rem;
+    gap: 1.5rem;
+}
+.event-left-panel, .event-right-panel {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+@media (max-width: 992px) {
+    .header-content {
+        flex-direction: column;
+    }
+    .header-actions {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+    .btn {
+        flex: 1;
+        justify-content: center;
+        min-width: 140px;
+    }
 }
 @media (max-width: 768px) {
     .event-content {
         grid-template-columns: 1fr;
     }
+    .event-header h1 {
+        font-size: 1.5rem;
+    }
+}
+
+/* Elegant confirmation modal styles */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+.modal-overlay.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 450px;
+    width: 90%;
+    animation: slideUp 0.3s ease;
+}
+.modal-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 2rem;
+}
+.modal-icon.warning {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+.modal-icon.info {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    color: white;
+}
+.modal-content h3 {
+    margin: 0 0 1rem;
+    color: #2c3e50;
+    font-size: 1.5rem;
+    text-align: center;
+}
+.modal-content p {
+    margin: 0 0 2rem;
+    color: #7f8c8d;
+    text-align: center;
+    line-height: 1.6;
+}
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+}
+.modal-actions button {
+    flex: 1;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.btn-confirm {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+.btn-confirm:hover {
+    transform: scale(1.02);
+}
+.btn-cancel {
+    background: #ecf0f1;
+    color: #7f8c8d;
+}
+.btn-cancel:hover {
+    background: #d5dbdd;
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 </style>
+
+<!-- Confirmation Modals -->
+<div id="deleteModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-icon warning">⚠️</div>
+        <h3>Delete Event?</h3>
+        <p>Are you sure you want to delete "{{ event.title }}"? This action cannot be undone and all attendees will lose access.</p>
+        <div class="modal-actions">
+            <button onclick="closeModal('deleteModal')" class="btn-cancel">Cancel</button>
+            <button onclick="document.getElementById('deleteForm').submit()" class="btn-confirm">Yes, Delete</button>
+        </div>
+    </div>
+</div>
+
+<div id="leaveModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-icon info">👋</div>
+        <h3>Leave Event?</h3>
+        <p>Are you sure you want to leave "{{ event.title }}"? You'll need to rejoin or be reinvited to access it again.</p>
+        <div class="modal-actions">
+            <button onclick="closeModal('leaveModal')" class="btn-cancel">Cancel</button>
+            <button onclick="document.getElementById('leaveForm').submit()" class="btn-confirm">Yes, Leave</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete() {
+    document.getElementById('deleteModal').classList.add('active');
+}
+
+function confirmLeave() {
+    document.getElementById('leaveModal').classList.add('active');
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).classList.remove('active');
+}
+
+// Close modal when clicking outside
+document.querySelectorAll('.modal-overlay').forEach(modal => {
+    modal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.classList.remove('active');
+        }
+    });
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.classList.remove('active');
+        });
+    }
+});
+</script>
 {% endblock %}
