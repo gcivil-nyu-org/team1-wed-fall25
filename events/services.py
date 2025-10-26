@@ -275,3 +275,154 @@ def decline_join_request(*, join_request):
     join_request.status = JoinRequestStatus.DECLINED
     join_request.decided_at = timezone.now()
     join_request.save()
+
+
+@transaction.atomic
+def update_event(*, event, form, locations, invites):
+    """
+    Update an existing event
+
+    Args:
+        event: Event instance to update
+        form: Validated EventForm with new data
+        locations: List of PublicArt IDs for additional stops
+        invites: List of User IDs to invite
+
+    Returns:
+        Updated Event instance
+    """
+    # Validate business rules
+    validate_max_locations(locations, max_allowed=5)
+
+    # Dedupe locations while preserving order
+    seen = set()
+    unique_locations = []
+    for loc_id in locations:
+        if loc_id not in seen:
+            seen.add(loc_id)
+            unique_locations.append(loc_id)
+
+    # Ensure all location IDs exist
+    valid_locations = PublicArt.objects.filter(id__in=unique_locations)
+    if valid_locations.count() != len(unique_locations):
+        raise ValueError("One or more locations are invalid.")
+
+    # Dedupe invites and exclude host
+    unique_invites = list(set(invites) - {event.host.id})
+
+    # Ensure all invitee IDs exist
+    if unique_invites:
+        valid_users = User.objects.filter(id__in=unique_invites)
+        if valid_users.count() != len(unique_invites):
+            raise ValueError("One or more invitees are invalid.")
+
+    # Update event fields
+    event.title = form.cleaned_data["title"]
+    event.start_time = form.cleaned_data["start_time"]
+    event.start_location = form.cleaned_data["start_location"]
+    event.visibility = form.cleaned_data["visibility"]
+    event.description = form.cleaned_data.get("description", "")
+    event.save()
+
+    # Update location stops (clear and recreate)
+    EventLocation.objects.filter(event=event).delete()
+    for order, loc_id in enumerate(unique_locations, start=1):
+        EventLocation.objects.create(event=event, location_id=loc_id, order=order)
+
+    # Update invites (only add new ones, don't remove existing)
+    existing_invitees = set(
+        EventInvite.objects.filter(event=event).values_list("invitee_id", flat=True)
+    )
+    new_invitees = set(unique_invites) - existing_invitees
+
+    for invitee_id in new_invitees:
+        EventInvite.objects.create(
+            event=event,
+            invited_by=event.host,
+            invitee_id=invitee_id,
+            status=InviteStatus.PENDING,
+        )
+        # Also create membership with INVITED role if not already member
+        EventMembership.objects.get_or_create(
+            event=event, user_id=invitee_id, defaults={"role": MembershipRole.INVITED}
+        )
+
+    return event
+
+
+@transaction.atomic
+def delete_event(*, event):
+    """
+    Soft delete an event (mark as deleted)
+
+    Args:
+        event: Event instance to delete
+
+    Returns:
+        Updated Event instance
+    """
+    event.is_deleted = True
+    event.save()
+    return event
+
+
+@transaction.atomic
+def leave_event(*, event, user):
+    """
+    Remove user from event (attendee deregistration)
+
+    Business Rules:
+    - User must be an ATTENDEE (not HOST)
+    - Removes EventMembership
+
+    Raises:
+        ValueError: If user is host or not a member
+    """
+    if event.host == user:
+        raise ValueError("Host cannot leave their own event.")
+
+    # Check if user is an attendee
+    membership = EventMembership.objects.filter(
+        event=event, user=user, role=MembershipRole.ATTENDEE
+    ).first()
+
+    if not membership:
+        raise ValueError("You are not registered for this event.")
+
+    # Remove membership
+    membership.delete()
+
+
+@transaction.atomic
+def favorite_event(*, event, user):
+    """
+    Add event to user's favorites
+
+    Business Rules:
+    - Idempotent: no-op if already favorited
+    - Cannot favorite deleted events
+
+    Raises:
+        ValueError: If event is deleted
+    """
+    from .models import EventFavorite
+
+    if event.is_deleted:
+        raise ValueError("Cannot favorite a deleted event.")
+
+    # Create favorite (idempotent)
+    EventFavorite.objects.get_or_create(event=event, user=user)
+
+
+@transaction.atomic
+def unfavorite_event(*, event, user):
+    """
+    Remove event from user's favorites
+
+    Returns:
+        bool: True if favorite was removed, False if it didn't exist
+    """
+    from .models import EventFavorite
+
+    deleted_count, _ = EventFavorite.objects.filter(event=event, user=user).delete()
+    return deleted_count > 0
