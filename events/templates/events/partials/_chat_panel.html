@@ -1,0 +1,239 @@
+<div class="chat-panel" id="chat">
+    <div class="chat-header">
+        <h2>Event Chat</h2>
+        <p class="chat-info">Latest 20 messages</p>
+    </div>
+    
+    <!-- Messages -->
+    <div class="chat-messages">
+        {% if chat_messages %}
+            {% for msg in chat_messages %}
+            <div class="chat-message {% if msg.author == request.user %}own-message{% endif %}">
+                <div class="message-author">
+                    <strong>{{ msg.author.username }}</strong>
+                    {% if msg.author == event.host %}
+                    <span class="host-badge">Host</span>
+                    {% endif %}
+                </div>
+                <div class="message-content">{{ msg.message }}</div>
+                <div class="message-time">{{ msg.created_at|date:"M j, g:i A" }}</div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="no-messages">
+            <div class="no-messages-icon">✉</div>
+            <p>No messages yet</p>
+            <p class="sub-text">Be the first to start the conversation</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Message Form -->
+    <form method="post" action="{% url 'events:chat_send' event.slug %}" class="chat-form">
+        {% csrf_token %}
+        <textarea 
+            name="message" 
+            placeholder="Type your message..." 
+            maxlength="300" 
+            rows="3"
+            required></textarea>
+        <button type="submit" class="btn-send">Send</button>
+    </form>
+</div>
+
+<style>
+.chat-panel {
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+    height: 650px;
+    position: relative;
+    overflow: hidden;
+}
+.chat-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.chat-header h2 {
+    margin: 0 0 0.5rem 0;
+    color: #ffffff;
+    font-size: 1.5rem;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+}
+.chat-info {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+    font-weight: 300;
+    letter-spacing: 0.3px;
+}
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+.chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+.chat-messages::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+.chat-messages::-webkit-scrollbar-thumb {
+    background: rgba(102, 126, 234, 0.3);
+    border-radius: 10px;
+}
+.chat-messages::-webkit-scrollbar-thumb:hover {
+    background: rgba(102, 126, 234, 0.5);
+}
+.chat-message {
+    margin-bottom: 0.875rem;
+    padding: 0.875rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: messageSlideIn 0.4s ease-out backwards;
+    border-left: 2px solid rgba(255, 255, 255, 0.1);
+}
+@keyframes messageSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+.chat-message:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-left-color: rgba(102, 126, 234, 0.5);
+}
+.chat-message.own-message {
+    background: rgba(102, 126, 234, 0.1);
+    border-left-color: rgba(102, 126, 234, 0.5);
+}
+.message-author {
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.message-author strong {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.875rem;
+    font-weight: 400;
+}
+.host-badge {
+    background: rgba(250, 112, 154, 0.15);
+    color: #ffb3c6;
+    padding: 0.25rem 0.625rem;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 400;
+    border: 1px solid rgba(250, 112, 154, 0.3);
+    letter-spacing: 0.3px;
+}
+.message-content {
+    margin: 0.5rem 0;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    font-weight: 300;
+}
+.message-time {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 300;
+}
+.no-messages {
+    text-align: center;
+    padding: 3rem 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+.no-messages-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: rgba(255, 255, 255, 0.3);
+    animation: float 4s ease-in-out infinite;
+}
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-12px);
+    }
+}
+.no-messages p {
+    margin: 0.25rem 0;
+    font-size: 1rem;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.7);
+}
+.no-messages .sub-text {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 300;
+}
+.chat-form {
+    display: flex;
+    gap: 0.75rem;
+    align-items: stretch;
+}
+.chat-form textarea {
+    flex: 1;
+    padding: 0.875rem;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    resize: none;
+    font-size: 0.9rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: inherit;
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 300;
+}
+.chat-form textarea::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+.chat-form textarea:focus {
+    outline: none;
+    border-color: rgba(102, 126, 234, 0.5);
+    background: rgba(255, 255, 255, 0.08);
+}
+.btn-send {
+    padding: 0.875rem 1.75rem;
+    background: rgba(102, 126, 234, 0.15);
+    color: #8b9cff;
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 400;
+    font-size: 0.9rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    letter-spacing: 0.3px;
+}
+.btn-send:hover {
+    background: rgba(102, 126, 234, 0.25);
+    border-color: rgba(102, 126, 234, 0.5);
+    transform: translateY(-2px);
+}
+.btn-send:active {
+    transform: translateY(0);
+}
+</style>
+

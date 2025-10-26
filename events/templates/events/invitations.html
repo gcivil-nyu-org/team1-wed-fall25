@@ -1,0 +1,269 @@
+{% extends 'events/base_tabs.html' %}
+
+{% block events_content %}
+<style>
+.invitations-wrapper {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    min-height: calc(100vh - 200px);
+    padding: 3rem 1rem;
+}
+.invitations {
+    max-width: 900px;
+    margin: 0 auto;
+}
+.page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    animation: fadeInDown 0.6s ease-out;
+}
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.page-header h2 {
+    color: white;
+    font-size: 3rem;
+    margin: 0 0 0.5rem 0;
+    font-weight: 700;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+}
+.page-header p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.2rem;
+}
+.invites-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+.invite-card {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    position: relative;
+    overflow: hidden;
+    animation: slideInUp 0.6s ease-out backwards;
+}
+.invite-card:nth-child(1) { animation-delay: 0.1s; }
+.invite-card:nth-child(2) { animation-delay: 0.2s; }
+.invite-card:nth-child(3) { animation-delay: 0.3s; }
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.invite-card::before {
+    content: "💌";
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    font-size: 2rem;
+    opacity: 0.3;
+}
+.invite-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+    border-color: #f093fb;
+}
+.invite-card h3 {
+    margin: 0 0 1.5rem 0;
+    color: #2c3e50;
+    font-size: 1.75rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    padding-right: 3rem;
+}
+.invite-card p {
+    margin: 0.875rem 0;
+    color: #555;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+.invite-card p strong {
+    color: #2c3e50;
+    min-width: 90px;
+    font-weight: 600;
+}
+.invite-card .description {
+    font-style: italic;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid #f0f0f0;
+    color: #7f8c8d;
+    font-size: 0.95rem;
+    line-height: 1.7;
+}
+.invite-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid #f0f0f0;
+}
+@media (max-width: 600px) {
+    .invite-actions {
+        grid-template-columns: 1fr;
+    }
+}
+.btn-accept, .btn-decline, .btn-view {
+    padding: 0.875rem 1.5rem;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+.btn-accept {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(17, 153, 142, 0.4);
+}
+.btn-accept:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(17, 153, 142, 0.5);
+}
+.btn-decline {
+    background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(235, 51, 73, 0.4);
+}
+.btn-decline:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(235, 51, 73, 0.5);
+}
+.btn-view {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+.btn-view:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.8s ease-out 0.4s backwards;
+}
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+.empty-icon {
+    font-size: 5rem;
+    margin-bottom: 1rem;
+    animation: float 3s ease-in-out infinite;
+}
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
+}
+.empty-state p {
+    font-size: 1.2rem;
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+.help-text {
+    color: #7f8c8d;
+    font-size: 1rem;
+}
+.help-text a {
+    color: #f093fb;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+.help-text a:hover {
+    color: #f5576c;
+    text-decoration: underline;
+}
+</style>
+
+<div class="invitations-wrapper">
+    <div class="invitations">
+        <div class="page-header">
+            <h2>💌 Your Invitations</h2>
+            <p>Respond to event invitations from friends</p>
+        </div>
+        
+        {% if invites %}
+        <div class="invites-list">
+            {% for invite in invites %}
+            <div class="invite-card">
+                <h3>{{ invite.event.title }}</h3>
+                <p><strong>👤 From:</strong> {{ invite.event.host.username }}</p>
+                <p><strong>📅 When:</strong> {{ invite.event.start_time|date:"F j, Y g:i A" }}</p>
+                <p><strong>📍 Where:</strong> {{ invite.event.start_location.title }}</p>
+                
+                {% if invite.event.description %}
+                <p class="description">{{ invite.event.description|truncatewords:30 }}</p>
+                {% endif %}
+                
+                <div class="invite-actions">
+                    <form method="post" action="{% url 'events:accept' invite.event.slug %}" style="display:contents;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-accept">✓ Accept</button>
+                    </form>
+                    
+                    <form method="post" action="{% url 'events:decline' invite.event.slug %}" style="display:contents;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-decline">✗ Decline</button>
+                    </form>
+                    
+                    <a href="{% url 'events:detail' invite.event.slug %}" class="btn-view">👁️ View</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">💌</div>
+            <p>No pending invitations.</p>
+            <p class="help-text">Check out <a href="{% url 'events:public' %}">public events</a> to find something to join!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

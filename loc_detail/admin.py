@@ -7,10 +7,13 @@ class PublicArtAdmin(admin.ModelAdmin):
     list_display = ["title", "artist_name", "borough", "year_created", "agency"]
     list_filter = ["borough", "agency", "year_created"]
     search_fields = ["title", "artist_name", "description", "location"]
-    readonly_fields = ["created_at", "updated_at", "external_id"]
+    readonly_fields = ["created_at", "updated_at", "external_id", "art_image"]
 
     fieldsets = (
-        ("Basic Information", {"fields": ("title", "artist_name", "description")}),
+        (
+            "Basic Information",
+            {"fields": ("title", "artist_name", "description", "image", "art_image")},
+        ),
         (
             "Location",
             {

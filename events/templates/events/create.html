@@ -1,0 +1,409 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if is_update %}Edit Event{% else %}Create Event{% endif %} - Artinerary{% endblock %}
+
+{% block extra_head %}
+<style>
+    body {
+        background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+        min-height: 100vh;
+    }
+    .form-wrapper {
+        min-height: 100vh;
+        padding: 3rem 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .form-container {
+        max-width: 900px;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(20px);
+        border-radius: 16px;
+        padding: 3rem;
+        box-shadow: 
+            0 20px 60px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        animation: slideUp 0.8s ease-out;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    .form-container h1 {
+        margin: 0 0 0.75rem 0;
+        color: #ffffff;
+        font-size: 2.25rem;
+        font-weight: 300;
+        letter-spacing: 1px;
+    }
+    .form-subtitle {
+        color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 2.5rem;
+        font-size: 1rem;
+        font-weight: 300;
+        letter-spacing: 0.3px;
+    }
+    .form-group {
+        margin-bottom: 1.75rem;
+        animation: fadeIn 1s ease-out backwards;
+    }
+    .form-group:nth-child(1) { animation-delay: 0.1s; }
+    .form-group:nth-child(2) { animation-delay: 0.15s; }
+    .form-group:nth-child(3) { animation-delay: 0.2s; }
+    .form-group:nth-child(4) { animation-delay: 0.25s; }
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 0.75rem;
+        font-weight: 400;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 0.95rem;
+        letter-spacing: 0.3px;
+    }
+    .form-group input[type="text"],
+    .form-group input[type="datetime-local"],
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 8px;
+        font-size: 0.95rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 300;
+    }
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+        color: rgba(255, 255, 255, 0.4);
+    }
+    .form-group select option {
+        background: #1a1a2e;
+        color: white;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: rgba(102, 126, 234, 0.5);
+        background: rgba(255, 255, 255, 0.08);
+        transform: translateY(-1px);
+    }
+    .location-search-container,
+    .user-search-container {
+        margin-top: 0.75rem;
+    }
+    .location-search-container input,
+    .user-search-container input {
+        width: 100%;
+    }
+    .autocomplete-results {
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-top: none;
+        max-height: 250px;
+        overflow-y: auto;
+        background: rgba(20, 20, 30, 0.95);
+        backdrop-filter: blur(20px);
+        display: none;
+        border-radius: 0 0 8px 8px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        margin-top: -8px;
+    }
+    .autocomplete-item {
+        padding: 0.875rem 1rem;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.9rem;
+    }
+    .autocomplete-item:last-child {
+        border-bottom: none;
+    }
+    .autocomplete-item:hover {
+        background: rgba(102, 126, 234, 0.15);
+        color: rgba(255, 255, 255, 0.95);
+        transform: translateX(4px);
+    }
+    .chips-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.625rem;
+        margin-top: 0.875rem;
+        min-height: 40px;
+        padding: 0.625rem;
+        border-radius: 8px;
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .chip {
+        background: rgba(102, 126, 234, 0.15);
+        color: #8b9cff;
+        padding: 0.4rem 0.875rem;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 400;
+        border: 1px solid rgba(102, 126, 234, 0.3);
+        animation: chipIn 0.3s ease-out;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 0.875rem;
+        letter-spacing: 0.3px;
+    }
+    @keyframes chipIn {
+        from {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+    .chip:hover {
+        background: rgba(102, 126, 234, 0.25);
+        border-color: rgba(102, 126, 234, 0.5);
+    }
+    .chip-remove {
+        cursor: pointer;
+        padding: 0 0.25rem;
+        border-radius: 50%;
+        transition: all 0.2s ease;
+        opacity: 0.7;
+    }
+    .chip-remove:hover {
+        background: rgba(255, 255, 255, 0.1);
+        opacity: 1;
+    }
+    .add-button {
+        margin-top: 0.75rem;
+        padding: 0.625rem 1.125rem;
+        background: rgba(17, 153, 142, 0.15);
+        color: #5affe8;
+        border: 1px solid rgba(17, 153, 142, 0.3);
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 400;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 0.875rem;
+        letter-spacing: 0.3px;
+    }
+    .add-button:hover {
+        background: rgba(17, 153, 142, 0.25);
+        border-color: rgba(17, 153, 142, 0.5);
+        transform: translateY(-2px);
+    }
+    .add-button:disabled {
+        background: rgba(149, 165, 166, 0.15);
+        color: rgba(255, 255, 255, 0.4);
+        border-color: rgba(149, 165, 166, 0.2);
+        cursor: not-allowed;
+        transform: none;
+    }
+    .counter {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        font-weight: 300;
+    }
+    .form-actions {
+        margin-top: 2.5rem;
+        display: flex;
+        gap: 0.875rem;
+        padding-top: 2rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .submit-button {
+        flex: 1;
+        padding: 0.875rem 2rem;
+        background: rgba(102, 126, 234, 0.15);
+        color: #8b9cff;
+        border: 1px solid rgba(102, 126, 234, 0.3);
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 400;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        letter-spacing: 0.3px;
+        position: relative;
+    }
+    .submit-button:hover {
+        background: rgba(102, 126, 234, 0.25);
+        border-color: rgba(102, 126, 234, 0.5);
+        transform: translateY(-2px);
+    }
+    .submit-button:active {
+        transform: translateY(0);
+    }
+    .cancel-button {
+        padding: 0.875rem 1.75rem;
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 400;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        letter-spacing: 0.3px;
+    }
+    .cancel-button:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.3);
+        color: rgba(255, 255, 255, 0.9);
+        transform: translateY(-2px);
+    }
+    .error {
+        color: #ff6b7a;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        background: rgba(235, 51, 73, 0.15);
+        border-radius: 6px;
+        border-left: 2px solid rgba(235, 51, 73, 0.5);
+        font-weight: 300;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-wrapper">
+    <div class="form-container">
+        <h1>{% if is_update %}Edit Event{% else %}Create Event{% endif %}</h1>
+        <p class="form-subtitle">
+            {% if is_update %}
+            Update your event details and invite more people
+            {% else %}
+            Plan your next art adventure and invite friends to join
+            {% endif %}
+        </p>
+        
+        <form method="post" id="create-event-form">
+        {% csrf_token %}
+        
+        <!-- Title -->
+        <div class="form-group">
+            <label for="{{ form.title.id_for_label }}">Event Title *</label>
+            {{ form.title }}
+            {% if form.title.errors %}
+                <div class="error">{{ form.title.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <!-- Date & Time -->
+        <div class="form-group">
+            <label for="{{ form.start_time.id_for_label }}">Date & Time *</label>
+            {{ form.start_time }}
+            {% if form.start_time.errors %}
+                <div class="error">{{ form.start_time.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <!-- Starting Location -->
+        <div class="form-group">
+            <label for="id_start_location">Starting Location *</label>
+            <input type="hidden" name="start_location" id="id_start_location" required>
+            {% if form.start_location.errors %}
+                <div class="error">{{ form.start_location.errors }}</div>
+            {% endif %}
+            
+            <div class="location-search-container">
+                <input type="text" id="location-search" placeholder="Search for an art location...">
+                <div id="location-results" class="autocomplete-results"></div>
+            </div>
+        </div>
+        
+        <!-- Description -->
+        <div class="form-group">
+            <label for="{{ form.description.id_for_label }}">Description</label>
+            {{ form.description }}
+            {% if form.description.errors %}
+                <div class="error">{{ form.description.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <!-- Additional Locations -->
+        <div class="form-group">
+            <label>Additional Locations (optional)</label>
+            <div id="locations-chips" class="chips-container"></div>
+            <div class="counter" id="locations-counter">0/5</div>
+            <div class="location-search-container">
+                <input type="text" id="extra-location-search" placeholder="Search for locations to add...">
+                <div id="extra-location-results" class="autocomplete-results"></div>
+            </div>
+        </div>
+        
+        <!-- Invite Members -->
+        <div class="form-group">
+            <label>Invite Members</label>
+            <div id="invites-chips" class="chips-container"></div>
+            <div class="user-search-container">
+                <input type="text" id="user-search" placeholder="Search for users to invite...">
+                <div id="user-results" class="autocomplete-results"></div>
+            </div>
+        </div>
+        
+        <!-- Visibility -->
+        <div class="form-group">
+            <label for="{{ form.visibility.id_for_label }}">Visibility *</label>
+            {{ form.visibility }}
+            {% if form.visibility.errors %}
+                <div class="error">{{ form.visibility.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="submit-button">
+                {% if is_update %}Update Event{% else %}Create Event{% endif %}
+            </button>
+            {% if is_update %}
+            <a href="{% url 'events:detail' event.slug %}" class="cancel-button">Cancel</a>
+            {% endif %}
+        </div>
+    </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'events/create.js' %}"></script>
+{% if is_update %}
+<script>
+// Pre-populate existing locations and invites for edit mode
+document.addEventListener('DOMContentLoaded', function() {
+    const existingLocations = {{ existing_locations|safe }};
+    const existingInvites = {{ existing_invites|safe }};
+    
+    // This will be handled by the create.js script
+    window.existingLocations = existingLocations;
+    window.existingInvites = existingInvites;
+});
+</script>
+{% endif %}
+{% endblock %}
+
