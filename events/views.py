@@ -77,6 +77,7 @@ def detail(request, slug):
         get_join_request,
         list_pending_join_requests,
     )
+    from .models import EventFavorite
 
     try:
         event = get_event_detail(slug)
@@ -92,11 +93,15 @@ def detail(request, slug):
     # Get attendees list
     attendees = list_event_attendees(event)
 
+    # Check if user has favorited this event
+    is_favorited = EventFavorite.objects.filter(event=event, user=request.user).exists()
+
     context = {
         "event": event,
         "user_role": user_role,
         "additional_locations": additional_locations,
         "attendees": attendees,
+        "is_favorited": is_favorited,
     }
 
     # Participant-specific data
@@ -123,6 +128,8 @@ def index(request):
 @login_required
 def public_events(request):
     """Display public events with search, filter, and pagination"""
+    from .models import EventFavorite
+
     # Parse query params
     query = request.GET.get("q", "").strip()
     visibility_filter = request.GET.get("filter", "")  # 'open' or 'invite'
@@ -135,10 +142,18 @@ def public_events(request):
         order=sort,
     )
 
-    # Add 'joined' attribute to each event
+    # Get user's favorited event IDs for efficient lookup
+    favorited_ids = set(
+        EventFavorite.objects.filter(user=request.user).values_list(
+            "event_id", flat=True
+        )
+    )
+
+    # Add 'joined' and 'is_favorited' attributes to each event
     events_list = []
     for event in events:
         event.joined = user_has_joined(event, request.user)
+        event.is_favorited = event.id in favorited_ids
         events_list.append(event)
 
     # Pagination
@@ -370,3 +385,165 @@ def decline_request(request, slug, request_id):
         messages.error(request, "Failed to decline request.")
 
     return redirect(event.get_absolute_url())
+
+
+@login_required
+def update_event(request, slug):
+    """Update an existing event (host only)"""
+    from .services import update_event as update_event_service
+
+    event = get_object_or_404(Event, slug=slug, is_deleted=False)
+
+    # Verify user is host
+    if event.host != request.user:
+        messages.error(request, "Only the host can edit this event.")
+        return redirect(event.get_absolute_url())
+
+    if request.method == "POST":
+        form = EventForm(request.POST, instance=event)
+        if form.is_valid():
+            try:
+                locations = parse_locations(request)
+                invites = parse_invites(request)
+
+                updated_event = update_event_service(
+                    event=event, form=form, locations=locations, invites=invites
+                )
+
+                messages.success(request, f'Event "{updated_event.title}" updated!')
+                return redirect(updated_event.get_absolute_url())
+
+            except ValueError as e:
+                messages.error(request, str(e))
+            except ValidationError as e:
+                error_msg = e.message if hasattr(e, "message") else str(e)
+                messages.error(request, error_msg)
+            except Exception as e:
+                messages.error(request, f"An error occurred: {str(e)}")
+    else:
+        # Pre-populate form with existing data
+        form = EventForm(instance=event)
+
+    # Get existing locations and invites for pre-population
+    existing_locations = list(
+        event.locations.all().order_by("order").values_list("location_id", flat=True)
+    )
+    existing_invites = list(
+        EventInvite.objects.filter(event=event).values_list("invitee_id", flat=True)
+    )
+
+    context = {
+        "form": form,
+        "event": event,
+        "existing_locations": existing_locations,
+        "existing_invites": existing_invites,
+        "is_update": True,
+    }
+
+    return render(request, "events/create.html", context)
+
+
+@login_required
+@require_POST
+def delete_event(request, slug):
+    """Delete an event (host only)"""
+    from .services import delete_event as delete_event_service
+
+    event = get_object_or_404(Event, slug=slug, is_deleted=False)
+
+    # Verify user is host
+    if event.host != request.user:
+        messages.error(request, "Only the host can delete this event.")
+        return redirect(event.get_absolute_url())
+
+    try:
+        delete_event_service(event=event)
+        messages.success(request, f'Event "{event.title}" has been deleted.')
+        return redirect("events:public")
+    except Exception as e:
+        messages.error(request, f"Failed to delete event: {str(e)}")
+        return redirect(event.get_absolute_url())
+
+
+@login_required
+@require_POST
+def leave_event(request, slug):
+    """Leave an event (attendee deregistration)"""
+    from .services import leave_event as leave_event_service
+
+    event = get_object_or_404(Event, slug=slug, is_deleted=False)
+
+    try:
+        leave_event_service(event=event, user=request.user)
+        messages.success(request, f'You have left "{event.title}".')
+        return redirect("events:public")
+    except ValueError as e:
+        messages.error(request, str(e))
+        return redirect(event.get_absolute_url())
+
+
+@login_required
+@require_POST
+def favorite_event_view(request, slug):
+    """Add event to favorites"""
+    from .services import favorite_event as favorite_event_service
+
+    event = get_object_or_404(Event, slug=slug, is_deleted=False)
+
+    try:
+        favorite_event_service(event=event, user=request.user)
+        messages.success(request, f'Added "{event.title}" to favorites!')
+    except ValueError as e:
+        messages.error(request, str(e))
+
+    # Redirect back to the referring page or event detail
+    return redirect(request.META.get("HTTP_REFERER", event.get_absolute_url()))
+
+
+@login_required
+@require_POST
+def unfavorite_event_view(request, slug):
+    """Remove event from favorites"""
+    from .services import unfavorite_event as unfavorite_event_service
+
+    event = get_object_or_404(Event, slug=slug)
+
+    try:
+        unfavorite_event_service(event=event, user=request.user)
+        messages.success(request, f'Removed "{event.title}" from favorites.')
+    except Exception as e:
+        messages.error(request, f"Failed to remove from favorites: {str(e)}")
+
+    # Redirect back to the referring page or event detail
+    return redirect(request.META.get("HTTP_REFERER", event.get_absolute_url()))
+
+
+@login_required
+def favorites(request):
+    """Display user's favorite events"""
+    from .models import EventFavorite
+
+    # Get favorited events (excluding deleted ones)
+    favorites_qs = (
+        EventFavorite.objects.filter(user=request.user, event__is_deleted=False)
+        .select_related("event", "event__host", "event__start_location")
+        .order_by("-created_at")
+    )
+
+    # Add 'joined' attribute to each event
+    favorites_list = []
+    for fav in favorites_qs:
+        fav.event.joined = user_has_joined(fav.event, request.user)
+        fav.event.favorited_at = fav.created_at
+        favorites_list.append(fav.event)
+
+    # Pagination
+    paginator = Paginator(favorites_list, 12)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "page_obj": page_obj,
+    }
+
+    return render(request, "events/favorites.html", context)

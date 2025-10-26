@@ -8,12 +8,20 @@ urlpatterns = [
     path("", views.index, name="index"),
     path("public/", views.public_events, name="public"),
     path("invitations/", views.invitations, name="invitations"),
+    path("favorites/", views.favorites, name="favorites"),
     # CREATE (Phase 1)
     path("create/", views.create, name="create"),
     # ACTIONS (Phase 2)
     path("<slug:slug>/join/", views.join_event, name="join"),
     path("<slug:slug>/accept/", views.accept_invite, name="accept"),
     path("<slug:slug>/decline/", views.decline_invite, name="decline"),
+    # FAVORITES
+    path("<slug:slug>/favorite/", views.favorite_event_view, name="favorite"),
+    path("<slug:slug>/unfavorite/", views.unfavorite_event_view, name="unfavorite"),
+    # UPDATE & DELETE (Host only)
+    path("<slug:slug>/edit/", views.update_event, name="update"),
+    path("<slug:slug>/delete/", views.delete_event, name="delete"),
+    path("<slug:slug>/leave/", views.leave_event, name="leave"),
     # CHAT & REQUESTS (Phase 3)
     path("<slug:slug>/chat/send/", views.chat_send, name="chat_send"),
     path("<slug:slug>/request/", views.request_join_view, name="request_join"),

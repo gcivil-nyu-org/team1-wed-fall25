@@ -182,3 +182,30 @@ class EventJoinRequest(models.Model):
 
     def __str__(self):
         return f"Join request by {self.requester.username} for {self.event.title}"
+
+
+class EventFavorite(models.Model):
+    """Tracks user's favorited events"""
+
+    event = models.ForeignKey(
+        Event, on_delete=models.CASCADE, related_name="favorited_by"
+    )
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="favorite_events"
+    )
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["event", "user"], name="uniq_event_favorite"
+            )
+        ]
+        indexes = [
+            models.Index(fields=["user", "-created_at"]),
+            models.Index(fields=["event"]),
+        ]
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.user.username} favorited {self.event.title}"
