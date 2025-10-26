@@ -52,8 +52,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "accounts",
-    "loc_detail.apps.LocDetailConfig",
     "events.apps.EventsConfig",
+    "loc_detail",
+    "storages",
 ]
 
 MIDDLEWARE = [
@@ -128,6 +129,43 @@ else:
     }
 
 
+# aws settings
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
+AWS_S3_REGION_NAME = "us-east-2"
+AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
+
+# static and media file settings
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+]
+
+MEDIA_ROOT = BASE_DIR / "media"
+STATICFILES_LOCATION = "static"
+MEDIAFILES_LOCATION = "media"
+MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{MEDIAFILES_LOCATION}/"
+
+# Use local static files if local, use static files in S3 otherwise
+# Use S3 media files all the time
+if DEBUG:
+    STATIC_URL = "static/"
+    STORAGES = {
+        "default": {"BACKEND": "core.custom_storage.MediaStorage"},
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
+        },
+    }
+else:
+    STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{STATICFILES_LOCATION}/"
+    STORAGES = {
+        "default": {"BACKEND": "core.custom_storage.MediaStorage"},
+        "staticfiles": {"BACKEND": "core.custom_storage.StaticStorage"},
+    }
+
+
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
@@ -157,19 +195,6 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 
 USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
-
-# URL to use when referring to static files located in STATIC_ROOT
-STATIC_URL = "static/"
-# Path where collectstatic will collect static files for deployment
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-# a list of directories where Django should look for static files
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),
-]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
