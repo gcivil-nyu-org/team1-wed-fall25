@@ -38,6 +38,7 @@ ALLOWED_HOSTS = [
     "172.31.41.137",
     "artinerary-dev.us-east-2.elasticbeanstalk.com",
     "artinerary-prod.us-east-2.elasticbeanstalk.com",
+    "localhost",
 ]
 
 
@@ -51,6 +52,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "accounts",
+    "events.apps.EventsConfig",
     "loc_detail",
     "storages",
 ]
@@ -193,7 +195,6 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

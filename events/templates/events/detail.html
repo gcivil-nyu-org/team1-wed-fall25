@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ event.title }} - Artinerary{% endblock %}
+
+{% block content %}
+<div class="event-detail-container">
+    <!-- Header -->
+    <div class="event-header">
+        <h1>{{ event.title }}</h1>
+        <p class="event-host">
+            Hosted by <strong>{{ event.host.username }}</strong>
+            {% if user_role == 'HOST' %}
+            <span class="badge badge-host">You are the host</span>
+            {% endif %}
+        </p>
+    </div>
+
+    <!-- Two-column layout -->
+    <div class="event-content">
+        <!-- Left Panel: Event Details -->
+        <div class="event-left-panel">
+            {% include 'events/partials/_details_panel.html' %}
+        </div>
+
+        <!-- Right Panel: Context-dependent -->
+        <div class="event-right-panel">
+            {% if user_role == 'HOST' or user_role == 'ATTENDEE' %}
+                {% include 'events/partials/_chat_panel.html' %}
+            {% else %}
+                {% include 'events/partials/_cta_panel.html' %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.event-detail-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+.event-header {
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 1rem;
+}
+.event-header h1 {
+    margin: 0;
+    color: #333;
+}
+.event-host {
+    color: #666;
+    margin-top: 0.5rem;
+}
+.badge-host {
+    background: #007bff;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+}
+.event-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+@media (max-width: 768px) {
+    .event-content {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
