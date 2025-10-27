@@ -695,16 +695,19 @@ class EventSelectorTests(TestCase):
 
     def test_list_chat_messages_ordering(self):
         """Chat messages are ordered oldest first"""
+        import time
         from .models import EventChatMessage
         from .selectors import list_chat_messages
 
-        # Create 3 messages
+        # Create 3 messages with small delays to ensure ordering
         EventChatMessage.objects.create(
             event=self.event, author=self.host, message="First"
         )
+        time.sleep(0.01)
         EventChatMessage.objects.create(
             event=self.event, author=self.host, message="Second"
         )
+        time.sleep(0.01)
         EventChatMessage.objects.create(
             event=self.event, author=self.host, message="Third"
         )
@@ -713,4 +716,5 @@ class EventSelectorTests(TestCase):
 
         self.assertEqual(len(messages), 3)
         self.assertEqual(messages[0].message, "First")
+        self.assertEqual(messages[1].message, "Second")
         self.assertEqual(messages[2].message, "Third")

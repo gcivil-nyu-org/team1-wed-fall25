@@ -14,7 +14,7 @@ install:
 script:
   - black --check .
   - flake8 .
-  - coverage run manage.py test
+  - coverage run manage.py test events.tests tests.test_events_comprehensive tests.test_events_comprehensive_part2 tests.test_events_actions tests.test_loc_detail_views tests.test_loc_detail_models accounts.tests loc_detail.tests
   - coverage report
 
 after_success:

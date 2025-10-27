@@ -4,6 +4,7 @@ omit =
     */migrations/*
     */tests/*
     */test_*.py
+    *tests.py
     */__pycache__/*
     */venv/*
     */env/*
