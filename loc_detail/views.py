@@ -2,10 +2,10 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, Avg
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from .models import PublicArt, ArtComment, UserFavoriteArt
+from .models import PublicArt, ArtComment, UserFavoriteArt, CommentLike
 
 
 @login_required
@@ -45,12 +45,20 @@ def index(request):
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
+    # Get user's favorite art IDs
+    user_favorites = list(
+        UserFavoriteArt.objects.filter(user=request.user).values_list(
+            "art_id", flat=True
+        )
+    )
+
     context = {
         "page_obj": page_obj,
         "boroughs": boroughs,
         "search_query": search_query,
         "borough_filter": borough_filter,
         "total_count": art_list.count(),
+        "user_favorites": user_favorites,
     }
 
     return render(request, "loc_detail/art_list.html", context)
@@ -61,18 +69,72 @@ def art_detail(request, art_id):
     """Detail page for a specific art piece"""
     art = get_object_or_404(PublicArt, id=art_id)
 
-    # Handle comment submission
+    # Handle comment/review submission
     if request.method == "POST":
         comment_text = request.POST.get("comment", "").strip()
+        rating = request.POST.get("rating")
+        parent_id = request.POST.get("parent_id")
+        comment_id = request.POST.get("comment_id")  # For editing
+        image = request.FILES.get("image")  # Get uploaded image
+
         if comment_text:
-            ArtComment.objects.create(user=request.user, art=art, comment=comment_text)
-            messages.success(request, "Your comment has been added!")
+            parent_comment = None
+            if parent_id:
+                parent_comment = ArtComment.objects.filter(id=parent_id).first()
+
+            # Check if editing existing comment
+            if comment_id:
+                try:
+                    existing_comment = ArtComment.objects.get(
+                        id=comment_id, user=request.user
+                    )
+                    existing_comment.comment = comment_text
+                    if rating and not parent_comment:
+                        existing_comment.rating = int(rating)
+                    if image:
+                        existing_comment.image = image
+                    existing_comment.save()
+                    messages.success(request, "Your review has been updated!")
+                except ArtComment.DoesNotExist:
+                    messages.error(
+                        request,
+                        "Comment not found or you don't have permission to edit it.",
+                    )
+            else:
+                # Create new comment with rating (replies don't need rating)
+                ArtComment.objects.create(
+                    user=request.user,
+                    art=art,
+                    comment=comment_text,
+                    rating=int(rating) if rating and not parent_comment else 5,
+                    parent=parent_comment,
+                    image=(
+                        image if not parent_comment else None
+                    ),  # Only main reviews can have images
+                )
+
+                if parent_comment:
+                    messages.success(request, "Your reply has been added!")
+                else:
+                    messages.success(request, "Your review has been added!")
+
             return redirect("loc_detail:art_detail", art_id=art_id)
         else:
             messages.error(request, "Comment cannot be empty.")
 
-    # Get all comments for this art piece
-    comments = art.comments.all()
+    # Get top-level comments only (not replies)
+    comments = art.comments.filter(parent__isnull=True).prefetch_related(
+        "replies", "user"
+    )
+
+    # Add user reaction to each comment and reply
+    for comment in comments:
+        comment.user_reaction_status = comment.user_reaction(request.user)
+        for reply in comment.replies.all():
+            reply.user_reaction_status = reply.user_reaction(request.user)
+
+    # Get user's existing review if any
+    user_review = art.comments.filter(user=request.user, parent__isnull=True).first()
 
     # Get related art pieces (same borough or same artist)
     related_art = PublicArt.objects.filter(
@@ -82,11 +144,18 @@ def art_detail(request, art_id):
     # Check if user has favorited this art
     is_favorited = UserFavoriteArt.objects.filter(user=request.user, art=art).exists()
 
+    # Get rating statistics
+    avg_rating = art.get_average_rating()
+    total_reviews = art.get_total_reviews()
+
     context = {
         "art": art,
         "comments": comments,
+        "user_review": user_review,
         "related_art": related_art,
         "is_favorited": is_favorited,
+        "avg_rating": avg_rating,
+        "total_reviews": total_reviews,
     }
 
     return render(request, "loc_detail/art_detail.html", context)
@@ -137,6 +206,51 @@ def api_favorite_toggle(request, art_id):
         message = "Added to favorites"
 
     return JsonResponse({"favorited": favorited, "message": message})
+
+
+@login_required
+@require_POST
+def api_comment_reaction(request, comment_id):
+    """API endpoint to like/dislike a comment"""
+    comment = get_object_or_404(ArtComment, id=comment_id)
+    reaction_type = request.POST.get("reaction")  # 'like' or 'dislike'
+
+    # Check if user already reacted
+    existing_reaction = CommentLike.objects.filter(
+        user=request.user, comment=comment
+    ).first()
+
+    if existing_reaction:
+        # If same reaction, remove it (toggle off)
+        if (existing_reaction.is_like and reaction_type == "like") or (
+            not existing_reaction.is_like and reaction_type == "dislike"
+        ):
+            existing_reaction.delete()
+            action = "removed"
+        else:
+            # Change reaction
+            existing_reaction.is_like = reaction_type == "like"
+            existing_reaction.save()
+            action = "changed"
+    else:
+        # Create new reaction
+        CommentLike.objects.create(
+            user=request.user, comment=comment, is_like=(reaction_type == "like")
+        )
+        action = "added"
+
+    # Refresh counts from database
+    likes_count = comment.likes.filter(is_like=True).count()
+    dislikes_count = comment.likes.filter(is_like=False).count()
+
+    return JsonResponse(
+        {
+            "success": True,
+            "action": action,
+            "likes": likes_count,
+            "dislikes": dislikes_count,
+        }
+    )
 
 
 @login_required
