@@ -8,14 +8,14 @@
     <div class="chat-messages">
         {% if chat_messages %}
             {% for msg in chat_messages %}
-            <div class="chat-message {% if msg.author == request.user %}own-message{% endif %}">
+            <div class="chat-message {% if msg.author == request.user %}own-message{% endif %}" data-message-id="{{ msg.id }}">
                 <div class="message-author">
                     <strong>{{ msg.author.username }}</strong>
                     {% if msg.author == event.host %}
                     <span class="host-badge">Host</span>
                     {% endif %}
                 </div>
-                <div class="message-content">{{ msg.message }}</div>
+                <div class="message-content">{{ msg.message|linebreaks }}</div>
                 <div class="message-time">{{ msg.created_at|date:"M j, g:i A" }}</div>
             </div>
             {% endfor %}
@@ -29,10 +29,11 @@
     </div>
     
     <!-- Message Form -->
-    <form method="post" action="{% url 'events:chat_send' event.slug %}" class="chat-form">
+    <form method="post" action="{% url 'events:chat_send' event.slug %}" class="chat-form" id="chat-form">
         {% csrf_token %}
         <textarea 
             name="message" 
+            id="chat-message-input"
             placeholder="Type your message..." 
             maxlength="300" 
             rows="3"
@@ -40,6 +41,36 @@
         <button type="submit" class="btn-send">Send</button>
     </form>
 </div>
+
+<script>
+// Handle Enter key to send, Shift+Enter for new line
+document.addEventListener('DOMContentLoaded', function() {
+    const messageInput = document.getElementById('chat-message-input');
+    const chatForm = document.getElementById('chat-form');
+    
+    if (messageInput && chatForm) {
+        // Enter to send, Shift+Enter for new line
+        messageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                chatForm.submit();
+            }
+        });
+        
+        // Don't need to handle scroll here since page will reload
+    }
+});
+</script>
+
+<script>
+// Scroll to bottom on page load (for message sender after form submission)
+window.addEventListener('load', function() {
+    const chatMessages = document.querySelector('.chat-messages');
+    if (chatMessages) {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+});
+</script>
 
 <style>
 .chat-panel {
@@ -236,4 +267,92 @@
     transform: translateY(0);
 }
 </style>
+
+<script>
+(function() {
+    const chatMessages = document.querySelector('.chat-messages');
+    const eventSlug = '{{ event.slug }}';
+    let lastMessageId = null;
+    
+    // Get last message ID on page load
+    const messages = document.querySelectorAll('.chat-message');
+    if (messages.length > 0) {
+        lastMessageId = parseInt(messages[messages.length - 1].dataset.messageId) || null;
+    }
+    
+    // Auto-refresh chat every 1 second
+    setInterval(function() {
+        fetch(`/events/${eventSlug}/chat/api/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.messages && data.messages.length > 0) {
+                    const latestMessageId = data.messages[data.messages.length - 1].id;
+                    
+                    // Only refresh if there's a new message
+                    if (lastMessageId === null || latestMessageId !== lastMessageId) {
+                        loadNewMessages(data.messages);
+                        lastMessageId = latestMessageId;
+                    }
+                }
+            })
+            .catch(error => console.error('Error fetching messages:', error));
+    }, 1000);
+    
+    function loadNewMessages(messages) {
+        chatMessages.innerHTML = '';
+        
+        if (messages.length === 0) {
+            chatMessages.innerHTML = `
+                <div class="no-messages">
+                    <div class="no-messages-icon">✉</div>
+                    <p>No messages yet</p>
+                    <p class="sub-text">Be the first to start the conversation</p>
+                </div>
+            `;
+            return;
+        }
+        
+        messages.forEach(function(msg) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-message';
+            messageDiv.dataset.messageId = msg.id;
+            
+            if (msg.author === '{{ request.user.username }}') {
+                messageDiv.classList.add('own-message');
+            }
+            
+            const isHost = msg.is_host ? '<span class="host-badge">Host</span>' : '';
+            
+            messageDiv.innerHTML = `
+                <div class="message-author">
+                    <strong>${msg.author}</strong>
+                    ${isHost}
+                </div>
+                <div class="message-content">${escapeHtml(msg.message)}</div>
+                <div class="message-time">${msg.created_at}</div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+        });
+        
+        // Always scroll to bottom to show latest message
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    function escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;',
+            '\n': '<br>'
+        };
+        return text.replace(/[&<>"'\n]/g, function(m) { 
+            if (m === '\n') return '<br>';
+            return map[m]; 
+        });
+    }
+})();
+</script>
 

@@ -297,6 +297,36 @@ def api_event_pins(request):
     return JsonResponse({"points": points})
 
 
+@login_required
+def api_chat_messages(request, slug):
+    """JSON API for real-time chat messages"""
+    from .selectors import list_chat_messages, user_role_in_event
+
+    event = get_object_or_404(Event, slug=slug)
+
+    # Check if user is a member
+    role = user_role_in_event(event, request.user)
+    if role == "VISITOR":
+        return JsonResponse({"error": "Only event members can view chat"}, status=403)
+
+    # Get messages
+    messages = list_chat_messages(event, limit=20)
+
+    # Format for JSON response
+    messages_data = [
+        {
+            "id": msg.id,
+            "author": msg.author.username,
+            "is_host": msg.author == event.host,
+            "message": msg.message,
+            "created_at": msg.created_at.strftime("%b %d, %I:%M %p"),
+        }
+        for msg in messages
+    ]
+
+    return JsonResponse({"messages": messages_data})
+
+
 # PHASE 3 VIEWS
 
 
