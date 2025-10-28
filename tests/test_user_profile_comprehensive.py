@@ -202,8 +202,18 @@ class UserProfileFormTests(TestCase):
 
     def test_form_clean_profile_image_valid(self):
         """Test valid profile image"""
+        # This is a minimal valid 1x1 PNG file.
+        tiny_png_bytes = (
+            b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01"
+            b"\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00"
+            b"\x00\x00\nIDATx\x9cc`\x00\x00\x00\x02\x00\x01\xe2!"
+            b"\xbc3\x00\x00\x00\x00IEND\xaeB`\x82"
+        )
+
         small_image = SimpleUploadedFile(
-            name="small.jpg", content=b"x" * 1024, content_type="image/jpeg"
+            name="small.png",
+            content=tiny_png_bytes,
+            content_type="image/png",
         )
 
         form = UserProfileForm(
@@ -252,6 +262,8 @@ class UserBasicInfoFormTests(TestCase):
         )
 
         self.assertTrue(form.is_valid())
+        # The form's clean method normalizes email to lowercase,
+        # but we haven't saved yet, so cleaned_data should still match.
         self.assertEqual(form.cleaned_data["email"], "test@example.com")
 
 
@@ -722,7 +734,8 @@ class UserSearchViewTests(TestCase):
         )
         self.public_user.profile.full_name = "Public Test User"
         self.public_user.profile.privacy = "PUBLIC"
-        self.public_user.profile.save()
+        she_profile = self.public_user.profile  # clarity
+        she_profile.save()
 
         self.private_user = User.objects.create_user(
             username="privateuser",
