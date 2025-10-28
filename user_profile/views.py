@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.views.decorators.http import require_POST  # moved to top
+from django.views.decorators.http import require_POST
 
 from .models import UserProfile, UserFollow
 from .forms import UserProfileForm, UserBasicInfoForm
@@ -17,32 +17,26 @@ from loc_detail.models import UserFavoriteArt
 def profile_view(request, username=None):
     """View user profile - own or another user's"""
     if username:
-        # Viewing another user's profile
         profile_user = get_object_or_404(User, username=username)
         is_own_profile = request.user == profile_user
     else:
-        # Viewing own profile
         profile_user = request.user
         is_own_profile = True
 
-    # Get or create profile
     profile, created = UserProfile.objects.get_or_create(user=profile_user)
 
-    # Check privacy permissions
     can_view = is_own_profile or profile.is_public()
 
     if not can_view:
         messages.error(request, "This profile is private.")
         return redirect("artinerary:index")
 
-    # Check if current user follows profile user
     is_following = False
     if request.user.is_authenticated and not is_own_profile:
         is_following = UserFollow.objects.filter(
             follower=request.user, following=profile_user
         ).exists()
 
-    # Get hosted events (public only for non-owners)
     if is_own_profile:
         hosted_events = Event.objects.filter(
             host=profile_user, is_deleted=False
@@ -51,17 +45,16 @@ def profile_view(request, username=None):
         hosted_events = Event.objects.filter(
             host=profile_user,
             is_deleted=False,
-            visibility__in=[EventVisibility.PUBLIC_OPEN, EventVisibility.PUBLIC_INVITE],
+            visibility__in=[
+                EventVisibility.PUBLIC_OPEN,
+                EventVisibility.PUBLIC_INVITE,
+            ],
         ).select_related("start_location")[:6]
 
-    # Get favorite art count
     favorite_art_count = UserFavoriteArt.objects.filter(user=profile_user).count()
-
-    # Get followers and following counts
     followers_count = profile_user.followers.count()
     following_count = profile_user.following.count()
 
-    # Get attended events count (as attendee, not host)
     attended_events_count = EventMembership.objects.filter(
         user=profile_user, role=MembershipRole.ATTENDEE
     ).count()
@@ -112,14 +105,11 @@ def remove_profile_image(request):
         profile = UserProfile.objects.get(user=request.user)
 
         if profile.profile_image:
-            # For S3 storage, we need to delete before clearing the field
             try:
-                # Delete the file from S3
                 profile.profile_image.delete(save=False)
             except Exception as e:
-                print(f"Error deleting file from S3: {e}")
+                print(f"Error deleting file from storage: {e}")
 
-            # Clear the database field
             profile.profile_image = None
             profile.save()
 
@@ -144,12 +134,10 @@ def follow_user(request, username):
 
     user_to_follow = get_object_or_404(User, username=username)
 
-    # Can't follow yourself
     if user_to_follow == request.user:
         messages.error(request, "You cannot follow yourself.")
         return redirect("user_profile:profile_view", username=username)
 
-    # Create or ignore if already following
     follow, created = UserFollow.objects.get_or_create(
         follower=request.user, following=user_to_follow
     )
@@ -188,7 +176,6 @@ def followers_list(request, username):
     profile_user = get_object_or_404(User, username=username)
     is_own_profile = request.user == profile_user
 
-    # Privacy check
     profile = get_object_or_404(UserProfile, user=profile_user)
     if not is_own_profile and not profile.is_public():
         messages.error(request, "This profile is private.")
@@ -200,7 +187,6 @@ def followers_list(request, username):
         .order_by("-created_at")
     )
 
-    # Pagination
     paginator = Paginator(followers, 20)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
@@ -221,7 +207,6 @@ def following_list(request, username):
     profile_user = get_object_or_404(User, username=username)
     is_own_profile = request.user == profile_user
 
-    # Privacy check
     profile = get_object_or_404(UserProfile, user=profile_user)
     if not is_own_profile and not profile.is_public():
         messages.error(request, "This profile is private.")
@@ -233,7 +218,6 @@ def following_list(request, username):
         .order_by("-created_at")
     )
 
-    # Pagination
     paginator = Paginator(following, 20)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
@@ -254,7 +238,6 @@ def user_search(request):
     query = request.GET.get("q", "").strip()
 
     if query:
-        # Search by username or full name
         users = (
             User.objects.filter(
                 Q(username__icontains=query) | Q(profile__full_name__icontains=query),
