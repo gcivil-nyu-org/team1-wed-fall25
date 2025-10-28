@@ -5,7 +5,14 @@ from django.urls import reverse
 from django.utils.text import slugify
 
 from loc_detail.models import PublicArt
-from .enums import EventVisibility, MembershipRole, InviteStatus, JoinRequestStatus
+from .enums import (
+    EventVisibility,
+    MembershipRole,
+    InviteStatus,
+    JoinRequestStatus,
+    MessageReportReason,
+    ReportStatus,
+)
 
 
 class Event(models.Model):
@@ -209,3 +216,46 @@ class EventFavorite(models.Model):
 
     def __str__(self):
         return f"{self.user.username} favorited {self.event.title}"
+
+
+class MessageReport(models.Model):
+    """Reports for inappropriate chat messages"""
+
+    message = models.ForeignKey(
+        EventChatMessage, on_delete=models.CASCADE, related_name="reports"
+    )
+    reporter = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="message_reports"
+    )
+    reason = models.CharField(
+        max_length=20, choices=MessageReportReason.choices
+    )
+    description = models.TextField(blank=True, max_length=500)
+    status = models.CharField(
+        max_length=20, choices=ReportStatus.choices, default=ReportStatus.PENDING
+    )
+    reviewed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reviewed_message_reports",
+    )
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["message", "reporter"], name="uniq_message_report"
+            )
+        ]
+        indexes = [
+            models.Index(fields=["status", "-created_at"]),
+            models.Index(fields=["message"]),
+            models.Index(fields=["reporter"]),
+        ]
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Report on {self.message.id} by {self.reporter.username}"

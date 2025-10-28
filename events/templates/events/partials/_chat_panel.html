@@ -9,10 +9,17 @@
         {% if chat_messages %}
             {% for msg in chat_messages %}
             <div class="chat-message {% if msg.author == request.user %}own-message{% endif %}" data-message-id="{{ msg.id }}">
-                <div class="message-author">
-                    <strong>{{ msg.author.username }}</strong>
-                    {% if msg.author == event.host %}
-                    <span class="host-badge">Host</span>
+                <div class="message-header">
+                    <div class="message-author">
+                        <strong>{{ msg.author.username }}</strong>
+                        {% if msg.author == event.host %}
+                        <span class="host-badge">Host</span>
+                        {% endif %}
+                    </div>
+                    {% if msg.author != request.user %}
+                    <button class="report-btn" data-message-id="{{ msg.id }}" title="Report this message">
+                        ⚠️
+                    </button>
                     {% endif %}
                 </div>
                 <div class="message-content">{{ msg.message|linebreaks }}</div>
@@ -42,6 +49,35 @@
     </form>
 </div>
 
+<!-- Report Modal -->
+<div class="report-modal" id="report-modal">
+    <div class="report-modal-content">
+        <h3>Report Inappropriate Message</h3>
+        <form id="report-form">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="report-reason">Reason:</label>
+                <select id="report-reason" name="reason" required>
+                    <option value="">Select a reason</option>
+                    <option value="INAPPROPRIATE">Inappropriate content</option>
+                    <option value="SPAM">Spam</option>
+                    <option value="HARASSMENT">Harassment</option>
+                    <option value="OFF_TOPIC">Off-topic</option>
+                    <option value="OTHER">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="report-description">Additional details (optional):</label>
+                <textarea id="report-description" name="description" maxlength="500" rows="3" placeholder="Provide more context about this report..."></textarea>
+            </div>
+            <div class="form-buttons">
+                <button type="button" class="btn-cancel" id="cancel-report">Cancel</button>
+                <button type="submit" class="btn-submit">Submit Report</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
 // Handle Enter key to send, Shift+Enter for new line
 document.addEventListener('DOMContentLoaded', function() {
@@ -69,6 +105,76 @@ window.addEventListener('load', function() {
     if (chatMessages) {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
+});
+
+// Report modal functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const reportModal = document.getElementById('report-modal');
+    const reportForm = document.getElementById('report-form');
+    const cancelBtn = document.getElementById('cancel-report');
+    let currentMessageId = null;
+    
+    // Open modal when report button is clicked
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.report-btn')) {
+            const messageId = e.target.closest('.report-btn').dataset.messageId;
+            currentMessageId = messageId;
+            reportModal.style.display = 'block';
+        }
+    });
+    
+    // Close modal
+    function closeModal() {
+        reportModal.style.display = 'none';
+        reportForm.reset();
+        currentMessageId = null;
+    }
+    
+    cancelBtn.addEventListener('click', closeModal);
+    
+    // Close modal when clicking outside
+    reportModal.addEventListener('click', function(e) {
+        if (e.target === reportModal) {
+            closeModal();
+        }
+    });
+    
+    // Submit report
+    reportForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (!currentMessageId) {
+            alert('No message selected');
+            return;
+        }
+        
+        const reason = document.getElementById('report-reason').value;
+        const description = document.getElementById('report-description').value;
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        // Send report via AJAX
+        fetch(`/events/messages/${currentMessageId}/report/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken
+            },
+            body: `reason=${encodeURIComponent(reason)}&description=${encodeURIComponent(description)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Message reported successfully. Thank you for keeping our community safe!');
+                closeModal();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while submitting the report.');
+        });
+    });
 });
 </script>
 
@@ -266,6 +372,136 @@ window.addEventListener('load', function() {
 .btn-send:active {
     transform: translateY(0);
 }
+
+/* Message Header with Report Button */
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.25rem;
+}
+
+.report-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 0.25rem 0.5rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+    visibility: hidden;
+}
+
+/* Show report button when hovering over message */
+.chat-message:hover .report-btn {
+    opacity: 0.6;
+    visibility: visible;
+}
+
+.chat-message:hover .report-btn:hover {
+    opacity: 1;
+}
+
+/* Report Modal */
+.report-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+}
+
+.report-modal-content {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    border-radius: 12px;
+    padding: 2rem;
+    margin: 10% auto;
+    max-width: 500px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.report-modal-content h3 {
+    margin: 0 0 1.5rem 0;
+    color: #8b9cff;
+    font-size: 1.25rem;
+    font-weight: 500;
+}
+
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+}
+
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #fff;
+    font-family: inherit;
+    font-size: 0.9rem;
+}
+
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: rgba(102, 126, 234, 0.5);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.form-group textarea {
+    resize: vertical;
+}
+
+.form-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.btn-cancel,
+.btn-submit {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+}
+
+.btn-cancel {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.btn-submit {
+    background: rgba(102, 126, 234, 0.15);
+    color: #8b9cff;
+    border: 1px solid rgba(102, 126, 234, 0.3);
+}
+
+.btn-submit:hover {
+    background: rgba(102, 126, 234, 0.25);
+    border-color: rgba(102, 126, 234, 0.5);
+}
 </style>
 
 <script>
@@ -322,11 +558,17 @@ window.addEventListener('load', function() {
             }
             
             const isHost = msg.is_host ? '<span class="host-badge">Host</span>' : '';
+            const isOwnMessage = msg.author === '{{ request.user.username }}';
+            const reportButton = !isOwnMessage ? 
+                `<button class="report-btn" data-message-id="${msg.id}" title="Report this message">⚠️</button>` : '';
             
             messageDiv.innerHTML = `
-                <div class="message-author">
-                    <strong>${msg.author}</strong>
-                    ${isHost}
+                <div class="message-header">
+                    <div class="message-author">
+                        <strong>${msg.author}</strong>
+                        ${isHost}
+                    </div>
+                    ${reportButton}
                 </div>
                 <div class="message-content">${escapeHtml(msg.message)}</div>
                 <div class="message-time">${msg.created_at}</div>

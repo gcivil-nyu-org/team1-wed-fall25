@@ -45,4 +45,6 @@ urlpatterns = [
     path("api/pins/", views.api_event_pins, name="api_event_pins"),
     # REALTIME CHAT API
     path("<slug:slug>/chat/api/", views.api_chat_messages, name="api_chat_messages"),
+    # MESSAGE REPORTING
+    path("messages/<int:message_id>/report/", views.report_message, name="report_message"),
 ]
