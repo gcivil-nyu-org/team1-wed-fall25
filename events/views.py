@@ -585,36 +585,34 @@ def favorites(request):
 def report_message(request, message_id):
     """Report an inappropriate chat message"""
     from .enums import ReportStatus
-    from django.utils import timezone
-    
+
     message = get_object_or_404(EventChatMessage, id=message_id)
-    
+
     # Get reason and description from POST data
     reason = request.POST.get("reason")
     description = request.POST.get("description", "").strip()
-    
+
     # Validate reason
-    if not reason or reason not in [choice[0] for choice in MessageReportReason.choices]:
+    choices = [choice[0] for choice in MessageReportReason.choices]
+    if not reason or reason not in choices:
         return JsonResponse({"error": "Invalid reason"}, status=400)
-    
+
     # Check if user already reported this message
     existing_report = MessageReport.objects.filter(
         message=message, reporter=request.user
     ).exists()
-    
+
     if existing_report:
-        return JsonResponse({"error": "You have already reported this message"}, status=400)
-    
+        error_msg = "You have already reported this message"
+        return JsonResponse({"error": error_msg}, status=400)
+
     # Create report
-    report = MessageReport.objects.create(
+    MessageReport.objects.create(
         message=message,
         reporter=request.user,
         reason=reason,
         description=description,
-        status=ReportStatus.PENDING
+        status=ReportStatus.PENDING,
     )
-    
-    return JsonResponse({
-        "success": True,
-        "message": "Message reported successfully"
-    })
+
+    return JsonResponse({"success": True, "message": "Message reported successfully"})

@@ -227,9 +227,7 @@ class MessageReport(models.Model):
     reporter = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="message_reports"
     )
-    reason = models.CharField(
-        max_length=20, choices=MessageReportReason.choices
-    )
+    reason = models.CharField(max_length=20, choices=MessageReportReason.choices)
     description = models.TextField(blank=True, max_length=500)
     status = models.CharField(
         max_length=20, choices=ReportStatus.choices, default=ReportStatus.PENDING

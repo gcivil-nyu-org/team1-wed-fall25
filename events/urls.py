@@ -46,5 +46,7 @@ urlpatterns = [
     # REALTIME CHAT API
     path("<slug:slug>/chat/api/", views.api_chat_messages, name="api_chat_messages"),
     # MESSAGE REPORTING
-    path("messages/<int:message_id>/report/", views.report_message, name="report_message"),
+    path(
+        "messages/<int:message_id>/report/", views.report_message, name="report_message"
+    ),
 ]
