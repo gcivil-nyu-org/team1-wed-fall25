@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if list_type == 'followers' %}
+        {{ profile_user.username }}'s Followers
+    {% else %}
+        {{ profile_user.username }}'s Following
+    {% endif %}
+    - Artinerary
+{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/site.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="follow-list-container">
+    <div class="follow-card">
+        <div class="header">
+            <h1>
+                {% if list_type == 'followers' %}
+                    Followers
+                {% else %}
+                    Following
+                {% endif %}
+            </h1>
+            <p>{{ profile_user.username }}'s {% if list_type == 'followers' %}followers{% else %}following{% endif %}</p>
+        </div>
+        
+        {% if page_obj.object_list %}
+            <div class="user-list">
+                {% for item in page_obj %}
+                    {% if list_type == 'followers' %}
+                        {% with user=item.follower %}
+                            <a href="{% url 'user_profile:profile_view' user.username %}" class="user-item">
+                                {% if user.profile.profile_image %}
+                                    <img src="{{ user.profile.profile_image.url }}" alt="{{ user.username }}" class="user-avatar">
+                                {% else %}
+                                    <div class="user-avatar-placeholder">
+                                        {{ user.username|first|upper }}
+                                    </div>
+                                {% endif %}
+                                <div class="user-info">
+                                    <div class="user-username">{{ user.username }}</div>
+                                    {% if user.profile.full_name %}
+                                        <div class="user-fullname">{{ user.profile.full_name }}</div>
+                                    {% endif %}
+                                    <div class="member-since-small">Member since {{ user.profile.created_at|date:"F Y" }}</div>
+                                </div>
+                            </a>
+                        {% endwith %}
+                    {% else %}
+                        {% with user=item.following %}
+                            <a href="{% url 'user_profile:profile_view' user.username %}" class="user-item">
+                                {% if user.profile.profile_image %}
+                                    <img src="{{ user.profile.profile_image.url }}" alt="{{ user.username }}" class="user-avatar">
+                                {% else %}
+                                    <div class="user-avatar-placeholder">
+                                        {{ user.username|first|upper }}
+                                    </div>
+                                {% endif %}
+                                <div class="user-info">
+                                    <div class="user-username">{{ user.username }}</div>
+                                    {% if user.profile.full_name %}
+                                        <div class="user-fullname">{{ user.profile.full_name }}</div>
+                                    {% endif %}
+                                    <div class="member-since-small">Member since {{ user.profile.created_at|date:"F Y" }}</div>
+                                </div>
+                            </a>
+                        {% endwith %}
+                    {% endif %}
+                {% endfor %}
+            </div>
+            
+            {% if page_obj.has_other_pages %}
+                <div class="pagination">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}" class="page-link">← Previous</a>
+                    {% endif %}
+                    
+                    <span class="page-current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                    
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}" class="page-link">Next →</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    {% if list_type == 'followers' %}👥{% else %}✨{% endif %}
+                </div>
+                <p>
+                    {% if is_own_profile %}
+                        {% if list_type == 'followers' %}
+                            You don't have any followers yet.
+                        {% else %}
+                            You're not following anyone yet.
+                        {% endif %}
+                    {% else %}
+                        {% if list_type == 'followers' %}
+                            {{ profile_user.username }} doesn't have any followers yet.
+                        {% else %}
+                            {{ profile_user.username }} isn't following anyone yet.
+                        {% endif %}
+                    {% endif %}
+                </p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "events.apps.EventsConfig",
     "loc_detail",
     "storages",
+    "user_profile.apps.UserProfileConfig",
 ]
 
 MIDDLEWARE = [
