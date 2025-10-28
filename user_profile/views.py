@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.views.decorators.http import require_POST  # moved to top
 
 from .models import UserProfile, UserFollow
 from .forms import UserProfileForm, UserBasicInfoForm
@@ -103,9 +104,6 @@ def edit_profile(request):
     return render(request, "user_profile/edit_profile.html", context)
 
 
-from django.views.decorators.http import require_POST
-
-
 @login_required
 @require_POST
 def remove_profile_image(request):
@@ -133,7 +131,7 @@ def remove_profile_image(request):
         messages.error(request, "User profile not found.")
     except Exception as e:
         print(f"Error in remove_profile_image: {e}")
-        messages.error(request, f"An error occurred while removing the image.")
+        messages.error(request, "An error occurred while removing the image.")
 
     return redirect("user_profile:edit_profile")
 

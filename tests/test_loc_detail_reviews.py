@@ -76,7 +76,7 @@ class ArtCommentRatingModelTests(TestCase):
             content_type="image/jpeg",
         )
 
-        review = ArtComment.objects.create(
+        _ = ArtComment.objects.create(  # noqa: F841 (intentional)
             user=self.user,
             art=self.art,
             comment="Check out this photo!",
@@ -84,6 +84,8 @@ class ArtCommentRatingModelTests(TestCase):
             image=image,
         )
 
+        # Verify image was set by fetching from DB
+        review = ArtComment.objects.get(user=self.user, art=self.art)
         self.assertIsNotNone(review.image)
         self.assertIn("review_images/", review.image.name)
 
@@ -330,7 +332,6 @@ class ReviewViewTests(TestCase):
             reverse("loc_detail:art_detail", kwargs={"art_id": self.art.id}),
             {"comment": "Amazing artwork!", "rating": "5"},
         )
-
         self.assertEqual(response.status_code, 302)  # Redirect after success
 
         # Check review was created
@@ -350,6 +351,7 @@ class ReviewViewTests(TestCase):
             reverse("loc_detail:art_detail", kwargs={"art_id": self.art.id}),
             {"comment": "See my photo!", "rating": "4", "image": image},
         )
+        self.assertIn(response.status_code, (200, 302))
 
         review = ArtComment.objects.get(user=self.user)
         self.assertIsNotNone(review.image)
@@ -367,6 +369,7 @@ class ReviewViewTests(TestCase):
             reverse("loc_detail:art_detail", kwargs={"art_id": self.art.id}),
             {"comment": "Updated comment", "rating": "5", "comment_id": review.id},
         )
+        self.assertEqual(response.status_code, 302)
 
         review.refresh_from_db()
         self.assertEqual(review.comment, "Updated comment")
@@ -386,12 +389,12 @@ class ReviewViewTests(TestCase):
             reverse("loc_detail:art_detail", kwargs={"art_id": self.art.id}),
             {"comment": "Second review", "rating": "5"},
         )
+        self.assertIn(response.status_code, (200, 302))
 
         # Should still only have one review
         reviews = ArtComment.objects.filter(
             user=self.user, art=self.art, parent__isnull=True
         )
-        # Could be 1 or 2 depending on implementation
         self.assertGreaterEqual(reviews.count(), 1)
 
     def test_submit_reply_to_review(self):
@@ -409,6 +412,7 @@ class ReviewViewTests(TestCase):
             reverse("loc_detail:art_detail", kwargs={"art_id": self.art.id}),
             {"comment": "Great point!", "parent_id": parent.id},
         )
+        self.assertIn(response.status_code, (200, 302))
 
         # Check reply was created
         reply = ArtComment.objects.get(parent=parent)
@@ -485,6 +489,7 @@ class CommentReactionAPITests(TestCase):
             ),
             {"reaction": "dislike"},
         )
+        self.assertEqual(response.status_code, 200)
 
         data = json.loads(response.content)
         self.assertEqual(data["likes"], 0)
@@ -505,6 +510,7 @@ class CommentReactionAPITests(TestCase):
             ),
             {"reaction": "like"},
         )
+        self.assertEqual(response.status_code, 200)
 
         data = json.loads(response.content)
         self.assertEqual(data["action"], "removed")
@@ -525,6 +531,7 @@ class CommentReactionAPITests(TestCase):
             ),
             {"reaction": "dislike"},
         )
+        self.assertEqual(response.status_code, 200)
 
         data = json.loads(response.content)
         self.assertEqual(data["action"], "changed")
@@ -542,6 +549,7 @@ class CommentReactionAPITests(TestCase):
             ),
             {"reaction": "like"},
         )
+        self.assertEqual(response.status_code, 200)
 
         data = json.loads(response.content)
         self.assertTrue(data["success"])
@@ -584,7 +592,7 @@ class RatingDisplayTests(TestCase):
 
     def test_no_rating_for_unreviewed_art(self):
         """Test that unreviewed art shows no rating"""
-        unreviewed = PublicArt.objects.create(
+        _ = PublicArt.objects.create(  # noqa: F841 (intentional)
             title="No Reviews", artist_name="Artist 3"
         )
 
@@ -639,3 +647,4 @@ class ReviewBadgeTests(TestCase):
         response = self.client.get(
             reverse("loc_detail:art_detail", kwargs={"art_id": self.art.id})
         )
+        self.assertIn(response.status_code, (200, 302))

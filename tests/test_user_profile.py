@@ -6,12 +6,10 @@ Tests models, views, and forms for user profiles and follow system
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.urls import reverse
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 from datetime import timedelta
 
-from user_profile.models import UserProfile, UserFollow
-from user_profile.forms import UserProfileForm, UserBasicInfoForm
+from user_profile.forms import UserProfileForm  # Removed unused imports
 from events.models import Event, EventMembership
 from events.enums import EventVisibility, MembershipRole
 from loc_detail.models import PublicArt, UserFavoriteArt
@@ -122,34 +120,34 @@ class UserFollowModelTests(TestCase):
 
     def test_create_follow(self):
         """Test creating a follow relationship"""
-        follow = UserFollow.objects.create(follower=self.user1, following=self.user2)
+        follow = self.user1.following.create(following=self.user2)
         self.assertEqual(follow.follower, self.user1)
         self.assertEqual(follow.following, self.user2)
 
     def test_follow_str_method(self):
         """Test string representation of UserFollow"""
-        follow = UserFollow.objects.create(follower=self.user1, following=self.user2)
+        follow = self.user1.following.create(following=self.user2)
         expected = f"{self.user1.username} follows {self.user2.username}"
         self.assertEqual(str(follow), expected)
 
     def test_follow_unique_together(self):
         """Test that a user can't follow the same user twice"""
-        UserFollow.objects.create(follower=self.user1, following=self.user2)
+        self.user1.following.create(following=self.user2)
 
         with self.assertRaises(Exception):
-            UserFollow.objects.create(follower=self.user1, following=self.user2)
+            self.user1.following.create(following=self.user2)
 
     def test_follow_cascade_delete(self):
         """Test that follows are deleted when user is deleted"""
-        UserFollow.objects.create(follower=self.user1, following=self.user2)
-        self.assertEqual(UserFollow.objects.count(), 1)
+        self.user1.following.create(following=self.user2)
+        self.assertEqual(self.user1.following.count(), 1)
 
         self.user1.delete()
-        self.assertEqual(UserFollow.objects.count(), 0)
+        self.assertEqual(self.user2.followers.count(), 0)
 
     def test_related_names(self):
         """Test related name access"""
-        UserFollow.objects.create(follower=self.user1, following=self.user2)
+        self.user1.following.create(following=self.user2)
 
         # user1 is following user2
         self.assertEqual(self.user1.following.count(), 1)
@@ -374,11 +372,7 @@ class FollowFunctionalityTests(TestCase):
         self.assertEqual(response.status_code, 302)
 
         # Check that follow was created
-        self.assertTrue(
-            UserFollow.objects.filter(
-                follower=self.user1, following=self.user2
-            ).exists()
-        )
+        self.assertTrue(self.user1.following.filter(following=self.user2).exists())
 
     def test_cannot_follow_self(self):
         """Test that user cannot follow themselves"""
@@ -388,18 +382,15 @@ class FollowFunctionalityTests(TestCase):
                 "user_profile:follow_user", kwargs={"username": self.user1.username}
             )
         )
+        self.assertEqual(response.status_code, 302)
 
         # Should not create follow
-        self.assertFalse(
-            UserFollow.objects.filter(
-                follower=self.user1, following=self.user1
-            ).exists()
-        )
+        self.assertFalse(self.user1.following.filter(following=self.user1).exists())
 
     def test_unfollow_user(self):
         """Test unfollowing a user"""
         # Create follow
-        UserFollow.objects.create(follower=self.user1, following=self.user2)
+        self.user1.following.create(following=self.user2)
 
         self.client.login(username="user1", password="testpass123")
         response = self.client.post(
@@ -411,15 +402,11 @@ class FollowFunctionalityTests(TestCase):
         self.assertEqual(response.status_code, 302)
 
         # Check that follow was deleted
-        self.assertFalse(
-            UserFollow.objects.filter(
-                follower=self.user1, following=self.user2
-            ).exists()
-        )
+        self.assertFalse(self.user1.following.filter(following=self.user2).exists())
 
     def test_followers_list_view(self):
         """Test viewing followers list"""
-        UserFollow.objects.create(follower=self.user1, following=self.user2)
+        self.user1.following.create(following=self.user2)
 
         self.client.login(username="user1", password="testpass123")
         response = self.client.get(
@@ -433,7 +420,7 @@ class FollowFunctionalityTests(TestCase):
 
     def test_following_list_view(self):
         """Test viewing following list"""
-        UserFollow.objects.create(follower=self.user1, following=self.user2)
+        self.user1.following.create(following=self.user2)
 
         self.client.login(username="user1", password="testpass123")
         response = self.client.get(
@@ -514,6 +501,7 @@ class UserSearchTests(TestCase):
         response = self.client.get(reverse("user_profile:user_search"), {"q": "user"})
 
         # Should include public user but not private user
+        self.assertEqual(response.status_code, 200)
         self.assertIn(self.public_user, response.context["users"])
         self.assertNotIn(self.private_user, response.context["users"])
 
@@ -617,10 +605,10 @@ class ProfileStatisticsTests(TestCase):
         user3 = User.objects.create_user(username="user3", password="testpass123")
 
         # user2 follows testuser
-        UserFollow.objects.create(follower=user2, following=self.user)
+        user2.following.create(following=self.user)
 
         # testuser follows user3
-        UserFollow.objects.create(follower=self.user, following=user3)
+        self.user.following.create(following=user3)
 
         self.client.login(username="testuser", password="testpass123")
         response = self.client.get(

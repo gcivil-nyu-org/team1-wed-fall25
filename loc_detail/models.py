@@ -15,9 +15,10 @@ class PublicArt(models.Model):
 
     def art_image(self):
         return mark_safe(
-            '<img style="border: 1px solid #333; object-fit: contain;" src="{url}" width="500px" height="500px" />'.format(
-                url=self.image.url,
-            )
+            (
+                '<img style="border: 1px solid #333; object-fit: contain;" '
+                'src="{url}" width="500px" height="500px" />'
+            ).format(url=self.image.url)
         )
 
     # Location Information
