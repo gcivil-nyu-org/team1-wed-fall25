@@ -71,7 +71,7 @@
                     </div>
                     
                     {% if favorite.art.borough %}
-                        <span class="badge">{{ favorite.art.borough }}</span>
+                        <span class="badge borough-badge">{{ favorite.art.borough }}</span>
                     {% endif %}
 
                     <div class="art-info">
@@ -95,6 +95,19 @@
                             <p class="year">
                                 <strong>Year:</strong> {{ favorite.art.year_created }}
                             </p>
+                        {% endif %}
+                        
+                        <!-- Rating Display -->
+                        {% if favorite.art.get_total_reviews > 0 %}
+                        <div class="art-rating">
+                            <span class="art-rating-stars">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= favorite.art.get_average_rating %}★{% else %}☆{% endif %}
+                                {% endfor %}
+                            </span>
+                            <span class="art-rating-score">{{ favorite.art.get_average_rating }}</span>
+                            <span class="art-rating-count">({{ favorite.art.get_total_reviews }} reviews)</span>
+                        </div>
                         {% endif %}
                         
                         <p class="added-date">
@@ -296,7 +309,7 @@
     transform: scale(1.3);
 }
 
-.badge {
+.borough-badge {
     display: inline-block;
     background: #3498db;
     color: white;
@@ -319,6 +332,33 @@
 
 .art-info strong {
     color: #333;
+}
+
+/* Rating Display in Favorites */
+.art-rating {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin: 10px 0;
+    padding: 8px 0;
+    border-top: 1px solid #e0e0e0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.art-rating-stars {
+    color: #fbbc04;
+    font-size: 16px;
+}
+
+.art-rating-score {
+    font-weight: 600;
+    color: #202124;
+    font-size: 14px;
+}
+
+.art-rating-count {
+    color: #5f6368;
+    font-size: 13px;
 }
 
 .added-date {

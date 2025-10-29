@@ -2,6 +2,62 @@
 
 {% block title %}NYC Public Art - Artinerary{% endblock %}
 
+{% block extra_head %}
+<style>
+    .art-rating {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 8px;
+        font-size: 14px;
+    }
+    .art-rating-stars {
+        color: #fbbc04;
+    }
+    .art-rating-score {
+        font-weight: 600;
+        color: #202124;
+    }
+    .art-rating-count {
+        color: #5f6368;
+        font-size: 13px;
+    }
+    
+    /* Favorite Button on Card */
+    .art-card {
+        position: relative;
+    }
+    .favorite-icon {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        transition: all 0.3s ease;
+        font-size: 20px;
+        z-index: 10;
+    }
+    .favorite-icon:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    }
+    .favorite-icon.favorited {
+        color: #e74c3c;
+    }
+    .favorite-icon:not(.favorited) {
+        color: #ccc;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="art-list-container">
     <div class="page-header">
@@ -44,6 +100,13 @@
         <div class="art-grid">
             {% for art in page_obj %}
                 <a href="{% url 'loc_detail:art_detail' art.id %}" class="art-card">
+                    <!-- Favorite Button -->
+                    <button class="favorite-icon {% if art.id in user_favorites %}favorited{% endif %}" 
+                            data-art-id="{{ art.id }}"
+                            onclick="event.preventDefault(); toggleFavorite('{{ art.id }}', this);">
+                        ❤
+                    </button>
+                    
                     <div class="art-card-header">
                         <h3 class="art-title">{{ art.title|default:"Untitled" }}</h3>
                         {% if art.borough %}
@@ -72,6 +135,19 @@
                             <p class="art-year">
                                 <strong>Year:</strong> {{ art.year_created }}
                             </p>
+                        {% endif %}
+                        
+                        <!-- Rating Display -->
+                        {% if art.get_total_reviews > 0 %}
+                        <div class="art-rating">
+                            <span class="art-rating-stars">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= art.get_average_rating %}★{% else %}☆{% endif %}
+                                {% endfor %}
+                            </span>
+                            <span class="art-rating-score">{{ art.get_average_rating }}</span>
+                            <span class="art-rating-count">({{ art.get_total_reviews }})</span>
+                        </div>
                         {% endif %}
                     </div>
                     
@@ -108,4 +184,45 @@
         </div>
     {% endif %}
 </div>
+
+<script>
+// CSRF token helper
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+const csrftoken = getCookie('csrftoken');
+
+function toggleFavorite(artId, button) {
+    fetch(`/loc_detail/api/favorite/${artId}/toggle`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.favorited) {
+            button.classList.add('favorited');
+        } else {
+            button.classList.remove('favorited');
+        }
+    })
+    .catch(error => {
+        console.error('Error toggling favorite:', error);
+    });
+}
+</script>
 {% endblock %}

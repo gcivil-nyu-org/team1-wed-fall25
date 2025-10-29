@@ -1,0 +1,111 @@
+{% extends 'base.html' %} {% load static %} {% block title %}Edit Profile -
+Artinerary{% endblock %}
+
+{% block extra_js %}
+<script>
+// Ensure remove image form submits correctly
+document.addEventListener('DOMContentLoaded', function() {
+    const removeForm = document.getElementById('remove-image-form');
+    if (removeForm) {
+        removeForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (confirm('Are you sure you want to remove your profile image?')) {
+                this.submit();
+            }
+        });
+    }
+});
+</script>
+{% endblock %} {% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/site.css' %}" />
+{% endblock %} {% block content %}
+<div class="edit-profile-container">
+  <div class="edit-card">
+    <div class="edit-header">
+      <h1>Edit Profile</h1>
+      <p>Update your personal information and preferences</p>
+    </div>
+
+    {# Main profile update form #}
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <!-- Basic Information -->
+      <div class="form-section">
+        <h2 class="form-section-title">Basic Information</h2>
+
+        {% for field in user_form %}
+        <div class="form-group">
+          {{ field.label_tag }} {{ field }} {% if field.help_text %}
+          <small>{{ field.help_text }}</small>
+          {% endif %} {% if field.errors %} {% for error in field.errors %}
+          <div class="error">{{ error }}</div>
+          {% endfor %} {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Profile Details -->
+      <div class="form-section">
+        <h2 class="form-section-title">Profile Details</h2>
+
+        {% for field in profile_form %}
+        <div class="form-group">
+          {{ field.label_tag }} {{ field }} {% if field.help_text %}
+          <small>{{ field.help_text }}</small>
+          {% endif %} {% if field.errors %} {% for error in field.errors %}
+          <div class="error">{{ error }}</div>
+          {% endfor %} {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn">Save Changes</button>
+        <a
+          href="{% url 'user_profile:profile_view' request.user.username %}"
+          class="btn btn-secondary"
+          >Cancel</a
+        >
+      </div>
+    </form>
+
+    {% if request.user.profile.profile_image %}
+    <div class="form-section" style="margin-top: 30px; border-top: 1px solid #e0e0e0; padding-top: 20px;">
+      <h2 class="form-section-title">Current Profile Image</h2>
+      <div class="current-image" style="margin-top: 10px">
+        <img
+          src="{{ request.user.profile.profile_image.url }}"
+          alt="Current profile picture"
+          style="
+            max-width: 150px;
+            height: auto;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+          "
+        />
+
+        <form
+          method="post"
+          action="{% url 'user_profile:remove_profile_image' %}"
+          style="margin-top: 10px"
+          id="remove-image-form"
+        >
+          {% csrf_token %}
+          <button
+            type="submit"
+            class="btn btn-danger"
+            onclick="return confirm('Are you sure you want to remove your profile image?')"
+          >
+            Remove Image
+          </button>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

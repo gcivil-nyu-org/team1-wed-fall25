@@ -14,4 +14,9 @@ urlpatterns = [
         views.api_favorite_toggle,
         name="api_favorite_toggle",
     ),
+    path(
+        "api/comment/<int:comment_id>/reaction",
+        views.api_comment_reaction,
+        name="api_comment_reaction",
+    ),
 ]
