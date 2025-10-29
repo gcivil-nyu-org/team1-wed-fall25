@@ -1,11 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.core.exceptions import ValidationError
 from django.views.decorators.http import require_POST
 from django.core.paginator import Paginator
 from django.urls import reverse
+from django.db import models
 
 from .models import Event, EventInvite
 from .forms import EventForm, parse_locations, parse_invites
@@ -23,7 +25,8 @@ from .selectors import (
     user_has_joined,
     list_user_invitations,
 )
-from .enums import InviteStatus
+from .enums import InviteStatus, MessageReportReason
+from .models import EventChatMessage, MessageReport, DirectChat, DirectMessage
 
 
 @login_required
@@ -297,6 +300,36 @@ def api_event_pins(request):
     return JsonResponse({"points": points})
 
 
+@login_required
+def api_chat_messages(request, slug):
+    """JSON API for real-time chat messages"""
+    from .selectors import list_chat_messages, user_role_in_event
+
+    event = get_object_or_404(Event, slug=slug)
+
+    # Check if user is a member
+    role = user_role_in_event(event, request.user)
+    if role == "VISITOR":
+        return JsonResponse({"error": "Only event members can view chat"}, status=403)
+
+    # Get messages
+    messages = list_chat_messages(event, limit=20)
+
+    # Format for JSON response
+    messages_data = [
+        {
+            "id": msg.id,
+            "author": msg.author.username,
+            "is_host": msg.author == event.host,
+            "message": msg.message,
+            "created_at": msg.created_at.strftime("%b %d, %I:%M %p"),
+        }
+        for msg in messages
+    ]
+
+    return JsonResponse({"messages": messages_data})
+
+
 # PHASE 3 VIEWS
 
 
@@ -547,3 +580,218 @@ def favorites(request):
     }
 
     return render(request, "events/favorites.html", context)
+
+
+@login_required
+@require_POST
+def report_message(request, message_id):
+    """Report an inappropriate chat message"""
+    from .enums import ReportStatus
+
+    message = get_object_or_404(EventChatMessage, id=message_id)
+
+    # Get reason and description from POST data
+    reason = request.POST.get("reason")
+    description = request.POST.get("description", "").strip()
+
+    # Validate reason
+    choices = [choice[0] for choice in MessageReportReason.choices]
+    if not reason or reason not in choices:
+        return JsonResponse({"error": "Invalid reason"}, status=400)
+
+    # Check if user already reported this message
+    existing_report = MessageReport.objects.filter(
+        message=message, reporter=request.user
+    ).exists()
+
+    if existing_report:
+        error_msg = "You have already reported this message"
+        return JsonResponse({"error": error_msg}, status=400)
+
+    # Create report
+    MessageReport.objects.create(
+        message=message,
+        reporter=request.user,
+        reason=reason,
+        description=description,
+        status=ReportStatus.PENDING,
+    )
+
+    return JsonResponse({"success": True, "message": "Message reported successfully"})
+
+
+@login_required
+@require_POST
+def create_or_get_direct_chat(request, slug):
+    """Create or get existing direct chat with another user in event"""
+    event = get_object_or_404(Event, slug=slug, is_deleted=False)
+    other_user_id = request.POST.get("other_user_id")
+
+    try:
+        other_user = User.objects.get(id=other_user_id)
+    except User.DoesNotExist:
+        return JsonResponse({"error": "User not found"}, status=404)
+
+    # Check both users are event members
+    from .selectors import user_role_in_event
+
+    requester_role = user_role_in_event(event, request.user)
+    other_role = user_role_in_event(event, other_user)
+
+    if requester_role == "VISITOR" or other_role == "VISITOR":
+        return JsonResponse({"error": "Both users must be event members"}, status=403)
+
+    # Create or get chat (ensure user1 < user2 for uniqueness)
+    user1, user2 = (
+        (request.user, other_user)
+        if request.user.id < other_user.id
+        else (other_user, request.user)
+    )
+
+    chat, created = DirectChat.objects.get_or_create(
+        event=event,
+        user1=user1,
+        user2=user2,
+    )
+
+    return JsonResponse({"chat_id": chat.id})
+
+
+@login_required
+@require_POST
+def send_direct_message(request, chat_id):
+    """Send message in direct chat"""
+    chat = get_object_or_404(DirectChat, id=chat_id)
+
+    # Verify user is part of this chat
+    if request.user not in [chat.user1, chat.user2]:
+        return JsonResponse({"error": "Not authorized"}, status=403)
+
+    content = request.POST.get("content", "").strip()
+    if not content:
+        return JsonResponse({"error": "Message cannot be empty"}, status=400)
+
+    if len(content) > 500:
+        return JsonResponse({"error": "Message too long"}, status=400)
+
+    message = DirectMessage.objects.create(
+        chat=chat, sender=request.user, content=content
+    )
+
+    # Auto-restore chat for recipient if they had left
+    from .models import DirectChatLeave
+
+    other_user = chat.get_other_user(request.user)
+
+    # If the other user had left this chat, restore them
+    DirectChatLeave.objects.filter(chat=chat, user=other_user).delete()
+
+    # Update chat timestamp
+    chat.save()
+
+    return JsonResponse({"success": True, "message_id": message.id})
+
+
+@login_required
+def api_direct_messages(request, chat_id):
+    """Get messages for a direct chat"""
+    chat = get_object_or_404(DirectChat, id=chat_id)
+
+    # Verify user is part of this chat
+    if request.user not in [chat.user1, chat.user2]:
+        return JsonResponse({"error": "Not authorized"}, status=403)
+
+    messages = DirectMessage.objects.filter(chat=chat).order_by("created_at")
+
+    messages_data = [
+        {
+            "id": msg.id,
+            "sender": msg.sender.username,
+            "content": msg.content,
+            "created_at": msg.created_at.strftime("%b %d, %I:%M %p"),
+            "is_own": msg.sender == request.user,
+        }
+        for msg in messages
+    ]
+
+    # Mark messages as read
+    DirectMessage.objects.filter(chat=chat, is_read=False).exclude(
+        sender=request.user
+    ).update(is_read=True)
+
+    return JsonResponse({"messages": messages_data})
+
+
+@login_required
+def list_user_direct_chats(request):
+    """Get list of all direct chats for the current user"""
+    # Get all chats where user is either user1 or user2 and hasn't left
+
+    chats = (
+        DirectChat.objects.filter(
+            models.Q(user1=request.user) | models.Q(user2=request.user)
+        )
+        .exclude(models.Q(leaves__user=request.user))
+        .select_related("event", "user1", "user2")
+        .order_by("-updated_at")
+    )
+
+    chats_data = []
+    for chat in chats:
+        other_user = chat.get_other_user(request.user)
+        # Get latest message
+        latest_message = (
+            DirectMessage.objects.filter(chat=chat).order_by("-created_at").first()
+        )
+        # Count unread messages
+        unread_count = (
+            DirectMessage.objects.filter(chat=chat, is_read=False)
+            .exclude(sender=request.user)
+            .count()
+        )
+
+        chats_data.append(
+            {
+                "chat_id": chat.id,
+                "event_title": chat.event.title,
+                "event_slug": chat.event.slug,
+                "other_user": other_user.username,
+                "other_user_id": other_user.id,
+                "latest_message": latest_message.content if latest_message else "",
+                "latest_time": (
+                    latest_message.created_at.strftime("%b %d, %I:%M %p")
+                    if latest_message
+                    else ""
+                ),
+                "unread_count": unread_count,
+            }
+        )
+
+    return JsonResponse({"chats": chats_data})
+
+
+@login_required
+def delete_direct_chat(request, chat_id):
+    """Leave a direct chat (don't delete the chat itself)"""
+    try:
+        chat = DirectChat.objects.get(
+            models.Q(user1=request.user) | models.Q(user2=request.user), id=chat_id
+        )
+
+        # Check if user has already left
+        if chat.has_user_left(request.user):
+            return JsonResponse(
+                {"error": "You have already left this chat"}, status=400
+            )
+
+        # Create leave record instead of deleting
+        from .models import DirectChatLeave
+
+        DirectChatLeave.objects.get_or_create(chat=chat, user=request.user)
+
+        return JsonResponse({"success": True})
+
+    except DirectChat.DoesNotExist:
+        return JsonResponse({"error": "Chat not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

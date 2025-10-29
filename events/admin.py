@@ -5,6 +5,7 @@ from .models import (
     EventMembership,
     EventChatMessage,
     EventJoinRequest,
+    MessageReport,
 )
 
 
@@ -39,3 +40,12 @@ class EventChatMessageAdmin(admin.ModelAdmin):
 class EventJoinRequestAdmin(admin.ModelAdmin):
     list_display = ["event", "requester", "status", "created_at"]
     list_filter = ["status", "event"]
+
+
+@admin.register(MessageReport)
+class MessageReportAdmin(admin.ModelAdmin):
+    list_display = ["message", "reporter", "reason", "status", "created_at"]
+    list_filter = ["status", "reason", "created_at"]
+    search_fields = ["message__message", "reporter__username", "description"]
+    readonly_fields = ["created_at", "reviewed_at"]
+    list_editable = ["status"]
