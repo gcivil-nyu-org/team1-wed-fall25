@@ -101,9 +101,7 @@ class DirectChatModelTests(TestCase):
             start_time=timezone.now() + timedelta(days=2),
             start_location=self.location,
         )
-        DirectChat.objects.create(
-            event=event2, user1=self.user1, user2=self.user2
-        )
+        DirectChat.objects.create(event=event2, user1=self.user1, user2=self.user2)
 
         # Update chat1 to make it more recent
         chat1.save()  # This updates updated_at
@@ -397,13 +395,9 @@ class DirectChatIntegrationTests(TestCase):
         )
 
         # Step 2: Send messages
-        DirectMessage.objects.create(
-            chat=chat, sender=self.user1, content="Hello!"
-        )
+        DirectMessage.objects.create(chat=chat, sender=self.user1, content="Hello!")
 
-        DirectMessage.objects.create(
-            chat=chat, sender=self.user2, content="Hi there!"
-        )
+        DirectMessage.objects.create(chat=chat, sender=self.user2, content="Hi there!")
 
         # Step 3: Leave chat
         DirectChatLeave.objects.create(chat=chat, user=self.user1)
