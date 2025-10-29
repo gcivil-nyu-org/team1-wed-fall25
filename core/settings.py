@@ -39,7 +39,7 @@ ALLOWED_HOSTS = [
     "artinerary-dev.us-east-2.elasticbeanstalk.com",
     "artinerary-prod.us-east-2.elasticbeanstalk.com",
     "localhost",
-    ".elasticbeanstalk.com"
+    ".elasticbeanstalk.com",
 ]
 
 

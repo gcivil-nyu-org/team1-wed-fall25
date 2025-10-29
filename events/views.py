@@ -680,8 +680,9 @@ def send_direct_message(request, chat_id):
 
     # Auto-restore chat for recipient if they had left
     from .models import DirectChatLeave
+
     other_user = chat.get_other_user(request.user)
-    
+
     # If the other user had left this chat, restore them
     DirectChatLeave.objects.filter(chat=chat, user=other_user).delete()
 
@@ -725,15 +726,12 @@ def api_direct_messages(request, chat_id):
 def list_user_direct_chats(request):
     """Get list of all direct chats for the current user"""
     # Get all chats where user is either user1 or user2 and hasn't left
-    from .models import DirectChatLeave
-    
+
     chats = (
         DirectChat.objects.filter(
             models.Q(user1=request.user) | models.Q(user2=request.user)
         )
-        .exclude(
-            models.Q(leaves__user=request.user)
-        )
+        .exclude(models.Q(leaves__user=request.user))
         .select_related("event", "user1", "user2")
         .order_by("-updated_at")
     )
@@ -777,20 +775,22 @@ def delete_direct_chat(request, chat_id):
     """Leave a direct chat (don't delete the chat itself)"""
     try:
         chat = DirectChat.objects.get(
-            models.Q(user1=request.user) | models.Q(user2=request.user),
-            id=chat_id
+            models.Q(user1=request.user) | models.Q(user2=request.user), id=chat_id
         )
-        
+
         # Check if user has already left
         if chat.has_user_left(request.user):
-            return JsonResponse({"error": "You have already left this chat"}, status=400)
-        
+            return JsonResponse(
+                {"error": "You have already left this chat"}, status=400
+            )
+
         # Create leave record instead of deleting
         from .models import DirectChatLeave
+
         DirectChatLeave.objects.get_or_create(chat=chat, user=request.user)
-        
+
         return JsonResponse({"success": True})
-        
+
     except DirectChat.DoesNotExist:
         return JsonResponse({"error": "Chat not found"}, status=404)
     except Exception as e:

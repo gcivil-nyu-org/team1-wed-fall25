@@ -294,17 +294,25 @@ class DirectChat(models.Model):
     def get_other_user(self, user):
         """Get the other user in this chat"""
         return self.user2 if self.user1 == user else self.user1
-    
+
     def has_user_left(self, user):
         """Check if a user has left this chat"""
         from .models import DirectChatLeave
+
         return DirectChatLeave.objects.filter(chat=self, user=user).exists()
-    
+
     def get_active_users(self):
         """Get users who haven't left this chat"""
         from .models import DirectChatLeave
-        left_users = set(DirectChatLeave.objects.filter(chat=self).values_list('user', flat=True))
-        return [self.user1, self.user2] if not left_users else [u for u in [self.user1, self.user2] if u.id not in left_users]
+
+        left_users = set(
+            DirectChatLeave.objects.filter(chat=self).values_list("user", flat=True)
+        )
+        return (
+            [self.user1, self.user2]
+            if not left_users
+            else [u for u in [self.user1, self.user2] if u.id not in left_users]
+        )
 
 
 class DirectMessage(models.Model):
@@ -332,21 +340,21 @@ class DirectMessage(models.Model):
 
 class DirectChatLeave(models.Model):
     """Track when users leave a direct chat"""
-    
-    chat = models.ForeignKey(DirectChat, on_delete=models.CASCADE, related_name="leaves")
+
+    chat = models.ForeignKey(
+        DirectChat, on_delete=models.CASCADE, related_name="leaves"
+    )
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="chat_leaves")
     left_at = models.DateTimeField(auto_now_add=True, db_index=True)
-    
+
     class Meta:
         constraints = [
-            models.UniqueConstraint(
-                fields=["chat", "user"], name="uniq_chat_leave"
-            )
+            models.UniqueConstraint(fields=["chat", "user"], name="uniq_chat_leave")
         ]
         indexes = [
             models.Index(fields=["user", "-left_at"]),
         ]
         ordering = ["-left_at"]
-    
+
     def __str__(self):
         return f"{self.user.username} left chat {self.chat.id}"
