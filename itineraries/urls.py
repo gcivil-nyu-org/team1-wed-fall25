@@ -21,5 +21,7 @@ urlpatterns = [
         views.api_get_user_itineraries,
         name="api_user_itineraries",
     ),
-    path("api/add-to-itinerary/", views.api_add_to_itinerary, name="api_add_to_itinerary"),
+    path(
+        "api/add-to-itinerary/", views.api_add_to_itinerary, name="api_add_to_itinerary"
+    ),
 ]

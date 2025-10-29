@@ -53,9 +53,9 @@ class ItineraryModelTests(TestCase):
         """Test itineraries are ordered by updated_at descending"""
         from time import sleep
 
-        itin1 = Itinerary.objects.create(user=self.user, title="First")
+        Itinerary.objects.create(user=self.user, title="First")
         sleep(0.01)  # Small delay to ensure different timestamps
-        itin2 = Itinerary.objects.create(user=self.user, title="Second")
+        Itinerary.objects.create(user=self.user, title="Second")
         itineraries = list(Itinerary.objects.all())
         # Second created should be first in list (newest first)
         self.assertEqual(itineraries[0].title, "Second")
@@ -486,9 +486,7 @@ class ItineraryAPITests(TestCase):
         itin = Itinerary.objects.create(user=self.user, title="Test Tour")
 
         data = {"location_id": self.location1.id, "itinerary_id": itin.id}
-        response = self.client.post(
-            reverse("itineraries:api_add_to_itinerary"), data
-        )
+        response = self.client.post(reverse("itineraries:api_add_to_itinerary"), data)
         self.assertEqual(response.status_code, 200)
         result = json.loads(response.content)
         self.assertTrue(result["success"])
@@ -501,9 +499,7 @@ class ItineraryAPITests(TestCase):
             "location_id": self.location1.id,
             "new_itinerary_title": "New Tour",
         }
-        response = self.client.post(
-            reverse("itineraries:api_add_to_itinerary"), data
-        )
+        response = self.client.post(reverse("itineraries:api_add_to_itinerary"), data)
         self.assertEqual(response.status_code, 200)
         result = json.loads(response.content)
         self.assertTrue(result["success"])
@@ -519,9 +515,7 @@ class ItineraryAPITests(TestCase):
         ItineraryStop.objects.create(itinerary=itin, location=self.location1, order=1)
 
         data = {"location_id": self.location1.id, "itinerary_id": itin.id}
-        response = self.client.post(
-            reverse("itineraries:api_add_to_itinerary"), data
-        )
+        response = self.client.post(reverse("itineraries:api_add_to_itinerary"), data)
         # Should return 400 for duplicate
         self.assertEqual(response.status_code, 400)
         result = json.loads(response.content)
@@ -534,9 +528,7 @@ class ItineraryAPITests(TestCase):
         itin = Itinerary.objects.create(user=self.user, title="Test Tour")
 
         data = {"location_id": 99999, "itinerary_id": itin.id}
-        response = self.client.post(
-            reverse("itineraries:api_add_to_itinerary"), data
-        )
+        response = self.client.post(reverse("itineraries:api_add_to_itinerary"), data)
         # Should return 500 or 400 for invalid location
         self.assertIn(response.status_code, [400, 500])
         result = json.loads(response.content)
@@ -555,9 +547,7 @@ class ItineraryAPITests(TestCase):
         ItineraryStop.objects.create(itinerary=itin, location=self.location1, order=1)
 
         data = {"location_id": self.location2.id, "itinerary_id": itin.id}
-        response = self.client.post(
-            reverse("itineraries:api_add_to_itinerary"), data
-        )
+        response = self.client.post(reverse("itineraries:api_add_to_itinerary"), data)
         self.assertEqual(response.status_code, 200)
         result = json.loads(response.content)
         self.assertTrue(result["success"])

@@ -223,9 +223,7 @@ def api_add_to_itinerary(request):
             order = 1
         elif itinerary_id:
             # Use existing itinerary
-            itinerary = get_object_or_404(
-                Itinerary, id=itinerary_id, user=request.user
-            )
+            itinerary = get_object_or_404(Itinerary, id=itinerary_id, user=request.user)
             # Get the next order number
             last_stop = itinerary.stops.order_by("-order").first()
             order = (last_stop.order + 1) if last_stop else 1
