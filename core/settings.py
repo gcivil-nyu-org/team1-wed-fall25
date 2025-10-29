@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "accounts",
     "events.apps.EventsConfig",
     "loc_detail",
+    "itineraries.apps.ItinerariesConfig",
     "storages",
     "user_profile.apps.UserProfileConfig",
 ]
@@ -109,15 +110,7 @@ elif "RDS_DB_NAME" in os.environ:
             "PORT": os.environ.get("RDS_PORT", 5432),
         }
     }
-elif "test" in sys.argv:
-    # Use SQLite for testing to avoid PostgreSQL permission issues
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "test_db.sqlite3",
-        }
-    }
-else:
+elif os.environ.get("DB_NAME"):
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
@@ -126,6 +119,14 @@ else:
             "PASSWORD": os.environ.get("DB_PASSWORD"),
             "HOST": "localhost",  # Or the IP address/hostname of your PostgreSQL server
             "PORT": "5432",  # Default PostgreSQL port
+        }
+    }
+else:
+    # Use SQLite as fallback for local development
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
         }
     }
 
