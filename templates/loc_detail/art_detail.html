@@ -30,6 +30,349 @@
     .favorite-button .heart {
         font-size: 20px;
     }
+    
+    /* Rating Summary */
+    .rating-summary {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 30px;
+    }
+    .rating-score {
+        text-align: center;
+    }
+    .rating-number {
+        font-size: 48px;
+        font-weight: bold;
+        color: #333;
+    }
+    .rating-stars {
+        color: #fbbc04;
+        font-size: 24px;
+    }
+    .rating-count {
+        color: #666;
+        margin-top: 5px;
+    }
+    
+    /* Star Rating Input */
+    .star-rating {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+        gap: 5px;
+        font-size: 32px;
+        margin: 15px 0;
+    }
+    .star-rating input {
+        display: none;
+    }
+    .star-rating label {
+        cursor: pointer;
+        color: #ddd;
+        transition: color 0.2s;
+    }
+    .star-rating input:checked ~ label,
+    .star-rating label:hover,
+    .star-rating label:hover ~ label {
+        color: #fbbc04;
+    }
+    
+    /* Review Form */
+    .review-form-container {
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+    .review-form-container h3 {
+        margin-top: 0;
+        font-size: 18px;
+        font-weight: 600;
+    }
+    .review-textarea {
+        width: 100%;
+        min-height: 60px;
+        max-height: 300px;
+        padding: 12px;
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: inherit;
+        resize: none;
+        box-sizing: border-box;
+        overflow-y: hidden;
+        transition: min-height 0.2s ease;
+    }
+    .review-textarea:focus {
+        outline: none;
+        border-color: #4285f4;
+        min-height: 100px;
+    }
+    .btn-review {
+        background: #1a73e8;
+        color: white;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 4px;
+        font-weight: 500;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+    .btn-review:hover {
+        background: #1557b0;
+    }
+    
+    /* Comments List */
+    .reviews-list {
+        margin-top: 30px;
+    }
+    .reviews-list h3 {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+    .review-item {
+        border-bottom: 1px solid #e0e0e0;
+        padding: 20px 0;
+    }
+    .review-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+    .review-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #4285f4;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+    .review-author-info {
+        flex: 1;
+    }
+    .review-author {
+        font-weight: 600;
+        color: #202124;
+    }
+    .review-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #5f6368;
+        margin-top: 2px;
+    }
+    .review-rating {
+        color: #fbbc04;
+        font-size: 14px;
+    }
+    .review-body {
+        margin: 12px 0;
+        color: #3c4043;
+        line-height: 1.6;
+    }
+    .review-actions {
+        display: flex;
+        gap: 15px;
+        margin-top: 10px;
+    }
+    .reaction-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #5f6368;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        border-radius: 4px;
+        transition: background 0.2s;
+    }
+    .reaction-btn:hover {
+        background: #f1f3f4;
+    }
+    .reaction-btn.active {
+        color: #1a73e8;
+        font-weight: 600;
+    }
+    .reply-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #1a73e8;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 5px 10px;
+    }
+    .reply-btn:hover {
+        text-decoration: underline;
+    }
+    
+    .action-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #5f6368;
+        font-size: 13px;
+        padding: 5px 10px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .action-btn:hover {
+        color: #1a73e8;
+    }
+    
+    /* Review Badges */
+    .review-badges {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+        flex-wrap: wrap;
+    }
+    .review-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    .badge-verified {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+    .badge-local {
+        background: #e3f2fd;
+        color: #1565c0;
+    }
+    .badge-helpful {
+        background: #fff3e0;
+        color: #e65100;
+    }
+    
+    /* Review Image */
+    .review-image {
+        margin: 12px 0;
+        border-radius: 8px;
+        overflow: hidden;
+        max-width: 400px;
+    }
+    .review-image img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+    
+    /* Image Upload */
+    .image-upload-container {
+        margin: 15px 0;
+    }
+    .image-upload-label {
+        display: inline-block;
+        padding: 8px 16px;
+        background: #f1f3f4;
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+        color: #5f6368;
+        transition: background 0.2s;
+    }
+    .image-upload-label:hover {
+        background: #e8eaed;
+    }
+    .image-upload-input {
+        display: none;
+    }
+    .image-preview {
+        margin-top: 10px;
+        max-width: 200px;
+        border-radius: 4px;
+        overflow: hidden;
+        display: none;
+    }
+    .image-preview img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+    
+    /* Replies */
+    .replies-container {
+        margin-left: 52px;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #f1f3f4;
+    }
+    .reply-item {
+        padding: 12px 0;
+    }
+    .reply-form {
+        margin-top: 15px;
+        margin-left: 52px;
+        display: none;
+    }
+    .reply-form.active {
+        display: block;
+    }
+    .reply-textarea {
+        width: 100%;
+        min-height: 60px;
+        max-height: 200px;
+        padding: 10px;
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        font-size: 13px;
+        font-family: inherit;
+        resize: none;
+        box-sizing: border-box;
+        overflow-y: hidden;
+        transition: min-height 0.2s ease;
+    }
+    .reply-textarea:focus {
+        outline: none;
+        border-color: #4285f4;
+        min-height: 80px;
+    }
+    .reply-actions {
+        margin-top: 10px;
+        display: flex;
+        gap: 10px;
+    }
+    .btn-cancel {
+        background: none;
+        border: 1px solid #dadce0;
+        color: #5f6368;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+    }
+    .btn-cancel:hover {
+        background: #f1f3f4;
+    }
+    
+    .no-reviews {
+        text-align: center;
+        padding: 40px 20px;
+        color: #5f6368;
+    }
 </style>
 {% endblock %}
 
@@ -136,43 +479,231 @@
                 </div>
             {% endif %}
 
-            <!-- Comments Section -->
+            <!-- Reviews Section -->
             <div class="detail-section comments-section">
-                <h2>Community Comments</h2>
+                <h2>Reviews & Ratings</h2>
                 
-                <!-- Comment Form -->
-                <div class="comment-form-container">
-                    <h3>Leave a Comment</h3>
-                    <form method="post" class="comment-form">
+                <!-- Rating Summary -->
+                {% if total_reviews > 0 %}
+                <div class="rating-summary">
+                    <div class="rating-score">
+                        <div class="rating-number">{{ avg_rating }}</div>
+                        <div class="rating-stars">
+                            {% with avg_rating|floatformat:0 as rating_int %}
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= rating_int|add:0 %}★{% else %}☆{% endif %}
+                            {% endfor %}
+                            {% endwith %}
+                        </div>
+                        <div class="rating-count">{{ total_reviews }} review{{ total_reviews|pluralize }}</div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Review Form -->
+                {% if user_review %}
+                <div class="review-form-container">
+                    <h3>Edit Your Review</h3>
+                    <form method="post" class="review-form" enctype="multipart/form-data">
                         {% csrf_token %}
+                        <input type="hidden" name="comment_id" value="{{ user_review.id }}">
+                        
+                        <div class="star-rating" id="edit-star-rating">
+                            <input type="radio" name="rating" value="5" id="edit-star5" {% if user_review.rating == 5 %}checked{% endif %}>
+                            <label for="edit-star5">★</label>
+                            <input type="radio" name="rating" value="4" id="edit-star4" {% if user_review.rating == 4 %}checked{% endif %}>
+                            <label for="edit-star4">★</label>
+                            <input type="radio" name="rating" value="3" id="edit-star3" {% if user_review.rating == 3 %}checked{% endif %}>
+                            <label for="edit-star3">★</label>
+                            <input type="radio" name="rating" value="2" id="edit-star2" {% if user_review.rating == 2 %}checked{% endif %}>
+                            <label for="edit-star2">★</label>
+                            <input type="radio" name="rating" value="1" id="edit-star1" {% if user_review.rating == 1 %}checked{% endif %}>
+                            <label for="edit-star1">★</label>
+                        </div>
+                        
                         <textarea 
                             name="comment" 
                             rows="4" 
-                            placeholder="Share your thoughts about this artwork..."
+                            placeholder="Share details of your experience at this location..."
                             required
-                            class="comment-textarea"
-                        ></textarea>
-                        <button type="submit" class="btn btn-comment">Post Comment</button>
+                            class="review-textarea"
+                        >{{ user_review.comment }}</textarea>
+                        
+                        <div class="image-upload-container">
+                            <label for="edit-image-upload" class="image-upload-label">
+                                📷 Add or Change Photo
+                            </label>
+                            <input type="file" id="edit-image-upload" name="image" accept="image/*" class="image-upload-input">
+                            <div class="image-preview" id="edit-image-preview">
+                                {% if user_review.image %}
+                                <img src="{{ user_review.image.url }}" alt="Review image">
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn-review">Update Review</button>
                     </form>
                 </div>
+                {% else %}
+                <div class="review-form-container">
+                    <h3>Share Your Experience</h3>
+                    <form method="post" class="review-form" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="star-rating">
+                            <input type="radio" name="rating" value="5" id="star5" checked>
+                            <label for="star5">★</label>
+                            <input type="radio" name="rating" value="4" id="star4">
+                            <label for="star4">★</label>
+                            <input type="radio" name="rating" value="3" id="star3">
+                            <label for="star3">★</label>
+                            <input type="radio" name="rating" value="2" id="star2">
+                            <label for="star2">★</label>
+                            <input type="radio" name="rating" value="1" id="star1">
+                            <label for="star1">★</label>
+                        </div>
+                        
+                        <textarea 
+                            name="comment" 
+                            rows="4" 
+                            placeholder="Share details of your experience at this location..."
+                            required
+                            class="review-textarea"
+                        ></textarea>
+                        
+                        <div class="image-upload-container">
+                            <label for="image-upload" class="image-upload-label">
+                                📷 Add Photo
+                            </label>
+                            <input type="file" id="image-upload" name="image" accept="image/*" class="image-upload-input">
+                            <div class="image-preview" id="image-preview"></div>
+                        </div>
+                        
+                        <button type="submit" class="btn-review">Post Review</button>
+                    </form>
+                </div>
+                {% endif %}
 
-                <!-- Display Comments -->
-                <div class="comments-list">
-                    <h3>Comments ({{ comments.count }})</h3>
+                <!-- Display Reviews -->
+                <div class="reviews-list">
+                    <h3>Community Reviews ({{ total_reviews }})</h3>
                     {% if comments %}
                         {% for comment in comments %}
-                            <div class="comment-item">
-                                <div class="comment-header">
-                                    <span class="comment-author">{{ comment.user.username }}</span>
-                                    <span class="comment-date">{{ comment.created_at|date:"M d, Y - g:i A" }}</span>
+                            <div class="review-item" data-comment-id="{{ comment.id }}">
+                                <div class="review-header">
+                                    <div class="review-avatar">{{ comment.user.username|first|upper }}</div>
+                                    <div class="review-author-info">
+                                        <div class="review-author">{{ comment.user.username }}</div>
+                                        <div class="review-meta">
+                                            <span class="review-rating">
+                                                {% for i in "12345" %}
+                                                    {% if forloop.counter <= comment.rating %}★{% else %}☆{% endif %}
+                                                {% endfor %}
+                                            </span>
+                                            <span>•</span>
+                                            <span>{{ comment.created_at|date:"M d, Y" }}</span>
+                                        </div>
+                                        <div class="review-badges">
+                                            {% if comment.likes_count >= 5 %}
+                                            <span class="review-badge badge-helpful">
+                                                ⭐ Helpful
+                                            </span>
+                                            {% endif %}
+                                            {% if comment.user.art_comments.count >= 10 %}
+                                            <span class="review-badge badge-local">
+                                                🏙️ Local Guide
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="comment-body">
-                                    {{ comment.comment }}
+                                <div class="review-body">{{ comment.comment }}</div>
+                                
+                                {% if comment.image %}
+                                <div class="review-image">
+                                    <img src="{{ comment.image.url }}" alt="Review photo">
                                 </div>
+                                {% endif %}
+                                
+                                <div class="review-actions">
+                                    <button class="reaction-btn like-btn {% if comment.user_reaction_status == 'like' %}active{% endif %}" 
+                                            data-comment-id="{{ comment.id }}"
+                                            data-reaction="like">
+                                        <span class="icon">👍</span>
+                                        <span class="count">{{ comment.likes_count }}</span>
+                                    </button>
+                                    <button class="reaction-btn dislike-btn {% if comment.user_reaction_status == 'dislike' %}active{% endif %}"
+                                            data-comment-id="{{ comment.id }}"
+                                            data-reaction="dislike">
+                                        <span class="icon">👎</span>
+                                        <span class="count">{{ comment.dislikes_count }}</span>
+                                    </button>
+                                    <button class="reply-btn" data-comment-id="{{ comment.id }}">Reply</button>
+                                    <button class="action-btn share-btn" data-comment-id="{{ comment.id }}">
+                                        <span>🔗</span> Share
+                                    </button>
+                                    <button class="action-btn report-btn" data-comment-id="{{ comment.id }}">
+                                        <span>⚠️</span> Report
+                                    </button>
+                                </div>
+                                
+                                <!-- Reply Form (hidden by default) -->
+                                <div class="reply-form" id="reply-form-{{ comment.id }}">
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="parent_id" value="{{ comment.id }}">
+                                        <textarea 
+                                            name="comment" 
+                                            placeholder="Write a reply..."
+                                            required
+                                            class="reply-textarea"
+                                        ></textarea>
+                                        <div class="reply-actions">
+                                            <button type="button" class="btn-cancel" onclick="cancelReply('{{ comment.id }}')">Cancel</button>
+                                            <button type="submit" class="btn-review">Reply</button>
+                                        </div>
+                                    </form>
+                                </div>
+                                
+                                <!-- Display Replies -->
+                                {% if comment.replies.all %}
+                                <div class="replies-container">
+                                    {% for reply in comment.replies.all %}
+                                    <div class="reply-item" data-comment-id="{{ reply.id }}">
+                                        <div class="review-header">
+                                            <div class="review-avatar">{{ reply.user.username|first|upper }}</div>
+                                            <div class="review-author-info">
+                                                <div class="review-author">{{ reply.user.username }}</div>
+                                                <div class="review-meta">
+                                                    <span>{{ reply.created_at|date:"M d, Y" }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="review-body">{{ reply.comment }}</div>
+                                        <div class="review-actions">
+                                            <button class="reaction-btn like-btn {% if reply.user_reaction_status == 'like' %}active{% endif %}"
+                                                    data-comment-id="{{ reply.id }}"
+                                                    data-reaction="like">
+                                                <span class="icon">👍</span>
+                                                <span class="count">{{ reply.likes_count }}</span>
+                                            </button>
+                                            <button class="reaction-btn dislike-btn {% if reply.user_reaction_status == 'dislike' %}active{% endif %}"
+                                                    data-comment-id="{{ reply.id }}"
+                                                    data-reaction="dislike">
+                                                <span class="icon">👎</span>
+                                                <span class="count">{{ reply.dislikes_count }}</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
                             </div>
                         {% endfor %}
                     {% else %}
-                        <p class="no-comments">No comments yet. Be the first to share your thoughts!</p>
+                        <div class="no-reviews">
+                            <p>No reviews yet. Be the first to share your experience!</p>
+                        </div>
                     {% endif %}
                 </div>
             </div>
@@ -279,6 +810,185 @@
                 });
             });
         }
+        
+        // Star rating functionality
+        const starRating = document.querySelector('.star-rating');
+        if (starRating) {
+            const inputs = starRating.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    // Visual feedback handled by CSS
+                });
+            });
+        }
+        
+        // Edit star rating functionality
+        const editStarRating = document.getElementById('edit-star-rating');
+        if (editStarRating) {
+            const inputs = editStarRating.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    // Visual feedback handled by CSS
+                });
+            });
+        }
+        
+        // Reply button functionality
+        const replyBtns = document.querySelectorAll('.reply-btn');
+        replyBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const commentId = this.getAttribute('data-comment-id');
+                const replyForm = document.getElementById(`reply-form-${commentId}`);
+                if (replyForm) {
+                    replyForm.classList.toggle('active');
+                }
+            });
+        });
+        
+        // Like/Dislike functionality with proper toggle
+        const reactionBtns = document.querySelectorAll('.reaction-btn');
+        reactionBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const commentId = this.getAttribute('data-comment-id');
+                const reaction = this.getAttribute('data-reaction');
+                const commentItem = this.closest('[data-comment-id="' + commentId + '"]');
+                const likeBtn = commentItem.querySelector('.like-btn');
+                const dislikeBtn = commentItem.querySelector('.dislike-btn');
+                const likeBtnCount = likeBtn.querySelector('.count');
+                const dislikeBtnCount = dislikeBtn.querySelector('.count');
+                
+                // Check current state
+                const isLikeActive = likeBtn.classList.contains('active');
+                const isDislikeActive = dislikeBtn.classList.contains('active');
+                
+                fetch(`/loc_detail/api/comment/${commentId}/reaction`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: `reaction=${reaction}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update counts
+                        likeBtnCount.textContent = data.likes;
+                        dislikeBtnCount.textContent = data.dislikes;
+                        
+                        // Update active states based on action
+                        if (reaction === 'like') {
+                            if (data.action === 'removed') {
+                                // Like was removed
+                                likeBtn.classList.remove('active');
+                            } else {
+                                // Like was added or changed from dislike
+                                likeBtn.classList.add('active');
+                                dislikeBtn.classList.remove('active');
+                            }
+                        } else {
+                            if (data.action === 'removed') {
+                                // Dislike was removed
+                                dislikeBtn.classList.remove('active');
+                            } else {
+                                // Dislike was added or changed from like
+                                dislikeBtn.classList.add('active');
+                                likeBtn.classList.remove('active');
+                            }
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+        
+        // Image upload preview
+        const imageUpload = document.getElementById('image-upload');
+        const imagePreview = document.getElementById('image-preview');
+        const editImageUpload = document.getElementById('edit-image-upload');
+        const editImagePreview = document.getElementById('edit-image-preview');
+        
+        if (imageUpload) {
+            imageUpload.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imagePreview.innerHTML = '<img src="' + e.target.result + '" alt="Preview">';
+                        imagePreview.style.display = 'block';
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+        
+        if (editImageUpload) {
+            editImageUpload.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        editImagePreview.innerHTML = '<img src="' + e.target.result + '" alt="Preview">';
+                        editImagePreview.style.display = 'block';
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+        
+        // Share button functionality (placeholder)
+        const shareBtns = document.querySelectorAll('.share-btn');
+        shareBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                alert('Share functionality will be implemented soon!');
+            });
+        });
+        
+        // Report button functionality (placeholder)
+        const reportBtns = document.querySelectorAll('.report-btn');
+        reportBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (confirm('Report this review for violating community guidelines?')) {
+                    alert('Report functionality will be implemented soon. Thank you for helping keep our community safe!');
+                }
+            });
+        });
+        
+        // Auto-expanding textarea functionality
+        function autoExpandTextarea(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, parseInt(getComputedStyle(textarea).maxHeight)) + 'px';
+        }
+        
+        // Apply to all textareas
+        const textareas = document.querySelectorAll('.review-textarea, .reply-textarea');
+        textareas.forEach(textarea => {
+            // Auto-expand on input
+            textarea.addEventListener('input', function() {
+                autoExpandTextarea(this);
+            });
+            
+            // Auto-expand on focus
+            textarea.addEventListener('focus', function() {
+                autoExpandTextarea(this);
+            });
+            
+            // Reset on blur if empty
+            textarea.addEventListener('blur', function() {
+                if (!this.value.trim()) {
+                    this.style.height = '';
+                }
+            });
+        });
     });
+    
+    function cancelReply(commentId) {
+        const replyForm = document.getElementById(`reply-form-${commentId}`);
+        if (replyForm) {
+            replyForm.classList.remove('active');
+        }
+    }
 </script>
 {% endblock %}
