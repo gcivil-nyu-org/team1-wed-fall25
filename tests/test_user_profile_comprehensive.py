@@ -3,7 +3,7 @@ Comprehensive unit tests for user_profile functionality
 Improved coverage for views, models, and forms
 """
 
-from django.test import TestCase, Client
+from django.test import TestCase, Client, override_settings
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -16,7 +16,13 @@ from events.models import Event, EventMembership
 from events.enums import EventVisibility, MembershipRole
 from loc_detail.models import PublicArt, UserFavoriteArt
 
+TEST_MEDIA_ROOT = "/tmp/test_media"
 
+
+@override_settings(
+    DEFAULT_FILE_STORAGE="django.core.files.storage.FileSystemStorage",
+    MEDIA_ROOT=TEST_MEDIA_ROOT,
+)
 class UserProfileModelTests(TestCase):
     """Test cases for UserProfile model"""
 
@@ -481,6 +487,10 @@ class EditProfileViewTests(TestCase):
         self.assertIn("user_form", response.context)
 
 
+@override_settings(
+    DEFAULT_FILE_STORAGE="django.core.files.storage.FileSystemStorage",
+    MEDIA_ROOT=TEST_MEDIA_ROOT,
+)
 class RemoveProfileImageViewTests(TestCase):
     """Test cases for remove_profile_image view"""
 

@@ -3,7 +3,7 @@ Complete test coverage for loc_detail views
 Covers all edge cases and missing lines
 """
 
-from django.test import TestCase, Client
+from django.test import TestCase, Client, override_settings
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -12,7 +12,13 @@ import json
 
 from loc_detail.models import PublicArt, UserFavoriteArt, ArtComment, CommentLike
 
+TEST_MEDIA_ROOT = "/tmp/test_media"
 
+
+@override_settings(
+    DEFAULT_FILE_STORAGE="django.core.files.storage.FileSystemStorage",
+    MEDIA_ROOT=TEST_MEDIA_ROOT,
+)
 class ArtDetailViewCompleteTests(TestCase):
     """Complete test coverage for art_detail view"""
 
