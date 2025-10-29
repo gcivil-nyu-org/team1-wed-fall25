@@ -10,7 +10,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 from datetime import timedelta
 
-# Removed unused direct model imports (UserProfile, UserFollow) to fix F401
+from user_profile.models import UserProfile
 from user_profile.forms import UserProfileForm, UserBasicInfoForm
 from events.models import Event, EventMembership
 from events.enums import EventVisibility, MembershipRole
@@ -193,34 +193,43 @@ class UserProfileFormTests(TestCase):
             content_type="image/jpeg",
         )
 
+        # Create instance for form
+        profile = UserProfile.objects.get(user=self.user)
+
         form = UserProfileForm(
-            data={"privacy": "PUBLIC"}, files={"profile_image": large_image}
+            data={"privacy": "PUBLIC"},
+            files={"profile_image": large_image},
+            instance=profile,
         )
 
         self.assertFalse(form.is_valid())
         self.assertIn("profile_image", form.errors)
 
     def test_form_clean_profile_image_valid(self):
-        """Test valid profile image"""
-        # This is a minimal valid 1x1 PNG file.
-        tiny_png_bytes = (
-            b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01"
-            b"\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00"
-            b"\x00\x00\nIDATx\x9cc`\x00\x00\x00\x02\x00\x01\xe2!"
-            b"\xbc3\x00\x00\x00\x00IEND\xaeB`\x82"
+        valid_png = (
+            b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR"
+            b"\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06"
+            b"\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\nIDAT"
+            b"x\x9cc\x00\x01\x00\x00\x05\x00\x01"
+            b"\x0d\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82"
         )
 
         small_image = SimpleUploadedFile(
-            name="small.png",
-            content=tiny_png_bytes,
+            name="tiny.png",
+            content=valid_png,
             content_type="image/png",
         )
 
+        profile = UserProfile.objects.get(user=self.user)
+
         form = UserProfileForm(
-            data={"privacy": "PUBLIC"}, files={"profile_image": small_image}
+            data={"privacy": "PUBLIC"},
+            files={"profile_image": small_image},
+            instance=profile,
         )
 
-        self.assertTrue(form.is_valid())
+        # Should now validate correctly
+        self.assertTrue(form.is_valid(), msg=form.errors)
 
 
 class UserBasicInfoFormTests(TestCase):
@@ -262,8 +271,6 @@ class UserBasicInfoFormTests(TestCase):
         )
 
         self.assertTrue(form.is_valid())
-        # The form's clean method normalizes email to lowercase,
-        # but we haven't saved yet, so cleaned_data should still match.
         self.assertEqual(form.cleaned_data["email"], "test@example.com")
 
 
@@ -734,8 +741,7 @@ class UserSearchViewTests(TestCase):
         )
         self.public_user.profile.full_name = "Public Test User"
         self.public_user.profile.privacy = "PUBLIC"
-        she_profile = self.public_user.profile  # clarity
-        she_profile.save()
+        self.public_user.profile.save()
 
         self.private_user = User.objects.create_user(
             username="privateuser",
