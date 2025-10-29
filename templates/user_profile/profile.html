@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ profile_user.username }}'s Profile - Artinerary{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/site.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <div class="profile-image-container">
+            {% if profile.profile_image %}
+                <img src="{{ profile.profile_image.url }}" alt="{{ profile_user.username }}" class="profile-image">
+            {% else %}
+                <div class="profile-image-placeholder">
+                    {{ profile_user.username|first|upper }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="profile-info">
+            <h1 class="profile-username">{{ profile_user.username }}</h1>
+            {% if profile.full_name %}
+                <p class="profile-fullname">{{ profile.full_name }}</p>
+            {% endif %}
+            <p class="profile-email">{{ profile_user.email }}</p>
+            
+            <span class="privacy-badge {{ profile.privacy|lower }}">
+                {% if profile.is_public %}
+                    Public Profile
+                {% else %}
+                    Private Profile
+                {% endif %}
+            </span>
+            
+            <p class="member-since">
+                Member since {{ profile.created_at|date:"F Y" }}
+            </p>
+            
+            <div class="profile-actions">
+                {% if is_own_profile %}
+                    <a href="{% url 'user_profile:edit_profile' %}" class="btn">
+                        Edit Profile
+                    </a>
+                {% else %}
+                    {% if is_following %}
+                        <form method="post" action="{% url 'user_profile:unfollow_user' profile_user.username %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-secondary">
+                                Unfollow
+                            </button>
+                        </form>
+                    {% else %}
+                        <form method="post" action="{% url 'user_profile:follow_user' profile_user.username %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn">
+                                Follow
+                            </button>
+                        </form>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ hosted_events.count }}</div>
+            <div class="stat-label">Hosted Events</div>
+        </div>
+        <div class="stat-card alt1">
+            <div class="stat-number">{{ attended_events_count }}</div>
+            <div class="stat-label">Attended Events</div>
+        </div>
+        <!-- <div class="stat-card alt2">
+            <a href="{% url 'loc_detail:favorites' %}"></a>
+            <div class="stat-number">{{ favorite_art_count }}</div>
+            <div class="stat-label">Favorite Artworks</div>
+        </div> -->
+        <!-- <div class="stat-card alt3">
+            <a href="{% url 'user_profile:followers_list' profile_user.username %}">
+                <div class="stat-number">{{ followers_count }}</div>
+                <div class="stat-label">Followers</div>
+            </a>
+        </div>
+        <div class="stat-card">
+            <a href="{% url 'user_profile:following_list' profile_user.username %}">
+                <div class="stat-number">{{ following_count }}</div>
+                <div class="stat-label">Following</div>
+            </a>
+        </div> -->
+    </div>
+    
+    <!-- About Section -->
+    {% if profile.about or is_own_profile %}
+    <div class="section">
+        <h2 class="section-title">About</h2>
+        {% if profile.about %}
+            <div class="about-text">{{ profile.about }}</div>
+        {% else %}
+            <div class="about-text" style="color: #999; font-style: italic;">
+                {% if is_own_profile %}
+                    Tell others about yourself by editing your profile!
+                {% else %}
+                    This user hasn't added an about section yet.
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    <!-- Contact Info (only visible to followers or own profile) -->
+    {% if profile.contact_info and is_own_profile or profile.contact_info and is_following %}
+    <div class="section">
+        <h2 class="section-title">Contact Information</h2>
+        <div class="contact-info">
+            {{ profile.contact_info }}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Hosted Events -->
+    {% if hosted_events %}
+    <div class="section">
+        <h2 class="section-title">Hosted Events</h2>
+        <div class="events-grid">
+            {% for event in hosted_events %}
+            <div class="event-card">
+                <h3 class="event-title">{{ event.title }}</h3>
+                <p class="event-meta">
+                    {{ event.start_time|date:"F j, Y g:i A" }}
+                </p>
+                <p class="event-meta">
+                    {{ event.start_location.title }}
+                </p>
+                <a href="{% url 'events:detail' event.slug %}" class="event-link">
+                    View Event →
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="section">
+        <h2 class="section-title">Hosted Events</h2>
+        <div class="no-events">
+            {% if is_own_profile %}
+                You haven't hosted any events yet. <a href="{% url 'events:create' %}" class="event-link">Create your first event!</a>
+            {% else %}
+                {{ profile_user.username }} hasn't hosted any events yet.
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

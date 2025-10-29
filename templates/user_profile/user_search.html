@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Search Users - Artinerary{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/site.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="search-container">
+    <div class="search-card">
+        <div class="search-header">
+            <h1>Search Users</h1>
+            <p>Find and connect with other art enthusiasts</p>
+        </div>
+        
+        <form method="get" class="search-form">
+            <div class="search-input-wrapper">
+                <input 
+                    type="text" 
+                    name="q" 
+                    value="{{ query }}" 
+                    placeholder="Search by username or name..."
+                    class="search-input"
+                    autofocus
+                >
+                <button type="submit" class="search-btn">Search</button>
+            </div>
+        </form>
+        
+        {% if query %}
+            {% if users %}
+                <div class="results-header">
+                    Found {{ users|length }} user{{ users|length|pluralize }} matching "{{ query }}"
+                </div>
+                
+                <div class="user-list">
+                    {% for user in users %}
+                        <a href="{% url 'user_profile:profile_view' user.username %}" class="user-item">
+                            {% if user.profile.profile_image %}
+                                <img src="{{ user.profile.profile_image.url }}" alt="{{ user.username }}" class="user-avatar">
+                            {% else %}
+                                <div class="user-avatar-placeholder">
+                                    {{ user.username|first|upper }}
+                                </div>
+                            {% endif %}
+                            
+                            <div class="user-info">
+                                <div class="user-username">{{ user.username }}</div>
+                                {% if user.profile.full_name %}
+                                    <div class="user-fullname">{{ user.profile.full_name }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <span class="user-badge badge-public">
+                                Public Profile
+                            </span>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">🔍</div>
+                    <p>No users found matching "{{ query }}"</p>
+                    <p style="font-size: 0.9rem; margin-top: 0.5rem;">
+                        Try a different search term
+                    </p>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="no-query">
+                <div class="no-query-icon">👥</div>
+                <p>Enter a username or name to search</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
