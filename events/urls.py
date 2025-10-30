@@ -43,4 +43,30 @@ urlpatterns = [
     ),
     path("api/users/search/", views.api_users_search, name="api_users_search"),
     path("api/pins/", views.api_event_pins, name="api_event_pins"),
+    # REALTIME CHAT API
+    path("<slug:slug>/chat/api/", views.api_chat_messages, name="api_chat_messages"),
+    # MESSAGE REPORTING
+    path(
+        "messages/<int:message_id>/report/", views.report_message, name="report_message"
+    ),
+    # DIRECT CHAT (1-on-1)
+    path(
+        "<slug:slug>/chat/create/",
+        views.create_or_get_direct_chat,
+        name="create_direct_chat",
+    ),
+    path(
+        "chat/<int:chat_id>/send/",
+        views.send_direct_message,
+        name="send_direct_message",
+    ),
+    path(
+        "chat/<int:chat_id>/api/", views.api_direct_messages, name="api_direct_messages"
+    ),
+    path(
+        "chat/<int:chat_id>/delete/",
+        views.delete_direct_chat,
+        name="delete_direct_chat",
+    ),
+    path("chats/list/", views.list_user_direct_chats, name="list_direct_chats"),
 ]

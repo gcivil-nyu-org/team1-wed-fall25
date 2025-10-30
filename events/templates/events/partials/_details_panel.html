@@ -67,12 +67,19 @@
         <ul class="attendees-list">
             {% for membership in attendees %}
             <li class="attendee-item">
-                <strong>{{ membership.user.username }}</strong>
-                {% if membership.role == 'HOST' %}
-                <span class="role-badge host">Host</span>
-                {% endif %}
-                {% if user_role == 'HOST' %}
-                <span class="email">{{ membership.user.email }}</span>
+                <div class="attendee-info">
+                    <strong>{{ membership.user.username }}</strong>
+                    {% if membership.role == 'HOST' %}
+                    <span class="role-badge host">Host</span>
+                    {% endif %}
+                    {% if user_role == 'HOST' %}
+                    <span class="email">{{ membership.user.email }}</span>
+                    {% endif %}
+                </div>
+                {% if membership.user != request.user %}
+                <button class="btn-message" data-event="{{ event.slug }}" data-user="{{ membership.user.id }}" data-username="{{ membership.user.username }}">
+                    💬 Message
+                </button>
                 {% endif %}
             </li>
             {% endfor %}
@@ -189,15 +196,37 @@
     border-radius: 8px;
     border-left: 2px solid rgba(102, 126, 234, 0.3);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 .attendee-item:hover {
     background: rgba(255, 255, 255, 0.08);
     border-left-color: rgba(102, 126, 234, 0.6);
 }
+.attendee-info {
+    flex: 1;
+}
 .attendee-item strong {
     color: rgba(255, 255, 255, 0.9);
     font-weight: 400;
     font-size: 0.9rem;
+}
+.btn-message {
+    background: rgba(102, 126, 234, 0.15);
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    color: #8b9cff;
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+.btn-message:hover {
+    background: rgba(102, 126, 234, 0.25);
+    border-color: rgba(102, 126, 234, 0.5);
+    transform: translateY(-1px);
 }
 .role-badge {
     font-size: 0.75rem;

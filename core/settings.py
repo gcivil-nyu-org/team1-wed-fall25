@@ -39,6 +39,7 @@ ALLOWED_HOSTS = [
     "artinerary-dev.us-east-2.elasticbeanstalk.com",
     "artinerary-prod.us-east-2.elasticbeanstalk.com",
     "localhost",
+    ".elasticbeanstalk.com",
 ]
 
 
@@ -54,6 +55,7 @@ INSTALLED_APPS = [
     "accounts",
     "events.apps.EventsConfig",
     "loc_detail",
+    "itineraries.apps.ItinerariesConfig",
     "storages",
     "user_profile.apps.UserProfileConfig",
 ]
@@ -109,15 +111,7 @@ elif "RDS_DB_NAME" in os.environ:
             "PORT": os.environ.get("RDS_PORT", 5432),
         }
     }
-elif "test" in sys.argv:
-    # Use SQLite for testing to avoid PostgreSQL permission issues
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "test_db.sqlite3",
-        }
-    }
-else:
+elif os.environ.get("DB_NAME"):
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
@@ -126,6 +120,14 @@ else:
             "PASSWORD": os.environ.get("DB_PASSWORD"),
             "HOST": "localhost",  # Or the IP address/hostname of your PostgreSQL server
             "PORT": "5432",  # Default PostgreSQL port
+        }
+    }
+else:
+    # Use SQLite as fallback for local development
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
         }
     }
 
@@ -151,7 +153,17 @@ MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{MEDIAFILES_LOCATION}/"
 
 # Use local static files if local, use static files in S3 otherwise
 # Use S3 media files all the time
-if DEBUG:
+# Use local file storage for tests to avoid boto3 dependency
+if "test" in sys.argv or os.environ.get("TRAVIS") == "true":
+    STATIC_URL = "static/"
+    MEDIA_URL = "media/"
+    STORAGES = {
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
+        },
+    }
+elif DEBUG:
     STATIC_URL = "static/"
     STORAGES = {
         "default": {"BACKEND": "core.custom_storage.MediaStorage"},

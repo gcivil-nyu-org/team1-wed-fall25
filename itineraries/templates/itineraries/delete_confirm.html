@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Delete Itinerary - Artinerary{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'itineraries/css/itineraries.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'itineraries:list' %}">My Itineraries</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'itineraries:detail' itinerary.pk %}">{{ itinerary.title }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Delete</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Confirm Deletion
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <h5 class="mb-3">Are you sure you want to delete this itinerary?</h5>
+                    
+                    <div class="alert alert-warning">
+                        <strong>Itinerary:</strong> {{ itinerary.title }}
+                    </div>
+
+                    {% if itinerary.description %}
+                    <p class="text-muted">{{ itinerary.description }}</p>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <strong>This itinerary contains {{ itinerary.stops.count }} stop{{ itinerary.stops.count|pluralize }}:</strong>
+                        {% if itinerary.stops.all %}
+                        <ul class="mt-2">
+                            {% for stop in itinerary.stops.all %}
+                            <li>
+                                {{ stop.location.title|default:"Untitled" }} 
+                                at {{ stop.visit_time|time:"g:i A" }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        <strong>Warning:</strong> This action cannot be undone. All stops and data associated with this itinerary will be permanently deleted.
+                    </div>
+                </div>
+                <div class="card-footer bg-white">
+                    <form method="post" class="d-flex justify-content-between">
+                        {% csrf_token %}
+                        <a href="{% url 'itineraries:detail' itinerary.pk %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i>Yes, Delete Itinerary
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

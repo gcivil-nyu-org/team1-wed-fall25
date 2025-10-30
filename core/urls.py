@@ -23,6 +23,7 @@ urlpatterns = [
     path("artinerary/", include("artinerary.urls")),
     path("loc_detail/", include("loc_detail.urls")),
     path("events/", include(("events.urls", "events"), namespace="events")),
+    path("itineraries/", include("itineraries.urls")),
     path("admin/", admin.site.urls),
     path("profile/", include("user_profile.urls")),
 ]

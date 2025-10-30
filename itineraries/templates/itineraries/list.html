@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Itineraries - Artinerary{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'itineraries/css/itineraries.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="display-4">
+            <i class="fas fa-route me-2"></i>My Itineraries
+        </h1>
+        <a href="{% url 'itineraries:create' %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-plus me-2"></i>Create New Itinerary
+        </a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if itineraries %}
+        <div class="row">
+            {% for itinerary in itineraries %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card itinerary-card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a href="{% url 'itineraries:detail' itinerary.pk %}" class="text-decoration-none text-dark">
+                                {{ itinerary.title }}
+                            </a>
+                        </h5>
+                        
+                        {% if itinerary.description %}
+                        <p class="card-text text-muted">
+                            {{ itinerary.description|truncatewords:20 }}
+                        </p>
+                        {% endif %}
+
+                        <div class="itinerary-meta mb-3">
+                            <small class="text-muted">
+                                <i class="fas fa-map-marker-alt me-1"></i>
+                                {{ itinerary.stops.count }} stop{{ itinerary.stops.count|pluralize }}
+                            </small>
+                            <br>
+                            <small class="text-muted">
+                                <i class="fas fa-clock me-1"></i>
+                                Created {{ itinerary.created_at|date:"M d, Y" }}
+                            </small>
+                        </div>
+
+                        {% if itinerary.stops.all %}
+                        <div class="stops-preview mb-3">
+                            <small class="text-muted d-block mb-2">
+                                <strong>Stops:</strong>
+                            </small>
+                            <ol class="small mb-0 ps-3">
+                                {% for stop in itinerary.stops.all|slice:":3" %}
+                                <li class="text-truncate">
+                                    {{ stop.location.title|default:"Untitled" }}
+                                    <span class="text-muted">at {{ stop.visit_time|time:"g:i A" }}</span>
+                                </li>
+                                {% endfor %}
+                                {% if itinerary.stops.count > 3 %}
+                                <li class="text-muted">
+                                    + {{ itinerary.stops.count|add:"-3" }} more...
+                                </li>
+                                {% endif %}
+                            </ol>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="card-footer bg-white border-top">
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'itineraries:detail' itinerary.pk %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye me-1"></i>View
+                            </a>
+                            <a href="{% url 'itineraries:edit' itinerary.pk %}" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-edit me-1"></i>Edit
+                            </a>
+                            <a href="{% url 'itineraries:delete' itinerary.pk %}" class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-trash me-1"></i>Delete
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <div class="empty-state">
+                <i class="fas fa-route fa-4x text-muted mb-3"></i>
+                <h3 class="text-muted">No Itineraries Yet</h3>
+                <p class="text-muted mb-4">Start planning your art journey by creating your first itinerary!</p>
+                <a href="{% url 'itineraries:create' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus me-2"></i>Create Your First Itinerary
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

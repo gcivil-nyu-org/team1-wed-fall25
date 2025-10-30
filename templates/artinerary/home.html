@@ -57,9 +57,26 @@
         font-size: 14px;
         cursor: pointer;
         border-radius: 4px;
+        transition: background-color 0.3s ease;
     }
     .btn-view-details:hover {
         background-color: #45a049;
+        color: white;
+        text-decoration: none;
+    }
+    .btn-add-itinerary {
+        background-color: #2196F3;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        font-size: 16px;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+    }
+    .btn-add-itinerary:hover {
+        background-color: #0b7dda;
+        transform: scale(1.05);
     }
     .favorite-heart {
         font-size: 24px;
@@ -171,6 +188,7 @@
 
 {% block content %}
 <div class="container-fluid map-container">
+    {% csrf_token %}
     <h1 class="text-center">NYC Public Art Map</h1>
     <p class="text-center text-muted">Explore public art installations across New York City</p>
     

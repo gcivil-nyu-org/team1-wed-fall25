@@ -5,7 +5,14 @@ from django.urls import reverse
 from django.utils.text import slugify
 
 from loc_detail.models import PublicArt
-from .enums import EventVisibility, MembershipRole, InviteStatus, JoinRequestStatus
+from .enums import (
+    EventVisibility,
+    MembershipRole,
+    InviteStatus,
+    JoinRequestStatus,
+    MessageReportReason,
+    ReportStatus,
+)
 
 
 class Event(models.Model):
@@ -209,3 +216,145 @@ class EventFavorite(models.Model):
 
     def __str__(self):
         return f"{self.user.username} favorited {self.event.title}"
+
+
+class MessageReport(models.Model):
+    """Reports for inappropriate chat messages"""
+
+    message = models.ForeignKey(
+        EventChatMessage, on_delete=models.CASCADE, related_name="reports"
+    )
+    reporter = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="message_reports"
+    )
+    reason = models.CharField(max_length=20, choices=MessageReportReason.choices)
+    description = models.TextField(blank=True, max_length=500)
+    status = models.CharField(
+        max_length=20, choices=ReportStatus.choices, default=ReportStatus.PENDING
+    )
+    reviewed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reviewed_message_reports",
+    )
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["message", "reporter"], name="uniq_message_report"
+            )
+        ]
+        indexes = [
+            models.Index(fields=["status", "-created_at"]),
+            models.Index(fields=["message"]),
+            models.Index(fields=["reporter"]),
+        ]
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Report on {self.message.id} by {self.reporter.username}"
+
+
+class DirectChat(models.Model):
+    """1-on-1 chat between two users within an event"""
+
+    event = models.ForeignKey(
+        Event, on_delete=models.CASCADE, related_name="direct_chats"
+    )
+    user1 = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="direct_chats_initiated"
+    )
+    user2 = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="direct_chats_received"
+    )
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["event", "user1", "user2"], name="uniq_direct_chat"
+            )
+        ]
+        indexes = [
+            models.Index(fields=["user1", "-updated_at"]),
+            models.Index(fields=["user2", "-updated_at"]),
+        ]
+        ordering = ["-updated_at"]
+
+    def __str__(self):
+        u1, u2 = self.user1.username, self.user2.username
+        event_title = self.event.title
+        return f"Chat between {u1} and {u2} in {event_title}"
+
+    def get_other_user(self, user):
+        """Get the other user in this chat"""
+        return self.user2 if self.user1 == user else self.user1
+
+    def has_user_left(self, user):
+        """Check if a user has left this chat"""
+        from .models import DirectChatLeave
+
+        return DirectChatLeave.objects.filter(chat=self, user=user).exists()
+
+    def get_active_users(self):
+        """Get users who haven't left this chat"""
+        from .models import DirectChatLeave
+
+        left_users = set(
+            DirectChatLeave.objects.filter(chat=self).values_list("user", flat=True)
+        )
+        return (
+            [self.user1, self.user2]
+            if not left_users
+            else [u for u in [self.user1, self.user2] if u.id not in left_users]
+        )
+
+
+class DirectMessage(models.Model):
+    """Messages in 1-on-1 chat"""
+
+    chat = models.ForeignKey(
+        DirectChat, on_delete=models.CASCADE, related_name="messages"
+    )
+    sender = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.CharField(max_length=500)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["chat", "-created_at"]),
+            models.Index(fields=["sender"]),
+            models.Index(fields=["is_read"]),
+        ]
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"{self.sender.username}: {self.content[:50]}"
+
+
+class DirectChatLeave(models.Model):
+    """Track when users leave a direct chat"""
+
+    chat = models.ForeignKey(
+        DirectChat, on_delete=models.CASCADE, related_name="leaves"
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="chat_leaves")
+    left_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["chat", "user"], name="uniq_chat_leave")
+        ]
+        indexes = [
+            models.Index(fields=["user", "-left_at"]),
+        ]
+        ordering = ["-left_at"]
+
+    def __str__(self):
+        return f"{self.user.username} left chat {self.chat.id}"
