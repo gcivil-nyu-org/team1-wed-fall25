@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.utils.html import mark_safe
 from django.db.models import Avg
+from django.utils.html import mark_safe, format_html
 
 
 class PublicArt(models.Model):
@@ -20,6 +20,14 @@ class PublicArt(models.Model):
                 'src="{url}" width="500px" height="500px" />'
             ).format(url=self.image.url)
         )
+
+    def get_image_status(self):
+        if self.image:
+            return format_html("&#9989;")
+        else:
+            return "-"
+
+    get_image_status.short_description = "Has image"
 
     # Location Information
     location = models.CharField(max_length=500, blank=True, null=True)

@@ -35,7 +35,7 @@ export async function initializeMap() {
         const eventMarkerManager = new EventMarkerManager(map);
 
         // 6. Request user location (async, non-blocking)
-        geoManager.requestLocation();
+        // geoManager.requestLocation();
 
         // 7. Load art markers (async)
         await markerManager.loadMarkers();
