@@ -26,6 +26,7 @@ class PublicArt(models.Model):
             return format_html("&#9989;")
         else:
             return "-"
+
     get_image_status.short_description = "Has image"
 
     # Location Information
