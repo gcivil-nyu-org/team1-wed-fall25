@@ -1,0 +1,162 @@
+/* Itineraries app styles */
+
+/* Itinerary Cards */
+.itinerary-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid #dee2e6;
+}
+
+.itinerary-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.itinerary-card .card-title a {
+    transition: color 0.2s ease;
+}
+
+.itinerary-card .card-title a:hover {
+    color: #0d6efd !important;
+}
+
+.stops-preview {
+    background-color: #f8f9fa;
+    padding: 0.75rem;
+    border-radius: 0.25rem;
+}
+
+.stops-preview ol {
+    margin-bottom: 0;
+}
+
+/* Itinerary Detail Page */
+.itinerary-stop-item {
+    padding: 1rem;
+    border-left: 3px solid #0d6efd;
+    transition: background-color 0.2s ease;
+}
+
+.itinerary-stop-item:hover {
+    background-color: #f8f9fa;
+}
+
+.stop-number-badge {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #0d6efd, #0a58ca);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Map Styles */
+#itinerary-map {
+    border-radius: 0.25rem;
+}
+
+.custom-marker {
+    background: none;
+    border: none;
+}
+
+.marker-content {
+    width: 30px;
+    height: 30px;
+    background: linear-gradient(135deg, #0d6efd, #0a58ca);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    border: 3px solid white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Form Styles */
+.stop-form-row {
+    background-color: #f8f9fa;
+    transition: background-color 0.2s ease;
+}
+
+.stop-form-row:hover {
+    background-color: #e9ecef;
+}
+
+.stop-form-row .stop-number {
+    font-size: 0.9rem;
+}
+
+.delete-stop-btn {
+    transition: all 0.2s ease;
+}
+
+.delete-stop-btn:hover {
+    transform: scale(1.05);
+}
+
+/* Empty State */
+.empty-state {
+    padding: 3rem;
+}
+
+.empty-state i {
+    opacity: 0.5;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .itinerary-card {
+        margin-bottom: 1rem;
+    }
+
+    .stop-number-badge {
+        width: 35px;
+        height: 35px;
+        font-size: 1rem;
+    }
+
+    #itinerary-map {
+        height: 400px !important;
+    }
+}
+
+/* Loading state */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.loading-spinner {
+    color: white;
+    font-size: 2rem;
+}
+
+/* Animation for adding stops */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.stop-form-row.new {
+    animation: slideIn 0.3s ease;
+}
