@@ -152,7 +152,17 @@ MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{MEDIAFILES_LOCATION}/"
 
 # Use local static files if local, use static files in S3 otherwise
 # Use S3 media files all the time
-if DEBUG:
+# Use local file storage for tests to avoid boto3 dependency
+if "test" in sys.argv or os.environ.get("TRAVIS") == "true":
+    STATIC_URL = "static/"
+    MEDIA_URL = "media/"
+    STORAGES = {
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
+        },
+    }
+elif DEBUG:
     STATIC_URL = "static/"
     STORAGES = {
         "default": {"BACKEND": "core.custom_storage.MediaStorage"},
