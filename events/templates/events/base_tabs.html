@@ -145,10 +145,6 @@ body {
                class="tab {% if request.path == '/events/invitations/' %}active{% endif %}">
                 Invitations
             </a>
-            <a href="{% url 'events:favorites' %}" 
-               class="tab {% if request.path == '/events/favorites/' %}active{% endif %}">
-                Favorites
-            </a>
             <a href="{% url 'events:create' %}" class="btn-create">
                 Create Event
             </a>

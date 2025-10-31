@@ -24,6 +24,7 @@ urlpatterns = [
     path("loc_detail/", include("loc_detail.urls")),
     path("events/", include(("events.urls", "events"), namespace="events")),
     path("itineraries/", include("itineraries.urls")),
+    path("favorites/", include("favorites.urls")),
     path("admin/", admin.site.urls),
     path("profile/", include("user_profile.urls")),
 ]

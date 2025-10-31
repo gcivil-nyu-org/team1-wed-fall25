@@ -9,6 +9,7 @@ from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import timedelta
+import time
 
 from events.models import DirectChat, DirectMessage, DirectChatLeave, Event
 from events.enums import EventVisibility
@@ -259,6 +260,7 @@ class DirectChatLeaveModelTests(TestCase):
     def test_multiple_users_can_leave(self):
         """Test that both users can leave the same chat"""
         leave1 = DirectChatLeave.objects.create(chat=self.chat, user=self.user1)
+        time.sleep(0.01)  # Small delay to ensure different timestamps
         leave2 = DirectChatLeave.objects.create(chat=self.chat, user=self.user2)
 
         self.assertEqual(DirectChatLeave.objects.filter(chat=self.chat).count(), 2)
@@ -307,6 +309,7 @@ class DirectChatIntegrationTests(TestCase):
 
         for content, sender in messages:
             DirectMessage.objects.create(chat=chat, sender=sender, content=content)
+            time.sleep(0.01)  # Small delay to ensure different timestamps
 
         # Verify all messages were created
         self.assertEqual(DirectMessage.objects.filter(chat=chat).count(), 5)
@@ -345,6 +348,7 @@ class DirectChatIntegrationTests(TestCase):
         message1 = DirectMessage.objects.create(
             chat=chat, sender=self.user1, content="Message from user1"
         )
+        time.sleep(0.01)  # Small delay to ensure different timestamps
 
         message2 = DirectMessage.objects.create(
             chat=chat, sender=self.user2, content="Message from user2"

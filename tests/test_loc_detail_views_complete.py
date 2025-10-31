@@ -304,7 +304,7 @@ class FavoritesViewCompleteTests(TestCase):
 
         self.client.login(username="testuser", password="testpass123")
         response = self.client.get(
-            reverse("loc_detail:favorites"), {"search": "nonexistent"}
+            reverse("favorites:index"), {"search": "nonexistent"}
         )
 
         self.assertEqual(response.status_code, 200)
@@ -316,9 +316,7 @@ class FavoritesViewCompleteTests(TestCase):
         UserFavoriteArt.objects.create(user=self.user, art=art)
 
         self.client.login(username="testuser", password="testpass123")
-        response = self.client.get(
-            reverse("loc_detail:favorites"), {"borough": "Brooklyn"}
-        )
+        response = self.client.get(reverse("favorites:index"), {"borough": "Brooklyn"})
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context["page_obj"]), 0)
@@ -332,12 +330,12 @@ class FavoritesViewCompleteTests(TestCase):
         self.client.login(username="testuser", password="testpass123")
 
         # First page
-        response = self.client.get(reverse("loc_detail:favorites"))
+        response = self.client.get(reverse("favorites:index"))
         self.assertEqual(len(response.context["page_obj"]), 20)
         self.assertTrue(response.context["page_obj"].has_next())
 
         # Second page
-        response = self.client.get(reverse("loc_detail:favorites"), {"page": 2})
+        response = self.client.get(reverse("favorites:index"), {"page": 2})
         self.assertEqual(len(response.context["page_obj"]), 5)
         self.assertFalse(response.context["page_obj"].has_next())
 

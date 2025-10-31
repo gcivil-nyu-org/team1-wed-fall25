@@ -1,0 +1,95 @@
+{% if page_obj %}
+    <div class="events-grid">
+        {% for event in page_obj %}
+            <div class="event-card">
+                <div class="event-header">
+                    <h3 class="event-title">
+                        <a href="{% url 'events:detail' event.slug %}">
+                            {{ event.title }}
+                        </a>
+                    </h3>
+                    {% if event.joined %}
+                        <span class="badge" style="background: #28a745; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem;">
+                            <i class="fas fa-check-circle"></i> Joined
+                        </span>
+                    {% endif %}
+                </div>
+                
+                <div class="event-body">
+                    {% if event.description %}
+                        <p style="color: #666; margin-bottom: 15px;">{{ event.description|truncatewords:20 }}</p>
+                    {% endif %}
+
+                    <div class="event-meta">
+                        <div>
+                            <i class="fas fa-calendar"></i>
+                            <strong>{{ event.start_date|date:"M d, Y" }}</strong> at {{ event.start_time|time:"g:i A" }}
+                        </div>
+                        
+                        {% if event.start_location %}
+                        <div>
+                            <i class="fas fa-map-marker-alt"></i>
+                            {{ event.start_location.name|truncatewords:8 }}
+                        </div>
+                        {% endif %}
+                        
+                        <div>
+                            <i class="fas fa-user"></i>
+                            Hosted by {{ event.host.username }}
+                        </div>
+
+                        <div>
+                            <i class="fas fa-users"></i>
+                            {{ event.participants.count }} participant{{ event.participants.count|pluralize }}
+                        </div>
+
+                        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #e0e0e0; color: #999; font-size: 0.9rem;">
+                            <i class="fas fa-heart"></i>
+                            Favorited {{ event.favorited_at|date:"M d, Y" }}
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <a href="{% url 'events:detail' event.slug %}" class="btn btn-primary">
+                            <i class="fas fa-eye"></i> View Event
+                        </a>
+                        <form method="post" action="{% url 'events:unfavorite' event.slug %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-star"></i> Unfavorite
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+        <div style="text-align: center; margin-top: 30px;">
+            <nav aria-label="Pagination">
+                <ul class="pagination" style="display: inline-flex; list-style: none; padding: 0; gap: 5px;">
+                    {% if page_obj.has_previous %}
+                        <li><a class="btn btn-outline-primary" href="?tab=events&page=1">First</a></li>
+                        <li><a class="btn btn-outline-primary" href="?tab=events&page={{ page_obj.previous_page_number }}">Previous</a></li>
+                    {% endif %}
+                    
+                    <li><span class="btn btn-primary">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                    
+                    {% if page_obj.has_next %}
+                        <li><a class="btn btn-outline-primary" href="?tab=events&page={{ page_obj.next_page_number }}">Next</a></li>
+                        <li><a class="btn btn-outline-primary" href="?tab=events&page={{ page_obj.paginator.num_pages }}">Last</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    {% endif %}
+{% else %}
+    <div class="empty-state">
+        <i class="fas fa-calendar-alt"></i>
+        <h3>No Favorite Events Yet</h3>
+        <p>Start exploring events and add them to your favorites!</p>
+        <a href="{% url 'events:public' %}" class="btn btn-primary">Browse Events</a>
+    </div>
+{% endif %}
