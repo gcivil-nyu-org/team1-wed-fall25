@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "events.apps.EventsConfig",
     "loc_detail",
     "itineraries.apps.ItinerariesConfig",
+    "favorites.apps.FavoritesConfig",
     "storages",
     "user_profile.apps.UserProfileConfig",
 ]
