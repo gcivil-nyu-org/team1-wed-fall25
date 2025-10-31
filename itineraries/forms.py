@@ -12,7 +12,7 @@ class ItineraryForm(forms.ModelForm):
 
     class Meta:
         model = Itinerary
-        fields = ["title", "description"]
+        fields = ["title", "description", "date"]
         widgets = {
             "title": forms.TextInput(
                 attrs={
@@ -26,6 +26,13 @@ class ItineraryForm(forms.ModelForm):
                     "class": "form-control",
                     "placeholder": "Add a description (optional)",
                     "rows": "3",
+                }
+            ),
+            "date": forms.DateInput(
+                attrs={
+                    "class": "form-control",
+                    "type": "date",
+                    "placeholder": "Select planned date (optional)",
                 }
             ),
         }
