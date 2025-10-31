@@ -316,9 +316,7 @@ class FavoritesViewCompleteTests(TestCase):
         UserFavoriteArt.objects.create(user=self.user, art=art)
 
         self.client.login(username="testuser", password="testpass123")
-        response = self.client.get(
-            reverse("favorites:index"), {"borough": "Brooklyn"}
-        )
+        response = self.client.get(reverse("favorites:index"), {"borough": "Brooklyn"})
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context["page_obj"]), 0)

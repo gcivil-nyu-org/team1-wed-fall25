@@ -527,9 +527,7 @@ class FavoritesViewTests(TestCase):
     def test_favorites_filter_by_borough(self):
         """Test filtering favorites by borough"""
         self.client.login(username="testuser", password="testpass123")
-        response = self.client.get(
-            reverse("favorites:index"), {"borough": "Manhattan"}
-        )
+        response = self.client.get(reverse("favorites:index"), {"borough": "Manhattan"})
 
         self.assertContains(response, "Favorite Art 1")
         self.assertNotContains(response, "Favorite Art 2")
