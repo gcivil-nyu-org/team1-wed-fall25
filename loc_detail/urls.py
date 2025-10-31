@@ -7,7 +7,11 @@ app_name = "loc_detail"
 urlpatterns = [
     path("", views.index, name="index"),
     path("art/<int:art_id>/", views.art_detail, name="art_detail"),
-    path("favorites/", RedirectView.as_view(url='/favorites/?tab=art', permanent=False), name="favorites"),
+    path(
+        "favorites/",
+        RedirectView.as_view(url="/favorites/?tab=art", permanent=False),
+        name="favorites",
+    ),
     # API endpoints
     path("api/points/all", views.api_all_points, name="api_all_points"),
     path(

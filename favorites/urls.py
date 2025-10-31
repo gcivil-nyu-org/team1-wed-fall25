@@ -1,6 +1,7 @@
 """
 URL configuration for unified favorites
 """
+
 from django.urls import path
 from . import views
 

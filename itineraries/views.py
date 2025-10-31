@@ -17,7 +17,7 @@ from loc_detail.models import PublicArt
 def itinerary_list(request):
     """View for listing all user's itineraries"""
     from .models import ItineraryFavorite
-    
+
     itineraries = Itinerary.objects.filter(user=request.user).prefetch_related(
         "stops", "stops__location"
     )
@@ -44,7 +44,7 @@ def itinerary_list(request):
 def itinerary_detail(request, pk):
     """View for displaying a single itinerary"""
     from .models import ItineraryFavorite
-    
+
     itinerary = get_object_or_404(
         Itinerary.objects.prefetch_related("stops", "stops__location"),
         pk=pk,
@@ -294,7 +294,7 @@ def favorite_itinerary(request, pk):
 
     # Check if user has permission to favorite (can't favorite own itineraries)
     # Actually, users can favorite their own itineraries for easy access
-    
+
     try:
         # Create favorite (idempotent)
         ItineraryFavorite.objects.get_or_create(itinerary=itinerary, user=request.user)
@@ -318,7 +318,7 @@ def unfavorite_itinerary(request, pk):
         deleted_count, _ = ItineraryFavorite.objects.filter(
             itinerary=itinerary, user=request.user
         ).delete()
-        
+
         if deleted_count > 0:
             messages.success(request, f'Removed "{itinerary.title}" from favorites.')
         else:

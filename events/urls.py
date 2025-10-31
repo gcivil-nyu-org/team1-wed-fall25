@@ -9,7 +9,11 @@ urlpatterns = [
     path("", views.index, name="index"),
     path("public/", views.public_events, name="public"),
     path("invitations/", views.invitations, name="invitations"),
-    path("favorites/", RedirectView.as_view(url='/favorites/?tab=events', permanent=False), name="favorites"),
+    path(
+        "favorites/",
+        RedirectView.as_view(url="/favorites/?tab=events", permanent=False),
+        name="favorites",
+    ),
     # CREATE (Phase 1)
     path("create/", views.create, name="create"),
     # ACTIONS (Phase 2)

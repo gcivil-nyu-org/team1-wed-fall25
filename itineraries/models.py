@@ -14,7 +14,9 @@ class Itinerary(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="itineraries")
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
-    date = models.DateField(blank=True, null=True, help_text="Planned date for this itinerary")
+    date = models.DateField(
+        blank=True, null=True, help_text="Planned date for this itinerary"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

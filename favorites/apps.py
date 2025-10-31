@@ -1,6 +1,7 @@
 """
 Apps configuration for favorites
 """
+
 from django.apps import AppConfig
 
 
