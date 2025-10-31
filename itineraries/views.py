@@ -16,12 +16,26 @@ from loc_detail.models import PublicArt
 @login_required
 def itinerary_list(request):
     """View for listing all user's itineraries"""
+    from .models import ItineraryFavorite
+    
     itineraries = Itinerary.objects.filter(user=request.user).prefetch_related(
         "stops", "stops__location"
     )
 
+    # Get favorited itinerary IDs for this user
+    favorited_ids = set(
+        ItineraryFavorite.objects.filter(user=request.user).values_list(
+            "itinerary_id", flat=True
+        )
+    )
+
+    # Add is_favorited attribute to each itinerary
+    for itinerary in itineraries:
+        itinerary.is_favorited = itinerary.id in favorited_ids
+
     context = {
         "itineraries": itineraries,
+        "is_favorites_view": False,
     }
     return render(request, "itineraries/list.html", context)
 
@@ -29,14 +43,22 @@ def itinerary_list(request):
 @login_required
 def itinerary_detail(request, pk):
     """View for displaying a single itinerary"""
+    from .models import ItineraryFavorite
+    
     itinerary = get_object_or_404(
         Itinerary.objects.prefetch_related("stops", "stops__location"),
         pk=pk,
         user=request.user,
     )
 
+    # Check if favorited
+    is_favorited = ItineraryFavorite.objects.filter(
+        itinerary=itinerary, user=request.user
+    ).exists()
+
     context = {
         "itinerary": itinerary,
+        "is_favorited": is_favorited,
     }
     return render(request, "itineraries/detail.html", context)
 
@@ -89,7 +111,7 @@ def itinerary_create(request):
         "locations": locations,
         "is_edit": False,
     }
-    return render(request, "itineraries/create.html", context)
+    return render(request, "itineraries/create_improved.html", context)
 
 
 @login_required
@@ -139,7 +161,7 @@ def itinerary_edit(request, pk):
         "itinerary": itinerary,
         "is_edit": True,
     }
-    return render(request, "itineraries/create.html", context)
+    return render(request, "itineraries/create_improved.html", context)
 
 
 @login_required
@@ -260,3 +282,76 @@ def api_add_to_itinerary(request):
 
     except Exception as e:
         return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+
+@login_required
+@require_POST
+def favorite_itinerary(request, pk):
+    """Add itinerary to user's favorites"""
+    from .models import ItineraryFavorite
+
+    itinerary = get_object_or_404(Itinerary, pk=pk)
+
+    # Check if user has permission to favorite (can't favorite own itineraries)
+    # Actually, users can favorite their own itineraries for easy access
+    
+    try:
+        # Create favorite (idempotent)
+        ItineraryFavorite.objects.get_or_create(itinerary=itinerary, user=request.user)
+        messages.success(request, f'Added "{itinerary.title}" to favorites.')
+    except Exception as e:
+        messages.error(request, f"Failed to add to favorites: {str(e)}")
+
+    # Redirect back to the referring page or itinerary detail
+    return redirect(request.META.get("HTTP_REFERER", itinerary.get_absolute_url()))
+
+
+@login_required
+@require_POST
+def unfavorite_itinerary(request, pk):
+    """Remove itinerary from user's favorites"""
+    from .models import ItineraryFavorite
+
+    itinerary = get_object_or_404(Itinerary, pk=pk)
+
+    try:
+        deleted_count, _ = ItineraryFavorite.objects.filter(
+            itinerary=itinerary, user=request.user
+        ).delete()
+        
+        if deleted_count > 0:
+            messages.success(request, f'Removed "{itinerary.title}" from favorites.')
+        else:
+            messages.info(request, "This itinerary was not in your favorites.")
+    except Exception as e:
+        messages.error(request, f"Failed to remove from favorites: {str(e)}")
+
+    # Redirect back to the referring page or itinerary detail
+    return redirect(request.META.get("HTTP_REFERER", itinerary.get_absolute_url()))
+
+
+@login_required
+def favorites(request):
+    """Display user's favorite itineraries"""
+    from .models import ItineraryFavorite
+
+    # Get favorited itineraries
+    favorites_qs = (
+        ItineraryFavorite.objects.filter(user=request.user)
+        .select_related("itinerary", "itinerary__user")
+        .prefetch_related("itinerary__stops", "itinerary__stops__location")
+        .order_by("-created_at")
+    )
+
+    # Extract itineraries with favorited_at timestamp
+    favorites_list = []
+    for fav in favorites_qs:
+        fav.itinerary.favorited_at = fav.created_at
+        favorites_list.append(fav.itinerary)
+
+    context = {
+        "itineraries": favorites_list,
+        "is_favorites_view": True,
+    }
+
+    return render(request, "itineraries/favorites.html", context)

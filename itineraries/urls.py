@@ -9,10 +9,13 @@ app_name = "itineraries"
 
 urlpatterns = [
     path("", views.itinerary_list, name="list"),
+    path("favorites/", views.favorites, name="favorites"),
     path("create/", views.itinerary_create, name="create"),
     path("<int:pk>/", views.itinerary_detail, name="detail"),
     path("<int:pk>/edit/", views.itinerary_edit, name="edit"),
     path("<int:pk>/delete/", views.itinerary_delete, name="delete"),
+    path("<int:pk>/favorite/", views.favorite_itinerary, name="favorite"),
+    path("<int:pk>/unfavorite/", views.unfavorite_itinerary, name="unfavorite"),
     path(
         "api/search-locations/", views.api_search_locations, name="api_search_locations"
     ),
