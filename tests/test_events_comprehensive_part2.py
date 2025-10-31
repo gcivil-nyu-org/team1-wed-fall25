@@ -756,7 +756,7 @@ class FavoritesViewTests(TestCase):
     def test_favorites_page_loads(self):
         """Test favorites page loads"""
         self.client.login(username="testuser", password="testpass123")
-        response = self.client.get(reverse("events:favorites"))
+        response = self.client.get(reverse("favorites:index") + "?tab=events")
         self.assertEqual(response.status_code, 200)
 
     def test_favorite_event(self):
