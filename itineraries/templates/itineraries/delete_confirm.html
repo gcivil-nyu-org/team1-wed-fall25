@@ -9,13 +9,11 @@
 
 {% block content %}
 <div class="container mt-4 mb-5">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'itineraries:list' %}">My Itineraries</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'itineraries:detail' itinerary.pk %}">{{ itinerary.title }}</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Delete</li>
-        </ol>
-    </nav>
+    <div class="mb-3">
+        <a href="{% url 'itineraries:detail' itinerary.pk %}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back
+        </a>
+    </div>
 
     <div class="row justify-content-center">
         <div class="col-md-8">
