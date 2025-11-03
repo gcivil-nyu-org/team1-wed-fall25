@@ -109,6 +109,17 @@
                     
                     <div class="art-card-header">
                         <h3 class="art-title">{{ art.title|default:"Untitled" }}</h3>
+
+                        {% if art.image %}
+                            <div>
+                                {{ art.square_thumbnail|safe }}
+                            </div>
+                        {% else %}
+                            <div>
+                                <p>No image available</p>
+                            </div>
+                        {% endif %}
+
                         {% if art.borough %}
                             <span class="art-badge">{{ art.borough }}</span>
                         {% endif %}
