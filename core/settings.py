@@ -141,9 +141,10 @@ AWS_S3_REGION_NAME = "us-east-2"
 AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
 AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
 
-# Add this check
-if not AWS_STORAGE_BUCKET_NAME:
-    raise ValueError("AWS_STORAGE_BUCKET_NAME environment variable is not set")
+# Only validate AWS settings if not in test mode
+if not ("test" in sys.argv or os.environ.get("TRAVIS") == "true"):
+    if not AWS_STORAGE_BUCKET_NAME:
+        raise ValueError("AWS_STORAGE_BUCKET_NAME environment variable is not set")
 
 # static and media file settings
 STATIC_ROOT = BASE_DIR / "staticfiles"
