@@ -6,6 +6,7 @@ from django.utils.html import mark_safe, format_html
 from io import BytesIO
 from django.core.files.base import ContentFile
 from PIL import Image
+from os.path import splitext
 
 
 class PublicArt(models.Model):
@@ -19,6 +20,8 @@ class PublicArt(models.Model):
     thumbnail = models.ImageField(upload_to="", blank=True, null=True, editable=False)
 
     THUMBNAIL_SIZE = (300, 300)
+    MAX_IMAGE_SIZE = (2000, 2000)  # max width, height for uploaded originals
+    MAX_IMAGE_QUALITY = 85
 
     def make_thumbnail(self, image_field, size=THUMBNAIL_SIZE):
         if not image_field:
@@ -39,6 +42,39 @@ class PublicArt(models.Model):
             print(f"Error creating thumbnail: {e}")
             return None
 
+    def downsample_image(
+        self, image_field, max_size=MAX_IMAGE_SIZE, quality=MAX_IMAGE_QUALITY
+    ):
+        """
+        Return ContentFile with downsampled version of image_field if exceeds max_size.
+        If the image is already within limits, returns None.
+        """
+        if not image_field:
+            return None
+        try:
+            image_field.open()
+            img = Image.open(image_field)
+            img_format = img.format or "JPEG"
+            # don't upconvert small images
+            if img.width <= max_size[0] and img.height <= max_size[1]:
+                return None
+
+            img = img.convert("RGB")  # normalize for saving as JPEG
+            img.thumbnail(max_size, Image.LANCZOS)
+
+            out_io = BytesIO()
+            save_format = (
+                "JPEG"
+                if img_format.upper() not in ("PNG", "GIF", "WEBP")
+                else img_format
+            )
+            img.save(out_io, format=save_format, quality=quality)
+            base, _ = splitext(getattr(image_field, "name", "image"))
+            new_name = f"{base}_resized.jpg"
+            return ContentFile(out_io.getvalue(), name=new_name)
+        except Exception:
+            return None
+
     def save(self, *args, **kwargs):
         # detect image change (new instance or image replaced)
         image_changed = False
@@ -54,7 +90,15 @@ class PublicArt(models.Model):
         else:
             image_changed = bool(self.image)
 
-        # if image present and changed, build thumbnail
+        # Downsample original image if needed before saving
+        if self.image and image_changed:
+            downsampled = self.downsample_image(self.image)
+            if downsampled:
+                # replace the uploaded image with the downsampled version
+                # save=False to avoid recursive save() calls
+                self.image.save(downsampled.name, downsampled, save=False)
+
+        # if image present and changed, build thumbnail (existing thumbnail logic)
         if self.image and image_changed:
             thumb_file = self.make_thumbnail(self.image)
             if thumb_file:
@@ -105,7 +149,7 @@ class PublicArt(models.Model):
             return mark_safe(
                 (
                     '<img style="border: 1px solid #ccc;'
-                    'object-fit: cover; object-position: top;'
+                    "object-fit: cover; object-position: top;"
                     'width: 100px; height: 100px;"'
                     'src="{url}" />'
                 ).format(url=self.thumbnail.url)
