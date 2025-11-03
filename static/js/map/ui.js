@@ -11,21 +11,21 @@ import { toggleFavorite } from './favorites.js';
  * @returns {HTMLElement} Popup content as DOM element
  */
 export function createPopupContent(point) {
-    console.log('Creating popup for:', point.t);
+    // console.log('Creating popup for:', point.t);
     const popupDiv = document.createElement('div');
-    
+
     // Title
     const title = document.createElement('div');
     title.className = 'popup-title';
     title.textContent = point.t;
     popupDiv.appendChild(title);
-    
+
     // Artist
     const artist = document.createElement('div');
     artist.className = 'popup-artist';
     artist.textContent = `by ${point.a}`;
     popupDiv.appendChild(artist);
-    
+
     // Borough
     if (point.b) {
         const borough = document.createElement('div');
@@ -33,43 +33,43 @@ export function createPopupContent(point) {
         borough.textContent = point.b;
         popupDiv.appendChild(borough);
     }
-    
+
     // Actions container
     const actions = document.createElement('div');
     actions.className = 'popup-actions';
-    
+
     // View Details button
     const detailBtn = document.createElement('a');
     detailBtn.href = `/loc_detail/art/${point.id}/`;
     detailBtn.className = 'btn-view-details';
     detailBtn.textContent = 'View Details';
     actions.appendChild(detailBtn);
-    
+
     // Add to Itinerary button
     const itineraryBtn = document.createElement('button');
     itineraryBtn.className = 'btn-add-itinerary';
     itineraryBtn.innerHTML = '<i class="fas fa-route"></i>';
     itineraryBtn.title = 'Add to Itinerary';
-    itineraryBtn.onclick = function(e) {
+    itineraryBtn.onclick = function (e) {
         e.preventDefault();
         openItineraryModal(point.id, point.t);
     };
     actions.appendChild(itineraryBtn);
-    console.log('Added itinerary button to popup');
-    
+    // console.log('Added itinerary button to popup');
+
     // Heart icon for favorites
     const heart = document.createElement('span');
     heart.className = 'favorite-heart not-favorited';
     heart.innerHTML = '&#10084;';
     heart.title = 'Add to favorites';
-    heart.onclick = function(e) {
+    heart.onclick = function (e) {
         e.preventDefault();
         toggleFavorite(point.id, heart);
     };
     actions.appendChild(heart);
-    
+
     popupDiv.appendChild(actions);
-    
+
     return popupDiv;
 }
 
@@ -85,14 +85,14 @@ function openItineraryModal(locationId, locationTitle) {
         modal = createItineraryModal();
         document.body.appendChild(modal);
     }
-    
+
     // Update modal content
     document.getElementById('modal-location-title').textContent = locationTitle;
     document.getElementById('modal-location-id').value = locationId;
-    
+
     // Load user's itineraries
     loadUserItineraries();
-    
+
     // Show modal
     const modalInstance = new bootstrap.Modal(modal);
     modalInstance.show();
@@ -164,20 +164,20 @@ function createItineraryModal() {
             </div>
         </div>
     `;
-    
+
     // Add event listeners
-    modal.querySelector('#option-existing').addEventListener('change', function() {
+    modal.querySelector('#option-existing').addEventListener('change', function () {
         document.getElementById('existing-itinerary-section').style.display = 'block';
         document.getElementById('new-itinerary-section').style.display = 'none';
     });
-    
-    modal.querySelector('#option-new').addEventListener('change', function() {
+
+    modal.querySelector('#option-new').addEventListener('change', function () {
         document.getElementById('existing-itinerary-section').style.display = 'none';
         document.getElementById('new-itinerary-section').style.display = 'block';
     });
-    
+
     modal.querySelector('#btn-save-to-itinerary').addEventListener('click', saveToItinerary);
-    
+
     return modal;
 }
 
@@ -186,11 +186,11 @@ function createItineraryModal() {
  */
 async function loadUserItineraries() {
     const select = document.getElementById('existing-itinerary-select');
-    
+
     try {
         const response = await fetch('/itineraries/api/user-itineraries/');
         const data = await response.json();
-        
+
         if (data.itineraries.length === 0) {
             select.innerHTML = '<option value="">No itineraries yet</option>';
             document.getElementById('option-new').checked = true;
@@ -198,7 +198,7 @@ async function loadUserItineraries() {
             document.getElementById('new-itinerary-section').style.display = 'block';
         } else {
             select.innerHTML = '<option value="">-- Select an itinerary --</option>' +
-                data.itineraries.map(itin => 
+                data.itineraries.map(itin =>
                     `<option value="${itin.id}">${itin.title} (${itin.stop_count} stops)</option>`
                 ).join('');
         }
@@ -216,11 +216,11 @@ async function saveToItinerary() {
     const option = document.querySelector('input[name="itinerary-option"]:checked').value;
     const messageDiv = document.getElementById('modal-message');
     const saveBtn = document.getElementById('btn-save-to-itinerary');
-    
+
     // Collect form data
     const formData = new FormData();
     formData.append('location_id', locationId);
-    
+
     if (option === 'existing') {
         const itineraryId = document.getElementById('existing-itinerary-select').value;
         if (!itineraryId) {
@@ -236,17 +236,17 @@ async function saveToItinerary() {
         }
         formData.append('new_itinerary_title', title);
     }
-    
+
     // Get CSRF token
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
     if (csrfToken) {
         formData.append('csrfmiddlewaretoken', csrfToken);
     }
-    
+
     // Disable button while saving
     saveBtn.disabled = true;
     saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Adding...';
-    
+
     try {
         const response = await fetch('/itineraries/api/add-to-itinerary/', {
             method: 'POST',
@@ -255,9 +255,9 @@ async function saveToItinerary() {
                 'X-CSRFToken': getCookie('csrftoken')
             }
         });
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
             showMessage(data.message + ' <a href="' + data.itinerary_url + '">View Itinerary</a>', 'success');
             setTimeout(() => {
@@ -285,7 +285,7 @@ function showMessage(message, type) {
     messageDiv.className = `alert alert-${type}`;
     messageDiv.innerHTML = message;
     messageDiv.style.display = 'block';
-    
+
     if (type === 'success') {
         setTimeout(() => {
             messageDiv.style.display = 'none';

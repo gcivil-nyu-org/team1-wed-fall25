@@ -3,6 +3,10 @@ from django.contrib.auth.models import User
 from django.db.models import Avg
 from django.utils.html import mark_safe, format_html
 
+from io import BytesIO
+from django.core.files.base import ContentFile
+from PIL import Image
+
 
 class PublicArt(models.Model):
     """Model for NYC Public Design Commission Outdoor Public Art"""
@@ -12,14 +16,101 @@ class PublicArt(models.Model):
     title = models.CharField(max_length=500, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     image = models.ImageField(upload_to="", blank=True, null=True)
+    thumbnail = models.ImageField(upload_to="", blank=True, null=True, editable=False)
+
+    THUMBNAIL_SIZE = (300, 300)
+
+    def make_thumbnail(self, image_field, size=THUMBNAIL_SIZE):
+        if not image_field:
+            return None
+        try:
+            img = Image.open(image_field)
+            img = img.convert("RGB")
+            img.thumbnail(size, Image.LANCZOS)
+
+            thumb_io = BytesIO()
+            img.save(thumb_io, format="JPEG", quality=85)
+            base_name = (
+                getattr(image_field, "name", "thumb").split("/")[-1].rsplit(".", 1)[0]
+            )
+            thumb_name = f"thumb_{base_name}.jpg"
+            return ContentFile(thumb_io.getvalue(), name=thumb_name)
+        except Exception as e:
+            print(f"Error creating thumbnail: {e}")
+            return None
+
+    def save(self, *args, **kwargs):
+        # detect image change (new instance or image replaced)
+        image_changed = False
+        if self.pk:
+            try:
+                old = PublicArt.objects.get(pk=self.pk)
+                if bool(old.image) != bool(self.image) or (
+                    old.image and self.image and old.image.name != self.image.name
+                ):
+                    image_changed = True
+            except PublicArt.DoesNotExist:
+                image_changed = True
+        else:
+            image_changed = bool(self.image)
+
+        # if image present and changed, build thumbnail
+        if self.image and image_changed:
+            thumb_file = self.make_thumbnail(self.image)
+            if thumb_file:
+                # remove old thumbnail if exists
+                try:
+                    if self.pk:
+                        old = PublicArt.objects.get(pk=self.pk)
+                        if (
+                            old.thumbnail
+                            and old.thumbnail.name
+                            and old.thumbnail.storage.exists(old.thumbnail.name)
+                        ):
+                            old.thumbnail.storage.delete(old.thumbnail.name)
+                except Exception:
+                    pass
+                # assign generated thumbnail
+                self.thumbnail.save(thumb_file.name, thumb_file, save=False)
+
+        # if image removed, also remove thumbnail
+        if not self.image and self.thumbnail:
+            try:
+                if self.thumbnail.name and self.thumbnail.storage.exists(
+                    self.thumbnail.name
+                ):
+                    self.thumbnail.storage.delete(self.thumbnail.name)
+            except Exception:
+                pass
+            self.thumbnail = None
+
+        super().save(*args, **kwargs)
 
     def art_image(self):
         return mark_safe(
             (
-                '<img style="border: 1px solid #333; object-fit: contain;" '
-                'src="{url}" width="500px" height="500px" />'
+                '<img style="border: 1px solid #ccc;'
+                'object-fit: contain; max-width: 100%; max-height: 500px;"'
+                'src="{url}"  />'
             ).format(url=self.image.url)
         )
+
+    def art_thumbnail(self):
+        if self.thumbnail:
+            return mark_safe(('<img src="{url}" />').format(url=self.thumbnail.url))
+        return "No Thumbnail"
+
+    def square_thumbnail(self):
+        if self.thumbnail:
+            return mark_safe(
+                (
+                    '<img style="border: 1px solid #ccc;'
+                    'object-fit: cover; object-position: top;'
+                    'width: 100px; height: 100px;"'
+                    'src="{url}" />'
+                ).format(url=self.thumbnail.url)
+            )
+        return "No Thumbnail"
 
     def get_image_status(self):
         if self.image:

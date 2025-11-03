@@ -104,7 +104,7 @@ class ItineraryViewTests(TestCase):
         self.client.login(username="testuser", password="testpass123")
         response = self.client.get(reverse("itineraries:create"))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "itineraries/create.html")
+        self.assertTemplateUsed(response, "itineraries/create_improved.html")
 
     def test_detail_view_requires_login(self):
         """Test that detail view requires login"""

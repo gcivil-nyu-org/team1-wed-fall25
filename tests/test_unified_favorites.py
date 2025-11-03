@@ -7,7 +7,8 @@ from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.urls import reverse
 from decimal import Decimal
-from datetime import datetime, timedelta
+from django.utils import timezone
+from datetime import timedelta
 from loc_detail.models import PublicArt, UserFavoriteArt
 from events.models import Event, EventFavorite
 from itineraries.models import Itinerary, ItineraryStop, ItineraryFavorite
@@ -198,14 +199,14 @@ class EventsFavoritesTabTests(TestCase):
             description="First event",
             host=self.host,
             start_location=self.location,
-            start_time=datetime.now() + timedelta(days=1),
+            start_time=timezone.now() + timedelta(days=1),
         )
         self.event2 = Event.objects.create(
             title="Event 2",
             description="Second event",
             host=self.host,
             start_location=self.location,
-            start_time=datetime.now() + timedelta(days=2),
+            start_time=timezone.now() + timedelta(days=2),
         )
 
     def test_events_tab_empty(self):
@@ -264,7 +265,7 @@ class EventsFavoritesTabTests(TestCase):
                 title=f"Event {i}",
                 host=self.host,
                 start_location=self.location,
-                start_time=datetime.now() + timedelta(days=i),
+                start_time=timezone.now() + timedelta(days=i),
             )
             EventFavorite.objects.create(user=self.user, event=event)
 
@@ -395,7 +396,7 @@ class FavoritesIntegrationTests(TestCase):
             title="Test Event",
             host=self.host,
             start_location=self.art,
-            start_time=datetime.now() + timedelta(days=1),
+            start_time=timezone.now() + timedelta(days=1),
         )
         self.itinerary = Itinerary.objects.create(user=self.user, title="Test Tour")
 

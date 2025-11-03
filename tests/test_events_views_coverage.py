@@ -6,7 +6,8 @@ Targets uncovered lines to boost coverage from 51% to 90%+
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.urls import reverse
-from datetime import datetime, timedelta
+from django.utils import timezone
+from datetime import timedelta
 from loc_detail.models import PublicArt
 from events.models import (
     Event,
@@ -47,7 +48,7 @@ class CreateEventViewTests(TestCase):
             {
                 "title": "",  # Empty title should fail validation
                 "description": "Test Description",
-                "start_time": (datetime.now() + timedelta(days=1)).strftime(
+                "start_time": (timezone.now() + timedelta(days=1)).strftime(
                     "%Y-%m-%dT%H:%M"
                 ),
                 "visibility": EventVisibility.PUBLIC_OPEN,
@@ -79,7 +80,7 @@ class DetailViewTests(TestCase):
         self.event = Event.objects.create(
             title="Test Event",
             description="Test Description",
-            start_time=datetime.now() + timedelta(days=1),
+            start_time=timezone.now() + timedelta(days=1),
             host=self.host,
             start_location=self.location,
             visibility=EventVisibility.PUBLIC_INVITE,
@@ -152,7 +153,7 @@ class JoinEventViewTests(TestCase):
         self.event = Event.objects.create(
             title="Test Event",
             description="Test Description",
-            start_time=datetime.now() + timedelta(days=1),
+            start_time=timezone.now() + timedelta(days=1),
             host=self.host,
             start_location=self.location,
             visibility=EventVisibility.PUBLIC_OPEN,
@@ -204,7 +205,7 @@ class InvitationViewTests(TestCase):
         self.event = Event.objects.create(
             title="Test Event",
             description="Test Description",
-            start_time=datetime.now() + timedelta(days=1),
+            start_time=timezone.now() + timedelta(days=1),
             host=self.host,
             start_location=self.location,
             visibility=EventVisibility.PRIVATE,
@@ -267,7 +268,7 @@ class APIViewTests(TestCase):
         event = Event.objects.create(
             title="Test Event",
             description="Test Description",
-            start_time=datetime.now() + timedelta(days=1),
+            start_time=timezone.now() + timedelta(days=1),
             host=host,
             start_location=location,
             visibility=EventVisibility.PUBLIC_OPEN,
@@ -302,7 +303,7 @@ class ChatSendViewTests(TestCase):
         self.event = Event.objects.create(
             title="Test Event",
             description="Test Description",
-            start_time=datetime.now() + timedelta(days=1),
+            start_time=timezone.now() + timedelta(days=1),
             host=self.host,
             start_location=self.location,
             visibility=EventVisibility.PUBLIC_OPEN,
@@ -342,7 +343,7 @@ class JoinRequestViewTests(TestCase):
         self.event = Event.objects.create(
             title="Test Event",
             description="Test Description",
-            start_time=datetime.now() + timedelta(days=1),
+            start_time=timezone.now() + timedelta(days=1),
             host=self.host,
             start_location=self.location,
             visibility=EventVisibility.PUBLIC_INVITE,
@@ -445,7 +446,7 @@ class UpdateEventViewTests(TestCase):
         self.event = Event.objects.create(
             title="Test Event",
             description="Test Description",
-            start_time=datetime.now() + timedelta(days=1),
+            start_time=timezone.now() + timedelta(days=1),
             host=self.host,
             start_location=self.location,
             visibility=EventVisibility.PUBLIC_OPEN,
@@ -490,7 +491,7 @@ class UpdateEventViewTests(TestCase):
             {
                 "title": "",  # Empty title
                 "description": "Updated Description",
-                "start_time": (datetime.now() + timedelta(days=1)).strftime(
+                "start_time": (timezone.now() + timedelta(days=1)).strftime(
                     "%Y-%m-%dT%H:%M"
                 ),
                 "visibility": EventVisibility.PUBLIC_OPEN,
@@ -518,7 +519,7 @@ class DeleteEventViewTests(TestCase):
         self.event = Event.objects.create(
             title="Test Event",
             description="Test Description",
-            start_time=datetime.now() + timedelta(days=1),
+            start_time=timezone.now() + timedelta(days=1),
             host=self.host,
             start_location=self.location,
             visibility=EventVisibility.PUBLIC_OPEN,
@@ -555,7 +556,7 @@ class LeaveEventViewTests(TestCase):
         self.event = Event.objects.create(
             title="Test Event",
             description="Test Description",
-            start_time=datetime.now() + timedelta(days=1),
+            start_time=timezone.now() + timedelta(days=1),
             host=self.host,
             start_location=self.location,
             visibility=EventVisibility.PUBLIC_OPEN,
@@ -597,7 +598,7 @@ class FavoriteEventViewTests(TestCase):
         self.event = Event.objects.create(
             title="Test Event",
             description="Test Description",
-            start_time=datetime.now() + timedelta(days=1),
+            start_time=timezone.now() + timedelta(days=1),
             host=self.host,
             start_location=self.location,
             visibility=EventVisibility.PUBLIC_OPEN,
@@ -646,7 +647,7 @@ class ReportMessageViewTests(TestCase):
         self.event = Event.objects.create(
             title="Test Event",
             description="Test Description",
-            start_time=datetime.now() + timedelta(days=1),
+            start_time=timezone.now() + timedelta(days=1),
             host=self.host,
             start_location=self.location,
             visibility=EventVisibility.PUBLIC_OPEN,
@@ -711,7 +712,7 @@ class DirectChatViewTests(TestCase):
         self.event = Event.objects.create(
             title="Test Event",
             description="Test Description",
-            start_time=datetime.now() + timedelta(days=1),
+            start_time=timezone.now() + timedelta(days=1),
             host=self.host,
             start_location=self.location,
             visibility=EventVisibility.PUBLIC_OPEN,
