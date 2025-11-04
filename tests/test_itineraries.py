@@ -307,7 +307,7 @@ class ItineraryCreateViewTests(TestCase):
         self.client.login(username="testuser", password="testpass123")
         response = self.client.get(reverse("itineraries:create"))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "itineraries/create.html")
+        self.assertTemplateUsed(response, "itineraries/create_improved.html")
 
     def test_create_itinerary_with_stops(self):
         """Test creating an itinerary with stops"""
@@ -360,8 +360,8 @@ class ItineraryEditViewTests(TestCase):
         itinerary = Itinerary.objects.create(user=self.user, title="Test Tour")
         response = self.client.get(reverse("itineraries:edit", args=[itinerary.pk]))
         self.assertEqual(response.status_code, 200)
-        # The edit view uses create.html template
-        self.assertTemplateUsed(response, "itineraries/create.html")
+        # The edit view uses create_improved.html template
+        self.assertTemplateUsed(response, "itineraries/create_improved.html")
 
     def test_edit_other_user_itinerary(self):
         """Test that user cannot edit other user's itinerary"""

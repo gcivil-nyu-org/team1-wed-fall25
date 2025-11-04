@@ -1,0 +1,179 @@
+{% if page_obj %}
+    <!-- Search and Filter Controls -->
+    <div class="search-filter-container">
+        <form method="get" class="search-filter-form">
+            <input type="hidden" name="tab" value="art">
+            <div class="form-group">
+                <input type="text" 
+                       name="search" 
+                       value="{{ search_query }}" 
+                       placeholder="Search favorites..." 
+                       class="form-control">
+            </div>
+            
+            <div class="form-group">
+                <select name="borough" class="form-control">
+                    <option value="">All Boroughs</option>
+                    {% for borough in boroughs %}
+                        <option value="{{ borough }}" {% if borough == borough_filter %}selected{% endif %}>
+                            {{ borough }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Search</button>
+                {% if search_query or borough_filter %}
+                    <a href="?tab=art" class="btn btn-outline-primary">Clear</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Favorites Grid -->
+    <div class="art-grid">
+        {% for favorite in page_obj %}
+            <div class="art-card">
+                <div class="card-header-with-favorite">
+                    <h3 class="art-title">
+                        <a href="{% url 'loc_detail:art_detail' favorite.art.id %}">
+                            {{ favorite.art.title|default:"Untitled" }}
+                        </a>
+                    </h3>
+                    <button class="btn-remove-favorite" 
+                            data-art-id="{{ favorite.art.id }}"
+                            title="Remove from favorites">
+                        ❤️
+                    </button>
+                </div>
+                
+                {% if favorite.art.borough %}
+                    <span class="borough-badge">{{ favorite.art.borough }}</span>
+                {% endif %}
+
+                <div class="art-info">
+                    <p><strong>Artist:</strong> {{ favorite.art.artist_name|default:"Unknown Artist" }}</p>
+                    
+                    {% if favorite.art.location %}
+                        <p><strong>Location:</strong> {{ favorite.art.location|truncatewords:15 }}</p>
+                    {% endif %}
+
+                    {% if favorite.art.get_total_reviews > 0 %}
+                    <div style="margin: 10px 0;">
+                        <span style="color: #fbbc04;">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= favorite.art.get_average_rating %}★{% else %}☆{% endif %}
+                            {% endfor %}
+                        </span>
+                        <span style="font-weight: 600; margin-left: 5px;">{{ favorite.art.get_average_rating }}</span>
+                        <span style="color: #666; font-size: 0.9rem;">({{ favorite.art.get_total_reviews }} reviews)</span>
+                    </div>
+                    {% endif %}
+                    
+                    <p style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0; color: #999; font-size: 0.85rem;">
+                        <i class="fas fa-heart me-1"></i> Added {{ favorite.added_at|date:"M d, Y" }}
+                    </p>
+                </div>
+
+                <a href="{% url 'loc_detail:art_detail' favorite.art.id %}" class="btn btn-outline-primary" style="width: 100%; margin-top: 15px; text-align: center;">
+                    View Details →
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+        <div style="text-align: center; margin-top: 30px;">
+            <nav aria-label="Pagination">
+                <ul class="pagination" style="display: inline-flex; list-style: none; padding: 0; gap: 5px;">
+                    {% if page_obj.has_previous %}
+                        <li><a class="btn btn-outline-primary" href="?tab=art&page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if borough_filter %}&borough={{ borough_filter }}{% endif %}">First</a></li>
+                        <li><a class="btn btn-outline-primary" href="?tab=art&page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if borough_filter %}&borough={{ borough_filter }}{% endif %}">Previous</a></li>
+                    {% endif %}
+                    
+                    <li><span class="btn btn-primary">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                    
+                    {% if page_obj.has_next %}
+                        <li><a class="btn btn-outline-primary" href="?tab=art&page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if borough_filter %}&borough={{ borough_filter }}{% endif %}">Next</a></li>
+                        <li><a class="btn btn-outline-primary" href="?tab=art&page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if borough_filter %}&borough={{ borough_filter }}{% endif %}">Last</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    {% endif %}
+{% else %}
+    <div class="empty-state">
+        <i class="fas fa-palette"></i>
+        <h3>No Favorite Art Locations Yet</h3>
+        <p>Start exploring NYC public art and add pieces to your favorites!</p>
+        <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+            <a href="{% url 'loc_detail:index' %}" class="btn btn-primary">Browse All Art</a>
+            <a href="{% url 'artinerary:index' %}" class="btn btn-outline-primary">View Map</a>
+        </div>
+    </div>
+{% endif %}
+
+<script>
+// CSRF token helper
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+const csrftoken = getCookie('csrftoken');
+
+// Remove from favorites functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const removeButtons = document.querySelectorAll('.btn-remove-favorite');
+    
+    removeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const artId = this.getAttribute('data-art-id');
+            const card = this.closest('.art-card');
+            
+            if (confirm('Remove this art location from your favorites?')) {
+                fetch(`/loc_detail/api/favorite/${artId}/toggle`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.favorited) {
+                        // Remove the card with animation
+                        card.style.transition = 'opacity 0.3s ease';
+                        card.style.opacity = '0';
+                        setTimeout(() => {
+                            card.remove();
+                            
+                            // Check if no favorites left
+                            const remainingCards = document.querySelectorAll('.art-card');
+                            if (remainingCards.length === 0) {
+                                location.reload();
+                            }
+                        }, 300);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error removing favorite:', error);
+                    alert('Failed to remove favorite. Please try again.');
+                });
+            }
+        });
+    });
+});
+</script>

@@ -3,7 +3,7 @@ Admin configuration for itineraries app
 """
 
 from django.contrib import admin
-from .models import Itinerary, ItineraryStop
+from .models import Itinerary, ItineraryStop, ItineraryFavorite
 
 
 class ItineraryStopInline(admin.TabularInline):
@@ -28,3 +28,12 @@ class ItineraryStopAdmin(admin.ModelAdmin):
     list_filter = ["itinerary", "visit_time"]
     search_fields = ["itinerary__title", "location__title"]
     ordering = ["itinerary", "order"]
+
+
+@admin.register(ItineraryFavorite)
+class ItineraryFavoriteAdmin(admin.ModelAdmin):
+    list_display = ["user", "itinerary", "created_at"]
+    list_filter = ["created_at"]
+    search_fields = ["user__username", "itinerary__title"]
+    readonly_fields = ["created_at"]
+    ordering = ["-created_at"]

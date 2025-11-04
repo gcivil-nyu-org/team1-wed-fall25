@@ -10,12 +10,11 @@
 
 {% block content %}
 <div class="container mt-4 mb-5">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'itineraries:list' %}">My Itineraries</a></li>
-            <li class="breadcrumb-item active" aria-current="page">{{ itinerary.title }}</li>
-        </ol>
-    </nav>
+    <div class="mb-3">
+        <a href="{% url 'itineraries:list' %}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to My Itineraries
+        </a>
+    </div>
 
     {% if messages %}
         {% for message in messages %}
@@ -32,6 +31,14 @@
             {% if itinerary.description %}
             <p class="lead text-muted">{{ itinerary.description }}</p>
             {% endif %}
+            {% if itinerary.date %}
+            <div class="mb-2">
+                <span class="badge bg-info text-dark fs-6">
+                    <i class="fas fa-calendar me-1"></i>
+                    Planned for {{ itinerary.date|date:"l, F d, Y" }}
+                </span>
+            </div>
+            {% endif %}
             <small class="text-muted">
                 <i class="fas fa-clock me-1"></i>Created {{ itinerary.created_at|date:"F d, Y" }}
                 {% if itinerary.updated_at != itinerary.created_at %}
@@ -39,13 +46,30 @@
                 {% endif %}
             </small>
         </div>
-        <div class="btn-group" role="group">
-            <a href="{% url 'itineraries:edit' itinerary.pk %}" class="btn btn-outline-primary">
-                <i class="fas fa-edit me-1"></i>Edit
-            </a>
-            <a href="{% url 'itineraries:delete' itinerary.pk %}" class="btn btn-outline-danger">
-                <i class="fas fa-trash me-1"></i>Delete
-            </a>
+        <div class="d-flex gap-2">
+            <div class="btn-group" role="group">
+                <a href="{% url 'itineraries:edit' itinerary.pk %}" class="btn btn-outline-primary">
+                    <i class="fas fa-edit me-1"></i>Edit
+                </a>
+                <a href="{% url 'itineraries:delete' itinerary.pk %}" class="btn btn-outline-danger">
+                    <i class="fas fa-trash me-1"></i>Delete
+                </a>
+            </div>
+            {% if is_favorited %}
+            <form method="post" action="{% url 'itineraries:unfavorite' itinerary.pk %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-warning" title="Remove from favorites">
+                    <i class="fas fa-star me-1"></i>Unfavorite
+                </button>
+            </form>
+            {% else %}
+            <form method="post" action="{% url 'itineraries:favorite' itinerary.pk %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-warning" title="Add to favorites">
+                    <i class="far fa-star me-1"></i>Favorite
+                </button>
+            </form>
+            {% endif %}
         </div>
     </div>
 
