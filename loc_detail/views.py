@@ -268,6 +268,10 @@ def api_comment_reaction(request, comment_id):
                 "user_reaction": user_reaction,
             }
         )
+    except ArtComment.DoesNotExist:
+        return JsonResponse(
+            {"success": False, "error": "Comment not found"}, status=404
+        )
     except Exception as e:
         logger.error(f"Error in api_comment_reaction: {str(e)}")
         return JsonResponse({"success": False, "error": str(e)}, status=500)
