@@ -30,9 +30,9 @@
 .page-header {
     text-align: center;
     margin-bottom: 3rem;
-    animation: fadeInDown 0.8s ease-out;
+    /* animation: fadeInDown 0.8s ease-out; */
 }
-@keyframes fadeInDown {
+/* @keyframes fadeInDown {
     from {
         opacity: 0;
         transform: translateY(-30px);
@@ -41,7 +41,7 @@
         opacity: 1;
         transform: translateY(0);
     }
-}
+} */
 .page-header h1 {
     color: #ffffff;
     font-size: 2.75rem;
@@ -67,10 +67,10 @@
     box-shadow: 
         0 8px 32px rgba(0, 0, 0, 0.3),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    animation: slideInUp 0.8s ease-out 0.2s backwards;
+    /* animation: slideInUp 0.8s ease-out 0.2s backwards; */
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
-@keyframes slideInUp {
+/* @keyframes slideInUp {
     from {
         opacity: 0;
         transform: translateY(30px);
@@ -79,7 +79,7 @@
         opacity: 1;
         transform: translateY(0);
     }
-}
+} */
 @media (max-width: 768px) {
     .filters {
         grid-template-columns: 1fr;
@@ -133,9 +133,9 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 1.5rem;
-    animation: fadeIn 1s ease-out 0.3s backwards;
+    /* animation: fadeIn 1s ease-out 0.3s backwards; */
 }
-@keyframes fadeIn {
+/* @keyframes fadeIn {
     from {
         opacity: 0;
         transform: translateY(20px);
@@ -144,7 +144,7 @@
         opacity: 1;
         transform: translateY(0);
     }
-}
+} */
 .event-card {
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(20px);
@@ -308,10 +308,6 @@
 
 <div class="public-events-wrapper">
     <div class="public-events">
-        <div class="page-header">
-            <h1>🎨 Public Events</h1>
-            <p>Discover and join art events happening in your area</p>
-        </div>
         
         <!-- Search and filters -->
         <form method="get" class="filters">
