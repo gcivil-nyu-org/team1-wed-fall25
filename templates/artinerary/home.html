@@ -46,6 +46,9 @@
         align-items: center;
         margin-top: 10px;
     }
+    .popup-actions a {
+        color: #fff
+    }
     .btn-view-details {
         background-color: #4CAF50;
         color: white;
@@ -60,7 +63,7 @@
         transition: background-color 0.3s ease;
     }
     .btn-view-details:hover {
-        background-color: #45a049;
+        background-color: #347c37;
         color: white;
         text-decoration: none;
     }
@@ -189,9 +192,7 @@
 {% block content %}
 <div class="container-fluid map-container">
     {% csrf_token %}
-    <h1 class="text-center">NYC Public Art Map</h1>
-    <p class="text-center text-muted">Explore public art installations across New York City</p>
-    
+    <h1>Map</h1>    
     <!-- Location notice (shown when location is denied) -->
     <div id="location-notice" style="display:none;">
         <span id="notice-text"></span>
