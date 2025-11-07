@@ -20,7 +20,7 @@ class PublicArt(models.Model):
     thumbnail = models.ImageField(upload_to="", blank=True, null=True, editable=False)
 
     THUMBNAIL_SIZE = (300, 300)
-    MAX_IMAGE_SIZE = (2000, 2000)  # max width, height for uploaded originals
+    MAX_IMAGE_SIZE = (2000, 2000)
     MAX_IMAGE_QUALITY = 85
 
     def make_thumbnail(self, image_field, size=THUMBNAIL_SIZE):
@@ -45,21 +45,16 @@ class PublicArt(models.Model):
     def downsample_image(
         self, image_field, max_size=MAX_IMAGE_SIZE, quality=MAX_IMAGE_QUALITY
     ):
-        """
-        Return ContentFile with downsampled version of image_field if exceeds max_size.
-        If the image is already within limits, returns None.
-        """
         if not image_field:
             return None
         try:
             image_field.open()
             img = Image.open(image_field)
             img_format = img.format or "JPEG"
-            # don't upconvert small images
             if img.width <= max_size[0] and img.height <= max_size[1]:
                 return None
 
-            img = img.convert("RGB")  # normalize for saving as JPEG
+            img = img.convert("RGB")
             img.thumbnail(max_size, Image.LANCZOS)
 
             out_io = BytesIO()
@@ -76,7 +71,6 @@ class PublicArt(models.Model):
             return None
 
     def save(self, *args, **kwargs):
-        # detect image change (new instance or image replaced)
         image_changed = False
         if self.pk:
             try:
@@ -90,19 +84,14 @@ class PublicArt(models.Model):
         else:
             image_changed = bool(self.image)
 
-        # Downsample original image if needed before saving
         if self.image and image_changed:
             downsampled = self.downsample_image(self.image)
             if downsampled:
-                # replace the uploaded image with the downsampled version
-                # save=False to avoid recursive save() calls
                 self.image.save(downsampled.name, downsampled, save=False)
 
-        # if image present and changed, build thumbnail (existing thumbnail logic)
         if self.image and image_changed:
             thumb_file = self.make_thumbnail(self.image)
             if thumb_file:
-                # remove old thumbnail if exists
                 try:
                     if self.pk:
                         old = PublicArt.objects.get(pk=self.pk)
@@ -114,10 +103,8 @@ class PublicArt(models.Model):
                             old.thumbnail.storage.delete(old.thumbnail.name)
                 except Exception:
                     pass
-                # assign generated thumbnail
                 self.thumbnail.save(thumb_file.name, thumb_file, save=False)
 
-        # if image removed, also remove thumbnail
         if not self.image and self.thumbnail:
             try:
                 if self.thumbnail.name and self.thumbnail.storage.exists(
@@ -184,10 +171,7 @@ class PublicArt(models.Model):
     agency = models.CharField(max_length=200, blank=True, null=True)
     community_board = models.CharField(max_length=100, blank=True, null=True)
 
-    # Original data reference
     external_id = models.CharField(max_length=100, unique=True, blank=True, null=True)
-
-    # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -200,20 +184,16 @@ class PublicArt(models.Model):
         return f"{self.title or 'Untitled'} by {self.artist_name or 'Unknown'}"
 
     def get_average_rating(self):
-        """Calculate average rating from all reviews (not replies)"""
         avg = self.comments.filter(parent__isnull=True).aggregate(Avg("rating"))[
             "rating__avg"
         ]
         return round(avg, 1) if avg else 0
 
     def get_total_reviews(self):
-        """Get total number of reviews (not replies)"""
         return self.comments.filter(parent__isnull=True).count()
 
 
 class UserFavoriteArt(models.Model):
-    """Track user's favorite art pieces"""
-
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="favorite_art"
     )
@@ -246,14 +226,6 @@ class ArtComment(models.Model):
         default=5,
         help_text="Rating from 1 to 5 stars",
     )
-    # Image upload for reviews
-    image = models.ImageField(
-        upload_to="review_images/",
-        blank=True,
-        null=True,
-        help_text="Upload a photo of the artwork",
-    )
-    # For threading/replies
     parent = models.ForeignKey(
         "self", on_delete=models.CASCADE, null=True, blank=True, related_name="replies"
     )
@@ -268,20 +240,42 @@ class ArtComment(models.Model):
 
     @property
     def likes_count(self):
-        """Get total likes for this comment"""
         return self.likes.filter(is_like=True).count()
 
     @property
     def dislikes_count(self):
-        """Get total dislikes for this comment"""
         return self.likes.filter(is_like=False).count()
 
     def user_reaction(self, user):
-        """Check if user has liked/disliked this comment"""
         reaction = self.likes.filter(user=user).first()
         if reaction:
             return "like" if reaction.is_like else "dislike"
         return None
+
+
+class CommentImage(models.Model):
+    """Multiple images for comments"""
+
+    comment = models.ForeignKey(
+        ArtComment, on_delete=models.CASCADE, related_name="images"
+    )
+    image = models.ImageField(upload_to="review_images/", help_text="Review photo")
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["order", "uploaded_at"]
+
+    def __str__(self):
+        return f"Image for comment by {self.comment.user.username}"
+
+    def delete(self, *args, **kwargs):
+        """Delete the image file when the model instance is deleted"""
+        if self.image:
+            storage = self.image.storage
+            if storage.exists(self.image.name):
+                storage.delete(self.image.name)
+        super().delete(*args, **kwargs)
 
 
 class CommentLike(models.Model):
@@ -293,7 +287,7 @@ class CommentLike(models.Model):
     comment = models.ForeignKey(
         ArtComment, on_delete=models.CASCADE, related_name="likes"
     )
-    is_like = models.BooleanField(default=True)  # True for like, False for dislike
+    is_like = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -305,3 +299,55 @@ class CommentLike(models.Model):
         return (
             f"{self.user.username} {reaction} comment by {self.comment.user.username}"
         )
+
+
+class CommentReport(models.Model):
+    """Reports on comments"""
+
+    REPORT_REASONS = [
+        ("spam", "Spam or misleading"),
+        ("harassment", "Harassment or bullying"),
+        ("hate", "Hate speech or discrimination"),
+        ("violence", "Violence or dangerous content"),
+        ("sexual", "Sexual content"),
+        ("misinformation", "False information"),
+        ("copyright", "Copyright violation"),
+        ("personal", "Personal information shared"),
+        ("other", "Other (please specify)"),
+    ]
+
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("reviewing", "Under Review"),
+        ("resolved", "Resolved"),
+        ("dismissed", "Dismissed"),
+    ]
+
+    comment = models.ForeignKey(
+        ArtComment, on_delete=models.CASCADE, related_name="reports"
+    )
+    reporter = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="comment_reports"
+    )
+    reasons = models.JSONField(help_text="List of selected report reasons")
+    additional_info = models.TextField(
+        blank=True, help_text="Additional details about the report"
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    created_at = models.DateTimeField(auto_now_add=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    reviewed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reviewed_reports",
+    )
+    admin_notes = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        unique_together = ["comment", "reporter"]
+
+    def __str__(self):
+        return f"Report by {self.reporter.username} on comment {self.comment.id}"

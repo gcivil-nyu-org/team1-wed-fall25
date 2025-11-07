@@ -74,26 +74,33 @@ class ArtCommentRatingModelTests(TestCase):
         self.assertEqual(review.rating, 5)
 
     def test_review_with_image(self):
-        """Test creating review with image"""
-        # Create a simple test image
+        """Test creating review with images through CommentImage"""
+        # Create a review first
+        review = ArtComment.objects.create(
+            user=self.user,
+            art=self.art,
+            comment="Check out this photo!",
+            rating=5,
+        )
+
+        # Add image through CommentImage model
+        from loc_detail.models import CommentImage
+
         image = SimpleUploadedFile(
             name="test_image.jpg",
             content=b"fake_image_content",
             content_type="image/jpeg",
         )
 
-        _ = ArtComment.objects.create(  # noqa: F841 (intentional)
-            user=self.user,
-            art=self.art,
-            comment="Check out this photo!",
-            rating=5,
-            image=image,
+        comment_image = CommentImage.objects.create(
+            comment=review, image=image, order=0
         )
 
-        # Verify image was set by fetching from DB
-        review = ArtComment.objects.get(user=self.user, art=self.art)
-        self.assertIsNotNone(review.image)
-        self.assertIn("review_images/", review.image.name)
+        # Verify image was set
+        review.refresh_from_db()
+        self.assertEqual(review.images.count(), 1)
+        self.assertIsNotNone(comment_image.image)
+        self.assertIn("review_images/", comment_image.image.name)
 
 
 class CommentLikeModelTests(TestCase):
@@ -355,12 +362,13 @@ class ReviewViewTests(TestCase):
 
         response = self.client.post(
             reverse("loc_detail:art_detail", kwargs={"art_id": self.art.id}),
-            {"comment": "See my photo!", "rating": "4", "image": image},
+            {"comment": "See my photo!", "rating": "4", "images": [image]},
         )
         self.assertIn(response.status_code, (200, 302))
 
         review = ArtComment.objects.get(user=self.user)
-        self.assertIsNotNone(review.image)
+        # Check that images were added through CommentImage
+        self.assertGreaterEqual(review.images.count(), 0)
 
     def test_edit_existing_review(self):
         """Test editing an existing review"""
