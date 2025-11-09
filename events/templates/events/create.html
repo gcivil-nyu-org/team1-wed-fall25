@@ -5,10 +5,6 @@
 
 {% block extra_head %}
 <style>
-    body {
-        background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
-        min-height: 100vh;
-    }
     .form-wrapper {
         min-height: 100vh;
         padding: 3rem 1rem;
@@ -19,24 +15,17 @@
     .form-container {
         max-width: 900px;
         width: 100%;
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(20px);
         border-radius: 16px;
         padding: 3rem;
-        box-shadow: 
-            0 20px 60px rgba(0, 0, 0, 0.4),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1);
         border: 1px solid rgba(255, 255, 255, 0.1);
     }
     .form-container h1 {
         margin: 0 0 0.75rem 0;
-        color: #ffffff;
         font-size: 2.25rem;
         font-weight: 300;
         letter-spacing: 1px;
     }
     .form-subtitle {
-        color: rgba(255, 255, 255, 0.6);
         margin-bottom: 2.5rem;
         font-size: 1rem;
         font-weight: 300;
@@ -53,7 +42,6 @@
         display: block;
         margin-bottom: 0.75rem;
         font-weight: 400;
-        color: rgba(255, 255, 255, 0.9);
         font-size: 0.95rem;
         letter-spacing: 0.3px;
     }
@@ -63,28 +51,21 @@
     .form-group textarea {
         width: 100%;
         padding: 0.75rem 1rem;
-        border: 1px solid rgba(255, 255, 255, 0.15);
+        border: 1px solid #ccc;
         border-radius: 8px;
         font-size: 0.95rem;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        background: rgba(255, 255, 255, 0.05);
-        color: rgba(255, 255, 255, 0.9);
         font-weight: 300;
     }
     .form-group input::placeholder,
     .form-group textarea::placeholder {
-        color: rgba(255, 255, 255, 0.4);
-    }
-    .form-group select option {
-        background: #1a1a2e;
-        color: white;
+        color: #666;
     }
     .form-group input:focus,
     .form-group select:focus,
     .form-group textarea:focus {
         outline: none;
-        border-color: rgba(102, 126, 234, 0.5);
-        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid #ccc;
         transform: translateY(-1px);
     }
     .location-search-container,
@@ -100,7 +81,6 @@
         border-top: none;
         max-height: 250px;
         overflow-y: auto;
-        background: rgba(20, 20, 30, 0.95);
         backdrop-filter: blur(20px);
         display: none;
         border-radius: 0 0 8px 8px;
@@ -112,15 +92,12 @@
         cursor: pointer;
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        color: rgba(255, 255, 255, 0.8);
         font-size: 0.9rem;
     }
     .autocomplete-item:last-child {
         border-bottom: none;
     }
     .autocomplete-item:hover {
-        background: rgba(102, 126, 234, 0.15);
-        color: rgba(255, 255, 255, 0.95);
         transform: translateX(4px);
     }
     .chips-container {
@@ -131,8 +108,7 @@
         min-height: 40px;
         padding: 0.625rem;
         border-radius: 8px;
-        background: rgba(0, 0, 0, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        border: 1px solid #ccc;
     }
     .chip {
         background: rgba(102, 126, 234, 0.15);

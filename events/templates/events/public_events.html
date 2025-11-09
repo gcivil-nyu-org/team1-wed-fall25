@@ -3,23 +3,11 @@
 {% block events_content %}
 <style>
 .public-events-wrapper {
-    background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+    /* background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); */
     min-height: calc(100vh - 200px);
     padding: 2rem 1rem;
     position: relative;
     overflow: hidden;
-}
-.public-events-wrapper::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: 
-        radial-gradient(circle at 30% 20%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 70% 70%, rgba(240, 147, 251, 0.1) 0%, transparent 50%);
-    pointer-events: none;
 }
 .public-events {
     max-width: 1400px;
@@ -49,14 +37,10 @@
     grid-template-columns: 2fr 1fr 1fr auto;
     gap: 1rem;
     margin-bottom: 2rem;
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(20px);
     padding: 1.5rem;
     border-radius: 12px;
-    box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: #ccc;
 }
 @media (max-width: 768px) {
     .filters {
@@ -69,8 +53,8 @@
     border-radius: 8px;
     font-size: 0.95rem;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background: rgba(255, 255, 255, 0.05);
-    color: rgba(255, 255, 255, 0.9);
+    background: #fff;
+    color: #000;
     font-weight: 300;
 }
 .filters input:focus, .filters select:focus {
@@ -80,11 +64,11 @@
     transform: translateY(-1px);
 }
 .filters input::placeholder {
-    color: rgba(255, 255, 255, 0.4);
+    color: #666;
 }
 .filters select option {
-    background: #1a1a2e;
-    color: white;
+    background: #fff;
+    color: #000;
 }
 .filters button {
     padding: 0.75rem 1.75rem;
@@ -113,17 +97,14 @@
     gap: 1.5rem;
 }
 .event-card {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(20px);
+    background: #fff;
     border-radius: 16px;
     padding: 1.75rem;
-    box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     border: 1px solid rgba(255, 255, 255, 0.1);
     position: relative;
     overflow: hidden;
+    color: #000;
 }
 .event-card::before {
     content: "";
@@ -136,21 +117,8 @@
     opacity: 0;
     transition: opacity 0.4s ease;
 }
-.event-card:hover::before {
-    opacity: 1;
-}
-.event-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 
-        0 16px 48px rgba(0, 0, 0, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2),
-        0 0 0 1px rgba(102, 126, 234, 0.3);
-    border-color: rgba(102, 126, 234, 0.3);
-    background: rgba(255, 255, 255, 0.08);
-}
 .event-card h3 {
     margin: 0 0 1.25rem 0;
-    color: #ffffff;
     font-size: 1.4rem;
     font-weight: 500;
     letter-spacing: 0.3px;
@@ -158,7 +126,6 @@
 }
 .event-card p {
     margin: 0.625rem 0;
-    color: rgba(255, 255, 255, 0.7);
     display: flex;
     align-items: center;
     gap: 0.625rem;
@@ -166,7 +133,6 @@
     font-weight: 300;
 }
 .event-card p strong {
-    color: rgba(255, 255, 255, 0.9);
     min-width: 70px;
     font-weight: 400;
 }
@@ -182,7 +148,7 @@
 }
 .badge-open {
     background: rgba(17, 153, 142, 0.15);
-    color: #5affe8;
+    /* color: #5affe8; */
     border: 1px solid rgba(17, 153, 142, 0.3);
 }
 .badge-invite {
@@ -225,7 +191,6 @@
 }
 .btn-joined {
     background: rgba(149, 165, 166, 0.15);
-    color: rgba(255, 255, 255, 0.5);
     cursor: not-allowed;
     border: 1px solid rgba(149, 165, 166, 0.2);
 }
