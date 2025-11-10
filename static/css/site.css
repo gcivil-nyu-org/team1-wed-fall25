@@ -357,6 +357,11 @@ main {
     align-self: stretch;
 }
 
+.art-rating-stars {
+    color: #fbbc04;
+    font-size: 16px;
+}
+
 .view-details {
     color: #3498db;
     font-weight: 500;
