@@ -101,10 +101,6 @@
 </div>
 
 <style>
-body {
-    background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
-    min-height: 100vh;
-}
 .event-detail-container {
     max-width: 1200px;
     margin: 2rem auto;
@@ -132,21 +128,12 @@ body {
 .header-text {
     flex: 1;
 }
-.event-header h1 {
-    margin: 0;
-    color: #ffffff;
-    font-size: 2.25rem;
-    font-weight: 400;
-    letter-spacing: 0.5px;
-}
 .event-host {
-    color: rgba(255, 255, 255, 0.7);
     margin-top: 0.75rem;
     font-size: 0.95rem;
     font-weight: 300;
 }
 .event-host strong {
-    color: rgba(255, 255, 255, 0.9);
     font-weight: 400;
 }
 .badge-host {
@@ -236,8 +223,6 @@ body {
     gap: 1.5rem;
 }
 .event-left-panel, .event-right-panel {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(20px);
     border-radius: 16px;
     padding: 2rem;
     box-shadow: 
@@ -307,11 +292,9 @@ body {
 }
 .modal-icon.warning {
     background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    color: white;
 }
 .modal-icon.info {
     background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-    color: white;
 }
 .modal-content h3 {
     margin: 0 0 1rem;
@@ -352,20 +335,6 @@ body {
 }
 .btn-cancel:hover {
     background: #d5dbdd;
-}
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 </style>
 

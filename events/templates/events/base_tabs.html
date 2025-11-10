@@ -3,16 +3,12 @@
 {% block content %}
 <style>
 body {
-    background: #0f0f0f;
     min-height: 100vh;
 }
 .events-container {
     max-width: 1400px;
     margin: 0 auto;
     padding: 0;
-}
-.events-header h1 {
-    color: #ffffff;
 }
 .tabs-nav {
     display: flex;
@@ -24,7 +20,7 @@ body {
 .tab {
     padding: 0.75rem 1.75rem;
     text-decoration: none;
-    color: rgba(255, 255, 255, 0.6);
+    color: #000;
     border-radius: 8px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     font-weight: 400;
@@ -46,16 +42,13 @@ body {
     transition: transform 0.3s ease;
 }
 .tab:hover {
-    color: rgba(255, 255, 255, 0.9);
-    background: rgba(255, 255, 255, 0.05);
     border-color: rgba(255, 255, 255, 0.1);
 }
 .tab:hover::before {
     transform: scaleX(1);
 }
 .tab.active {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(17, 153, 142, 0.25);
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 .tab.active::before {
@@ -64,8 +57,7 @@ body {
 .btn-create {
     margin-left: auto;
     padding: 0.75rem 1.75rem;
-    background: rgba(17, 153, 142, 0.15);
-    color: #5affe8;
+    color: #000;
     text-decoration: none;
     border-radius: 8px;
     font-weight: 400;
@@ -78,13 +70,6 @@ body {
 .btn-create:hover {
     background: rgba(17, 153, 142, 0.25);
     border-color: rgba(17, 153, 142, 0.5);
-    transform: translateY(-2px);
-}
-.btn-create:active {
-    transform: translateY(0);
-}
-.events-content {
-    /* Content styling handled by individual pages */
 }
 @media (max-width: 768px) {
     .events-header {
