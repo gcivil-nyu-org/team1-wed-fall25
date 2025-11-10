@@ -61,6 +61,57 @@ nav {
     text-decoration: underline;
 }
 
+.btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    font-size: 0.95rem;
+}
+
+.btn-primary {
+    background: #667eea;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #5568d3;
+}
+
+.btn-outline-primary {
+    background: transparent;
+    border: 2px solid #667eea;
+    color: #667eea;
+}
+
+.btn-outline-primary:hover {
+    background: #667eea;
+    color: white;
+}
+
+.btn-warning {
+    background: #ffc107;
+    color: #333;
+}
+
+.btn-warning:hover {
+    background: #e0a800;
+}
+
+.btn-outline-warning {
+    background: transparent;
+    border: 2px solid #ffc107;
+    color: #ffc107;
+}
+
+.btn-outline-warning:hover {
+    background: #ffc107;
+    color: #333;
+}
+
 .btn-link {
     background: none;
     border: none;
@@ -151,23 +202,6 @@ main {
     margin-top: 0.25rem;
 }
 
-.btn {
-    padding: 0.75rem 1.5rem;
-    background: #3498db;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-size: 1rem;
-    cursor: pointer;
-    font-weight: 500;
-    text-decoration: none;
-    display: inline-block;
-}
-
-.btn:hover {
-    background: #2980b9;
-}
-
 .form-footer {
     margin-top: 1.5rem;
     text-align: center;
@@ -240,10 +274,6 @@ main {
     border-color: #3498db;
 }
 
-.btn-filter {
-    background: #3498db;
-}
-
 .btn-clear {
     background: #95a5a6;
 }
@@ -269,6 +299,7 @@ main {
     color: inherit;
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
 }
 
 .art-card:hover {
@@ -280,6 +311,13 @@ main {
     padding: 1.5rem;
     background: #f8f9fa;
     border-bottom: 1px solid #e9ecef;
+    align-self: stretch;
+}
+
+.art-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
 }
 
 .art-title {
@@ -291,8 +329,8 @@ main {
 .art-badge {
     display: inline-block;
     padding: 0.25rem 0.75rem;
-    background: #3498db;
-    color: white;
+    background: #cce0e5;
+    color: #000;
     border-radius: 12px;
     font-size: 0.875rem;
 }
@@ -316,12 +354,48 @@ main {
     padding: 1rem 1.5rem;
     background: #f8f9fa;
     border-top: 1px solid #e9ecef;
+    align-self: stretch;
+}
+
+.art-rating-stars {
+    color: #fbbc04;
+    font-size: 16px;
 }
 
 .view-details {
     color: #3498db;
     font-weight: 500;
     font-size: 0.9rem;
+}
+
+.favorite-icon {
+    margin-top: 10px;
+    background: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    font-size: 20px;
+    z-index: 10;
+}
+
+.favorite-icon:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.favorite-icon.favorited {
+    color: #e74c3c;
+}
+
+.favorite-icon:not(.favorited) {
+    color: #ccc;
 }
 
 /* Pagination */
