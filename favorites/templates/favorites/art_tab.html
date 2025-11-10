@@ -34,52 +34,70 @@
     <!-- Favorites Grid -->
     <div class="art-grid">
         {% for favorite in page_obj %}
-            <div class="art-card">
-                <div class="card-header-with-favorite">
-                    <h3 class="art-title">
-                        <a href="{% url 'loc_detail:art_detail' favorite.art.id %}">
-                            {{ favorite.art.title|default:"Untitled" }}
-                        </a>
-                    </h3>
-                    <button class="btn-remove-favorite" 
-                            data-art-id="{{ favorite.art.id }}"
-                            title="Remove from favorites">
-                        ❤️
-                    </button>
-                </div>
-                
-                {% if favorite.art.borough %}
-                    <span class="borough-badge">{{ favorite.art.borough }}</span>
-                {% endif %}
+            <a class="art-card" href="{% url 'loc_detail:art_detail' favorite.art.id %}">
+                    <div class="art-card-header">
+                        <div class="art-header">
+                            <div>
+                                <h3 class="art-title">{{ favorite.art.title|default:"Untitled" }}</h3>
+                            {% if favorite.art.borough %}
+                                <span class="art-badge">{{ favorite.art.borough }}</span>
+                            {% endif %}
+                                <button class="btn-remove-favorite favorite-icon favorited" 
+                                        data-art-id="{{ favorite.art.id }}"
+                                        onclick="event.preventDefault(); toggleFavorite('{{ favorite.art.id }}', this);">
+                                    ❤
+                                </button>
+                            </div>
 
-                <div class="art-info">
-                    <p><strong>Artist:</strong> {{ favorite.art.artist_name|default:"Unknown Artist" }}</p>
-                    
-                    {% if favorite.art.location %}
-                        <p><strong>Location:</strong> {{ favorite.art.location|truncatewords:15 }}</p>
-                    {% endif %}
-
-                    {% if favorite.art.get_total_reviews > 0 %}
-                    <div style="margin: 10px 0;">
-                        <span style="color: #fbbc04;">
-                            {% for i in "12345" %}
-                                {% if forloop.counter <= favorite.art.get_average_rating %}★{% else %}☆{% endif %}
-                            {% endfor %}
-                        </span>
-                        <span style="font-weight: 600; margin-left: 5px;">{{ favorite.art.get_average_rating }}</span>
-                        <span style="color: #666; font-size: 0.9rem;">({{ favorite.art.get_total_reviews }} reviews)</span>
+                        {% if favorite.art.image %}
+                            <div>
+                                {{ favorite.art.square_thumbnail|safe }}
+                            </div>
+                        {% endif %}
+                        </div>
                     </div>
-                    {% endif %}
                     
-                    <p style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0; color: #999; font-size: 0.85rem;">
-                        <i class="fas fa-heart me-1"></i> Added {{ favorite.added_at|date:"M d, Y" }}
-                    </p>
-                </div>
-
-                <a href="{% url 'loc_detail:art_detail' favorite.art.id %}" class="btn btn-outline-primary" style="width: 100%; margin-top: 15px; text-align: center;">
-                    View Details →
-                </a>
-            </div>
+                    <div class="art-card-body">
+                        <p class="art-artist">
+                            <strong>Artist:</strong> {{ favorite.art.artist_name|default:"Unknown Artist" }}
+                        </p>
+                        
+                        {% if favorite.art.location %}
+                            <p class="art-location">
+                                <strong>Location:</strong> {{ favorite.art.location|truncatewords:15 }}
+                            </p>
+                        {% endif %}
+                        
+                        {% if favorite.art.medium %}
+                            <p class="art-medium">
+                                <strong>Medium:</strong> {{ favorite.art.medium|truncatewords:10 }}
+                            </p>
+                        {% endif %}
+                        
+                        {% if favorite.art.year_created %}
+                            <p class="art-year">
+                                <strong>Year:</strong> {{ favorite.art.year_created }}
+                            </p>
+                        {% endif %}
+                        
+                        <!-- Rating Display -->
+                        {% if favorite.art.get_total_reviews > 0 %}
+                        <div class="art-rating">
+                            <span class="art-rating-stars">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= favorite.art.get_average_rating %}★{% else %}☆{% endif %}
+                                {% endfor %}
+                            </span>
+                            <span class="art-rating-score">{{ favorite.art.get_average_rating }}</span>
+                            <span class="art-rating-count">({{ favorite.art.get_total_reviews }})</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="art-card-footer">
+                        <span class="view-details">View Details →</span>
+                    </div>
+</a>
         {% endfor %}
     </div>
 
