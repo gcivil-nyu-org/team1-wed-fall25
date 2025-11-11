@@ -98,10 +98,7 @@ def edit_profile(request):
 
         if profile_form.is_valid() and user_form.is_valid():
             # Detect email change (compare to original_email)
-            new_email = (
-                user_form.cleaned_data.get("email")
-                or request.POST.get("email")
-            )
+            new_email = user_form.cleaned_data.get("email") or request.POST.get("email")
             old_email = original_email
 
             # If email changed and user did NOT sign up via OAuth,
