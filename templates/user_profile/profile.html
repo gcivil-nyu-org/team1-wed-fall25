@@ -113,14 +113,14 @@
     {% endif %}
     
     <!-- Contact Info (only visible to followers or own profile) -->
-    {% if profile.contact_info and is_own_profile or profile.contact_info and is_following %}
+    <!-- {% if profile.contact_info and is_own_profile or profile.contact_info and is_following %}
     <div class="section">
         <h2 class="section-title">Contact Information</h2>
         <div class="contact-info">
             {{ profile.contact_info }}
         </div>
     </div>
-    {% endif %}
+    {% endif %} -->
     
     <!-- Hosted Events -->
     {% if hosted_events %}

@@ -8,7 +8,7 @@ class UserProfileForm(forms.ModelForm):
 
     class Meta:
         model = UserProfile
-        fields = ["full_name", "about", "contact_info", "privacy", "profile_image"]
+        fields = ["full_name", "about", "privacy", "profile_image"]
         widgets = {
             "full_name": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "Your full name"}
@@ -21,12 +21,12 @@ class UserProfileForm(forms.ModelForm):
                     "maxlength": 500,
                 }
             ),
-            "contact_info": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "Email, phone, or social media",
-                }
-            ),
+            # "contact_info": forms.TextInput(
+            #     attrs={
+            #         "class": "form-control",
+            #         "placeholder": "Email, phone, or social media",
+            #     }
+            # ),
             "privacy": forms.Select(attrs={"class": "form-control"}),
             "profile_image": forms.FileInput(
                 attrs={"class": "form-control", "accept": "image/*"}
@@ -35,14 +35,14 @@ class UserProfileForm(forms.ModelForm):
         labels = {
             "full_name": "Full Name",
             "about": "About Yourself",
-            "contact_info": "Contact Information",
+            # "contact_info": "Contact Information",
             "privacy": "Profile Privacy",
             "profile_image": "Profile Picture",
         }
         help_texts = {
             "about": "Maximum 500 characters",
             "privacy": "Public profiles can be viewed by anyone",
-            "contact_info": "This will only be visible to users who follow you",
+            # "contact_info": "This will only be visible to users who follow you",
         }
 
     def clean_profile_image(self):
