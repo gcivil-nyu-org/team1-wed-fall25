@@ -86,23 +86,40 @@ def edit_profile(request):
 
     if request.method == "POST":
         # Capture original email from DB to avoid any mutation during form handling
-        original_email = User.objects.filter(pk=request.user.pk).values_list("email", flat=True).first() or ""
+        original_email = (
+            User.objects.filter(pk=request.user.pk)
+            .values_list("email", flat=True)
+            .first()
+            or ""
+        )
 
         profile_form = UserProfileForm(request.POST, request.FILES, instance=profile)
         user_form = UserBasicInfoForm(request.POST, instance=request.user)
 
         if profile_form.is_valid() and user_form.is_valid():
-            # Detect email change (use cleaned_data but compare to original_email)
-            new_email = user_form.cleaned_data.get("email") or request.POST.get("email")
+            # Detect email change (compare to original_email)
+            new_email = (
+                user_form.cleaned_data.get("email")
+                or request.POST.get("email")
+            )
             old_email = original_email
 
-            # If email changed and user did NOT sign up via OAuth, require OTP verification
-            signed_up_with_oauth = SocialAccount.objects.filter(user=request.user).exists()
+            # If email changed and user did NOT sign up via OAuth,
+            # require OTP verification
+            signed_up_with_oauth = SocialAccount.objects.filter(
+                user=request.user
+            ).exists()
 
-            if new_email and new_email.lower() != (old_email or "").lower() and not signed_up_with_oauth:
+            if (
+                new_email
+                and new_email.lower() != (old_email or "").lower()
+                and not signed_up_with_oauth
+            ):
                 # Create OTP record for this email change
                 # Remove any existing unverified OTPs for this email
-                EmailVerificationOTP.objects.filter(email=new_email, is_verified=False).delete()
+                EmailVerificationOTP.objects.filter(
+                    email=new_email, is_verified=False
+                ).delete()
 
                 otp_record = EmailVerificationOTP.objects.create(
                     email=new_email,
@@ -112,21 +129,35 @@ def edit_profile(request):
 
                 # Send OTP email
                 subject = "Verify your new email for Artinerary"
-                message = f"Welcome back to Artinerary!\n\nYour verification code to confirm the email change is: {otp_record.otp}\n\nThis code will expire in 3 minutes. If you didn't request this change, please contact support."
+                message = (
+                    f"Welcome back to Artinerary!\n\n"
+                    f"Your verification code to confirm the email change "
+                    f"is: {otp_record.otp}\n\n"
+                    f"This code will expire in 3 minutes. If you didn't "
+                    f"request this change, please contact support."
+                )
                 try:
-                    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [new_email], fail_silently=False)
+                    send_mail(
+                        subject,
+                        message,
+                        settings.DEFAULT_FROM_EMAIL,
+                        [new_email],
+                        fail_silently=False,
+                    )
                 except Exception as e:
                     print(f"Error sending OTP email for email change: {e}")
 
                 # Store pending email in session
                 request.session["pending_email_change"] = new_email
 
-                # Save profile fields but do NOT save the user's email until verification
+                # Save profile fields but do NOT save the user's email
+                # until verification
                 profile_form.save()
 
                 messages.success(
                     request,
-                    f"A verification code has been sent to {new_email}. Please verify to complete the change."
+                    f"A verification code has been sent to {new_email}. "
+                    "Please verify to complete the change.",
                 )
                 return redirect("user_profile:verify_email_change")
 
@@ -307,7 +338,9 @@ def verify_email_change(request):
     new_email = request.session.get("pending_email_change")
 
     if not new_email:
-        messages.error(request, "No pending email change found. Please update your profile again.")
+        messages.error(
+            request, "No pending email change found. Please update your profile again."
+        )
         return redirect("user_profile:edit_profile")
 
     if request.method == "POST":
@@ -320,7 +353,11 @@ def verify_email_change(request):
                 )
 
                 if otp_record.is_expired():
-                    messages.error(request, "OTP has expired. Please update your email again to receive a new code.")
+                    messages.error(
+                        request,
+                        "OTP has expired. Please update your email again "
+                        "to receive a new code.",
+                    )
                     otp_record.delete()
                     del request.session["pending_email_change"]
                     return redirect("user_profile:edit_profile")
@@ -335,7 +372,9 @@ def verify_email_change(request):
 
                 del request.session["pending_email_change"]
 
-                messages.success(request, "Your email has been updated and verified successfully.")
+                messages.success(
+                    request, "Your email has been updated and verified successfully."
+                )
                 return redirect("user_profile:profile_view", username=user.username)
 
             except EmailVerificationOTP.DoesNotExist:
@@ -343,7 +382,11 @@ def verify_email_change(request):
     else:
         form = OTPVerificationForm()
 
-    return render(request, "user_profile/verify_email_change.html", {"form": form, "email": new_email})
+    return render(
+        request,
+        "user_profile/verify_email_change.html",
+        {"form": form, "email": new_email},
+    )
 
 
 @login_required
@@ -352,25 +395,43 @@ def resend_email_change_otp(request):
     new_email = request.session.get("pending_email_change")
 
     if not new_email:
-        messages.error(request, "No pending email change found. Please update your profile again.")
+        messages.error(
+            request, "No pending email change found. Please update your profile again."
+        )
         return redirect("user_profile:edit_profile")
 
     try:
-        otp_record = EmailVerificationOTP.objects.filter(email=new_email, is_verified=False).latest("created_at")
+        otp_record = EmailVerificationOTP.objects.filter(
+            email=new_email, is_verified=False
+        ).latest("created_at")
         otp_record.otp = EmailVerificationOTP.generate_otp()
         otp_record.save(update_fields=["otp"])
 
         # send email
         subject = "Your new verification code for Artinerary"
-        message = f"Your new verification code to confirm the email change is: {otp_record.otp}\nThis code will expire in 3 minutes."
+        message = (
+            f"Your new verification code to confirm the email change "
+            f"is: {otp_record.otp}\n"
+            f"This code will expire in 3 minutes."
+        )
         try:
-            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [new_email], fail_silently=False)
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [new_email],
+                fail_silently=False,
+            )
         except Exception as e:
             print(f"Error resending OTP for email change: {e}")
 
-        messages.success(request, "A new verification code has been sent to your email.")
+        messages.success(
+            request, "A new verification code has been sent to your email."
+        )
     except EmailVerificationOTP.DoesNotExist:
-        messages.error(request, "Verification session expired. Please update your profile again.")
+        messages.error(
+            request, "Verification session expired. Please update your profile again."
+        )
         return redirect("user_profile:edit_profile")
 
     return redirect("user_profile:verify_email_change")

@@ -41,7 +41,8 @@ class SignupView(FormView):
 
         messages.success(
             self.request,
-            f"A verification code has been sent to {email}. Please verify within 3 minutes.",
+            f"A verification code has been sent to {email}. "
+            "Please verify within 3 minutes.",
         )
         return super().form_valid(form)
 
@@ -50,11 +51,11 @@ class SignupView(FormView):
         subject = "Verify Your Artinerary Account"
         message = f"""
         Welcome to Artinerary!
-        
+
         Your verification code is: {otp}
-        
+
         This code will expire in 3 minutes.
-        
+
         If you didn't create an account with Artinerary, please ignore this email.
         """
         try:
@@ -109,7 +110,9 @@ def verify_otp_view(request):
                 otp_record.save()
 
                 # Log the user in
-                login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+                login(
+                    request, user, backend="django.contrib.auth.backends.ModelBackend"
+                )
 
                 # Clean up session
                 del request.session["pending_verification_email"]
@@ -125,9 +128,7 @@ def verify_otp_view(request):
     else:
         form = OTPVerificationForm()
 
-    return render(
-        request, "accounts/verify_otp.html", {"form": form, "email": email}
-    )
+    return render(request, "accounts/verify_otp.html", {"form": form, "email": email})
 
 
 def resend_otp_view(request):
@@ -151,7 +152,9 @@ def resend_otp_view(request):
         # Send new OTP
         SignupView().send_otp_email(email, otp_record.otp)
 
-        messages.success(request, "A new verification code has been sent to your email.")
+        messages.success(
+            request, "A new verification code has been sent to your email."
+        )
     except EmailVerificationOTP.DoesNotExist:
         messages.error(request, "Verification session expired. Please sign up again.")
         return redirect("accounts:signup")

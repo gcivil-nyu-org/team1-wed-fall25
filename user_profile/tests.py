@@ -41,13 +41,17 @@ class EmailChangeOTPTests(TestCase):
         self.assertIn(reverse("user_profile:verify_email_change"), resp.url)
 
         # OTP record created
-        otp_record = EmailVerificationOTP.objects.filter(email=new_email, is_verified=False).first()
+        otp_record = EmailVerificationOTP.objects.filter(
+            email=new_email, is_verified=False
+        ).first()
         self.assertIsNotNone(otp_record)
 
         # Verify using OTP
         verify_url = reverse("user_profile:verify_email_change")
         resp = self.client.post(verify_url, {"otp": otp_record.otp}, follow=True)
-        self.assertContains(resp, "Your email has been updated and verified successfully.")
+        self.assertContains(
+            resp, "Your email has been updated and verified successfully."
+        )
 
         # Refresh user from DB
         user.refresh_from_db()
@@ -85,11 +89,13 @@ class EmailChangeOTPTests(TestCase):
 
         # No OTP record should be created
         self.assertFalse(
-            EmailVerificationOTP.objects.filter(email=new_email, is_verified=False).exists()
+            EmailVerificationOTP.objects.filter(
+                email=new_email, is_verified=False
+            ).exists()
         )
 
     def test_resend_generates_new_code(self):
-        user = User.objects.create_user(
+        User.objects.create_user(
             username="alice3", email="alice@old.com", password="password123"
         )
         self.login("alice3", "password123")
@@ -108,12 +114,16 @@ class EmailChangeOTPTests(TestCase):
         )
         self.assertEqual(resp.status_code, 302)
 
-        otp1 = EmailVerificationOTP.objects.filter(email=new_email, is_verified=False).latest("created_at")
+        otp1 = EmailVerificationOTP.objects.filter(
+            email=new_email, is_verified=False
+        ).latest("created_at")
         resend_url = reverse("user_profile:resend_email_change_otp")
         resp = self.client.get(resend_url, follow=True)
         self.assertEqual(resp.status_code, 200)
 
-        otp2 = EmailVerificationOTP.objects.filter(email=new_email, is_verified=False).latest("created_at")
+        otp2 = EmailVerificationOTP.objects.filter(
+            email=new_email, is_verified=False
+        ).latest("created_at")
         self.assertNotEqual(otp1.otp, otp2.otp)
 
     def test_expired_otp_rejected(self):
@@ -136,7 +146,9 @@ class EmailChangeOTPTests(TestCase):
         )
         self.assertEqual(resp.status_code, 302)
 
-        otp = EmailVerificationOTP.objects.filter(email=new_email, is_verified=False).latest("created_at")
+        otp = EmailVerificationOTP.objects.filter(
+            email=new_email, is_verified=False
+        ).latest("created_at")
         # expire it
         otp.created_at = timezone.now() - timedelta(minutes=4)
         otp.save()

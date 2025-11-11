@@ -70,7 +70,8 @@ class AuthBackendTests(TestCase):
 
 class SignupViewTests(TestCase):
     def test_signup_redirects_to_otp_verification(self):
-        """Test that signup redirects to OTP verification instead of creating user immediately"""
+        """Test that signup redirects to OTP verification instead of
+        creating user immediately"""
         response = self.client.post(
             reverse("accounts:signup"),
             {
@@ -83,10 +84,10 @@ class SignupViewTests(TestCase):
         # Should redirect to OTP verification page
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse("accounts:verify_otp"))
-        
+
         # User should NOT be created yet (pending OTP verification)
         self.assertFalse(User.objects.filter(username="newuser").exists())
-        
+
         # Session should contain pending verification email
         session = self.client.session
         self.assertEqual(session.get("pending_verification_email"), "new@example.com")
@@ -98,7 +99,7 @@ class EmailVerificationOTPModelTests(TestCase):
         otp_record = EmailVerificationOTP.objects.create(
             email="test@example.com",
             username="testuser",
-            password_hash="hashedpassword"
+            password_hash="hashedpassword",
         )
         self.assertIsNotNone(otp_record.otp)
         self.assertEqual(len(otp_record.otp), 6)
@@ -109,7 +110,7 @@ class EmailVerificationOTPModelTests(TestCase):
         otp_record = EmailVerificationOTP.objects.create(
             email="test@example.com",
             username="testuser",
-            password_hash="hashedpassword"
+            password_hash="hashedpassword",
         )
         self.assertFalse(otp_record.is_expired())
 
@@ -118,7 +119,7 @@ class EmailVerificationOTPModelTests(TestCase):
         otp_record = EmailVerificationOTP.objects.create(
             email="test@example.com",
             username="testuser",
-            password_hash="hashedpassword"
+            password_hash="hashedpassword",
         )
         # Simulate 3+ minutes passing
         otp_record.created_at = timezone.now() - timedelta(minutes=4)
@@ -159,26 +160,23 @@ class OTPVerificationViewTests(TestCase):
             email="test@example.com",
             username="testuser",
             password_hash="pbkdf2_sha256$600000$test$hash",
-            otp="123456"
+            otp="123456",
         )
-        
+
         # Set session
         session = self.client.session
         session["pending_verification_email"] = "test@example.com"
         session.save()
-        
+
         # Verify OTP
-        response = self.client.post(
-            reverse("accounts:verify_otp"),
-            {"otp": "123456"}
-        )
-        
+        response = self.client.post(reverse("accounts:verify_otp"), {"otp": "123456"})
+
         # Should redirect to home
         self.assertEqual(response.status_code, 302)
-        
+
         # User should be created
         self.assertTrue(User.objects.filter(username="testuser").exists())
-        
+
         # OTP should be marked as verified
         otp_record.refresh_from_db()
         self.assertTrue(otp_record.is_verified)
@@ -190,30 +188,27 @@ class OTPVerificationViewTests(TestCase):
             email="test@example.com",
             username="testuser",
             password_hash="pbkdf2_sha256$600000$test$hash",
-            otp="123456"
+            otp="123456",
         )
-        
+
         # Set session
         session = self.client.session
         session["pending_verification_email"] = "test@example.com"
         session.save()
-        
+
         # Try wrong OTP
-        response = self.client.post(
-            reverse("accounts:verify_otp"),
-            {"otp": "999999"}
-        )
-        
+        response = self.client.post(reverse("accounts:verify_otp"), {"otp": "999999"})
+
         # Should stay on verification page
         self.assertEqual(response.status_code, 200)
-        
+
         # User should NOT be created
         self.assertFalse(User.objects.filter(username="testuser").exists())
 
     def test_verify_otp_without_session(self):
         """Test OTP verification without session redirects to signup"""
         response = self.client.get(reverse("accounts:verify_otp"))
-        
+
         # Should redirect to signup
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse("accounts:signup"))
@@ -225,27 +220,24 @@ class OTPVerificationViewTests(TestCase):
             email="test@example.com",
             username="testuser",
             password_hash="pbkdf2_sha256$600000$test$hash",
-            otp="123456"
+            otp="123456",
         )
         # Make it expired
         otp_record.created_at = timezone.now() - timedelta(minutes=4)
         otp_record.save()
-        
+
         # Set session
         session = self.client.session
         session["pending_verification_email"] = "test@example.com"
         session.save()
-        
+
         # Try to verify
-        response = self.client.post(
-            reverse("accounts:verify_otp"),
-            {"otp": "123456"}
-        )
-        
+        response = self.client.post(reverse("accounts:verify_otp"), {"otp": "123456"})
+
         # Should redirect to signup
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse("accounts:signup"))
-        
+
         # User should NOT be created
         self.assertFalse(User.objects.filter(username="testuser").exists())
 
@@ -261,22 +253,22 @@ class ResendOTPViewTests(TestCase):
             email="test@example.com",
             username="testuser",
             password_hash="pbkdf2_sha256$600000$test$hash",
-            otp="123456"
+            otp="123456",
         )
         old_otp = otp_record.otp
-        
+
         # Set session
         session = self.client.session
         session["pending_verification_email"] = "test@example.com"
         session.save()
-        
+
         # Resend OTP
         response = self.client.get(reverse("accounts:resend_otp"))
-        
+
         # Should redirect back to verify page
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse("accounts:verify_otp"))
-        
+
         # OTP should be different
         otp_record.refresh_from_db()
         self.assertNotEqual(otp_record.otp, old_otp)
@@ -284,7 +276,7 @@ class ResendOTPViewTests(TestCase):
     def test_resend_otp_without_session(self):
         """Test resending OTP without session redirects to signup"""
         response = self.client.get(reverse("accounts:resend_otp"))
-        
+
         # Should redirect to signup
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse("accounts:signup"))
