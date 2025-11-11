@@ -18,13 +18,12 @@
     color: white;
 }
 
-.favorite-button.favorited {
-    background-color: #e74c3c;
-    color: white;
+span.favorited {
+    color: #e74c3c;
 }
 
-.favorite-button .heart {
-    font-size: 20px;
+.pin {
+    fill: #5568d3;
 }
 
 /* Rating Summary */
@@ -395,6 +394,17 @@
     height: 120px;
     object-fit: cover;
     display: block;
+}
+
+.counter {
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
 }
 
 .remove-image-btn {

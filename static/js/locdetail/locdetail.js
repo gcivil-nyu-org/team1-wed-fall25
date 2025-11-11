@@ -67,8 +67,6 @@ function deleteExistingImage(imageId, reviewId) {
 // MAIN INITIALIZATION
 // ========================================
 document.addEventListener('DOMContentLoaded', function () {
-    console.log('✅ Page loaded, initializing...');
-
     // ========================================
     // FAVORITE BUTTON
     // ========================================
@@ -77,6 +75,7 @@ document.addEventListener('DOMContentLoaded', function () {
         favoriteBtn.addEventListener('click', function () {
             const artId = this.getAttribute('data-art-id');
             const favoriteText = document.getElementById('favorite-text');
+            const heart = favoriteBtn.querySelector('.heart');
 
             fetch('/loc_detail/api/favorite/' + artId + '/toggle', {
                 method: 'POST',
@@ -88,11 +87,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 .then(response => response.json())
                 .then(data => {
                     if (data.favorited) {
-                        favoriteBtn.classList.add('favorited');
+                        heart.classList.add('favorited');
                         favoriteText.textContent = 'Remove from Favorites';
                         alert('Added to favorites');
                     } else {
-                        favoriteBtn.classList.remove('favorited');
+                        heart.classList.remove('favorited');
                         favoriteText.textContent = 'Add to Favorites';
                         alert('Removed from favorites');
                     }
@@ -121,7 +120,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // FIXED LIKE/DISLIKE FUNCTIONALITY
     // ========================================
     const reactionButtons = document.querySelectorAll('.reaction-btn');
-    console.log('👍 Found', reactionButtons.length, 'reaction buttons');
 
     reactionButtons.forEach(function (btn) {
         btn.addEventListener('click', function (e) {
@@ -246,10 +244,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const dropArea = document.getElementById(dropAreaId);
         const preview = document.getElementById(previewId);
 
-        console.log('🖼️ Setting up image upload for:', previewId);
-
         if (!multipleUpload || !preview) {
-            console.error('❌ Required upload elements not found');
             return;
         }
 
@@ -350,14 +345,31 @@ document.addEventListener('DOMContentLoaded', function () {
             selectedFiles.forEach((file, index) => {
                 const reader = new FileReader();
                 reader.onload = function (e) {
-                    const div = document.createElement('div');
-                    div.className = 'image-preview-item';
-                    div.innerHTML = '<img src="' + e.target.result + '" alt="Preview ' + (index + 1) + '">' +
-                        '<button type="button" class="remove-image-btn" onclick="window.removeImageAt_' + previewId + '(' + index + ')">×</button>' +
-                        '<div style="position: absolute; bottom: 5px; left: 5px; background: rgba(0,0,0,0.6); color: white; padding: 2px 6px; border-radius: 3px; font-size: 11px;">' +
-                        (index + 1) + '/' + selectedFiles.length +
-                        '</div>';
-                    preview.appendChild(div);
+                    const imgPreview = document.createElement('div');
+                    imgPreview.className = 'image-preview-item';
+
+                    const prevImage = document.createElement('img');
+                    prevImage.src = e.target.result;
+                    prevImage.alt = 'Preview ' + (index + 1);
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.type = 'button';
+                    deleteBtn.className = 'delete-image-btn';
+                    deleteBtn.innerHTML = '×';
+                    deleteBtn.onclick = function () {
+                        selectedFiles.splice(index, 1);
+                        updatePreview();
+                        updateMultipleInput();
+                    }
+
+                    const counterDiv = document.createElement('div');
+                    counterDiv.className = "counter";
+
+                    imgPreview.appendChild(prevImage);
+                    imgPreview.appendChild(deleteBtn);
+                    imgPreview.appendChild(counterDiv);
+
+                    preview.appendChild(imgPreview);
                 }
                 reader.readAsDataURL(file);
             });
@@ -369,12 +381,6 @@ document.addEventListener('DOMContentLoaded', function () {
             multipleUpload.files = dt.files;
         }
 
-        // Global remove function for this preview
-        window['removeImageAt_' + previewId] = function (index) {
-            selectedFiles.splice(index, 1);
-            updatePreview();
-            updateMultipleInput();
-        };
     }
 
     // Setup both upload forms

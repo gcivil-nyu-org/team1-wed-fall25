@@ -1,12 +1,10 @@
 {% if page_obj %}
-    <div class="events-grid">
+    <div class="art-grid">
         {% for event in page_obj %}
-            <div class="event-card">
-                <div class="event-header">
-                    <h3 class="event-title">
-                        <a href="{% url 'events:detail' event.slug %}">
-                            {{ event.title }}
-                        </a>
+            <a class="art-card" href="{% url 'events:detail' event.slug %}">
+                <div class="art-card-header">
+                    <h3 class="art-title">
+                        {{ event.title }}
                     </h3>
                     {% if event.joined %}
                         <span class="badge" style="background: #28a745; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem;">
@@ -15,21 +13,20 @@
                     {% endif %}
                 </div>
                 
-                <div class="event-body">
+                <div class="art-card-body">
                     {% if event.description %}
                         <p style="color: #666; margin-bottom: 15px;">{{ event.description|truncatewords:20 }}</p>
                     {% endif %}
-
                     <div class="event-meta">
                         <div>
                             <i class="fas fa-calendar"></i>
-                            <strong>{{ event.start_date|date:"M d, Y" }}</strong> at {{ event.start_time|time:"g:i A" }}
+                            <strong>{{ event.start_time|date:"F j, Y" }}</strong> at {{ event.start_time|time:"g:i A" }}
                         </div>
                         
                         {% if event.start_location %}
                         <div>
                             <i class="fas fa-map-marker-alt"></i>
-                            {{ event.start_location.name|truncatewords:8 }}
+                            {{ event.start_location.title|truncatewords:8 }}
                         </div>
                         {% endif %}
                         
@@ -42,26 +39,18 @@
                             <i class="fas fa-users"></i>
                             {{ event.participants.count }} participant{{ event.participants.count|pluralize }}
                         </div>
-
-                        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #e0e0e0; color: #999; font-size: 0.9rem;">
-                            <i class="fas fa-heart"></i>
-                            Favorited {{ event.favorited_at|date:"M d, Y" }}
-                        </div>
-                    </div>
-
-                    <div class="action-buttons">
-                        <a href="{% url 'events:detail' event.slug %}" class="btn btn-primary">
-                            <i class="fas fa-eye"></i> View Event
-                        </a>
-                        <form method="post" action="{% url 'events:unfavorite' event.slug %}" style="display: inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-warning">
-                                <i class="fas fa-star"></i> Unfavorite
-                            </button>
-                        </form>
                     </div>
                 </div>
-            </div>
+                <div class="art-card-footer" style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <span class="view-details">View Details →</span>
+                    <form method="post" action="{% url 'events:unfavorite' event.slug %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-primary">
+                            <i class="fas fa-heart favorited"></i> Unfavorite
+                        </button>
+                    </form>
+                </div>
+            </a>
         {% endfor %}
     </div>
 

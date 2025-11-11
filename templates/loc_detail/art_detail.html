@@ -35,22 +35,25 @@
             <div class="action-buttons" style="display: flex; gap: 10px; margin-bottom: 20px;">
                 <button 
                     id="favorite-button" 
-                    class="favorite-button {% if is_favorited %}favorited{% endif %}"
+                    class="btn btn-outline-primary"
                     data-art-id="{{ art.id }}"
                     data-favorited="{{ is_favorited|yesno:'true,false' }}"
                 >
-                    <span class="heart">&#10084;</span>
+                    <span class="heart {% if is_favorited %}favorited{% endif %}">&#10084;</span>
                     <span id="favorite-text">{% if is_favorited %}Remove from Favorites{% else %}Add to Favorites{% endif %}</span>
                 </button>
 
                 <button 
                     id="add-to-itinerary-button" 
-                    class="favorite-button"
+                    class="btn btn-outline-primary"
                     data-art-id="{{ art.id }}"
                     data-art-title="{{ art.title|default:'Untitled' }}"
-                    style="border-color: #3498db; color: #3498db;"
                 >
-                    <span style="font-size: 20px;">📍</span>
+                    <span style="font-size: 20px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" class="pin">
+                            <path d="M480-480q33 0 56.5-23.5T560-560q0-33-23.5-56.5T480-640q-33 0-56.5 23.5T400-560q0 33 23.5 56.5T480-480Zm0 400Q319-217 239.5-334.5T160-552q0-150 96.5-239T480-880q127 0 223.5 89T800-552q0 100-79.5 217.5T480-80Z"/>
+                        </svg>
+                    </span>
                     <span>Add to Itinerary</span>
                 </button>
             </div>

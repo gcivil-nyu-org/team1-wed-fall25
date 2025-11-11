@@ -2,13 +2,6 @@
 
 {% block events_content %}
 <style>
-.public-events-wrapper {
-    /* background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); */
-    min-height: calc(100vh - 200px);
-    padding: 2rem 1rem;
-    position: relative;
-    overflow: hidden;
-}
 .public-events {
     max-width: 1400px;
     margin: 0 auto;
@@ -36,11 +29,6 @@
     display: grid;
     grid-template-columns: 2fr 1fr 1fr auto;
     gap: 1rem;
-    margin-bottom: 2rem;
-    padding: 1.5rem;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background-color: #ccc;
 }
 @media (max-width: 768px) {
     .filters {
@@ -48,48 +36,13 @@
     }
 }
 .filters input, .filters select {
-    padding: 0.75rem 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 8px;
-    font-size: 0.95rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background: #fff;
-    color: #000;
-    font-weight: 300;
-}
-.filters input:focus, .filters select:focus {
-    outline: none;
-    border-color: rgba(102, 126, 234, 0.5);
-    background: rgba(255, 255, 255, 0.08);
-    transform: translateY(-1px);
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
 }
 .filters input::placeholder {
     color: #666;
-}
-.filters select option {
-    background: #fff;
-    color: #000;
-}
-.filters button {
-    padding: 0.75rem 1.75rem;
-    background: rgba(102, 126, 234, 0.15);
-    color: #8b9cff;
-    border: 1px solid rgba(102, 126, 234, 0.3);
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 400;
-    font-size: 0.95rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    white-space: nowrap;
-    letter-spacing: 0.3px;
-}
-.filters button:hover {
-    background: rgba(102, 126, 234, 0.25);
-    border-color: rgba(102, 126, 234, 0.5);
-    transform: translateY(-2px);
-}
-.filters button:active {
-    transform: translateY(0);
 }
 .events-grid {
     display: grid;
@@ -238,26 +191,28 @@
 }
 </style>
 
-<div class="public-events-wrapper">
+<div>
     <div class="public-events">
         
         <!-- Search and filters -->
-        <form method="get" class="filters">
-            <input type="text" name="q" value="{{ query }}" placeholder="🔍 Search events...">
-            
-            <select name="filter">
-                <option value="">All Types</option>
-                <option value="open" {% if filter == 'open' %}selected{% endif %}>Open to All</option>
-                <option value="invite" {% if filter == 'invite' %}selected{% endif %}>Invite Only</option>
-            </select>
-            
-            <select name="sort">
-                <option value="start_time" {% if sort == 'start_time' %}selected{% endif %}>Soonest First</option>
-                <option value="-start_time" {% if sort == '-start_time' %}selected{% endif %}>Latest First</option>
-            </select>
-            
-            <button type="submit">Apply Filters</button>
-        </form>
+         <div class="filters-section">
+            <form method="get" class="filters">
+                <input type="text" name="q" value="{{ query }}" placeholder="🔍 Search events...">
+                
+                <select name="filter">
+                    <option value="">All Types</option>
+                    <option value="open" {% if filter == 'open' %}selected{% endif %}>Open to All</option>
+                    <option value="invite" {% if filter == 'invite' %}selected{% endif %}>Invite Only</option>
+                </select>
+                
+                <select name="sort">
+                    <option value="start_time" {% if sort == 'start_time' %}selected{% endif %}>Soonest First</option>
+                    <option value="-start_time" {% if sort == '-start_time' %}selected{% endif %}>Latest First</option>
+                </select>
+                
+                <button class="btn btn-outline-primary" type="submit">Apply Filters</button>
+            </form>
+        </div>
         
         <!-- Events grid -->
         {% if page_obj.object_list %}

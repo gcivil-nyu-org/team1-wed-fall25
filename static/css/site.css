@@ -61,6 +61,46 @@ nav {
     text-decoration: underline;
 }
 
+.nav-tabs {
+    border-bottom: 2px solid #e0e0e0;
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.nav-tabs .nav-item {
+    margin-bottom: -2px;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: #666;
+    font-weight: 500;
+    padding: 15px 30px;
+    transition: all 0.3s ease;
+    background: none;
+    font-size: 1.1rem;
+}
+
+.nav-tabs .nav-link:hover {
+    color: #667eea;
+    border-bottom-color: #667eea;
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.nav-tabs .nav-link.active {
+    color: #667eea;
+    border-bottom-color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.nav-tabs .nav-link i {
+    margin-right: 8px;
+}
+
+
 .btn {
     padding: 10px 20px;
     border-radius: 8px;
@@ -165,7 +205,7 @@ main {
     color: #2c3e50;
 }
 
-.form-group {
+.form-group-accounts {
     margin-bottom: 1.5rem;
 }
 
@@ -391,6 +431,10 @@ main {
 }
 
 .favorite-icon.favorited {
+    color: #e74c3c;
+}
+
+.fa-heart.favorited::before {
     color: #e74c3c;
 }
 

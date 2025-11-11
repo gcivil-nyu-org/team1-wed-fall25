@@ -1,6 +1,6 @@
 {% if page_obj %}
     <!-- Search and Filter Controls -->
-    <div class="search-filter-container">
+    <div class="filters-section">
         <form method="get" class="search-filter-form">
             <input type="hidden" name="tab" value="art">
             <div class="form-group">
@@ -22,7 +22,7 @@
                 </select>
             </div>
             
-            <div class="form-group">
+            <div>
                 <button type="submit" class="btn btn-primary">Search</button>
                 {% if search_query or borough_filter %}
                     <a href="?tab=art" class="btn btn-outline-primary">Clear</a>
