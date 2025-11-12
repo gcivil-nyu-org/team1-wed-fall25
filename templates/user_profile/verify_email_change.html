@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Verify Email Change - Artinerary{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1>Verify New Email</h1>
+    <p>We've sent a 6-digit verification code to <strong>{{ email }}</strong></p>
+    <p class="text-warning">Code expires in 3 minutes</p>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        {% if form.non_field_errors %}
+            <div class="error">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="form-group">
+            <label for="{{ form.otp.id_for_label }}">Verification Code</label>
+            {{ form.otp }}
+            {% if form.otp.errors %}
+                <div class="error">{{ form.otp.errors }}</div>
+            {% endif %}
+        </div>
+
+        <button type="submit" class="btn">Verify Email</button>
+    </form>
+    
+    <div class="form-footer">
+        <p>Didn't receive the code? <a href="{% url 'user_profile:resend_email_change_otp' %}">Resend Code</a></p>
+        <p><a href="{% url 'user_profile:edit_profile' %}">Back to Edit Profile</a></p>
+    </div>
+</div>
+
+<style>
+.text-warning {
+    color: #ff6b6b;
+    font-size: 0.9em;
+    margin-bottom: 1.5rem;
+}
+
+.form-footer {
+    margin-top: 1.5rem;
+    text-align: center;
+}
+
+.form-footer p {
+    margin: 0.5rem 0;
+}
+</style>
+{% endblock %}

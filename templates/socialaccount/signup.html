@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load socialaccount %}
+
+{% block title %}Complete Your Account - Artinerary{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1>Complete Your Account</h1>
+    
+    <div style="text-align: center; margin-bottom: 1.5rem;">
+        <p style="color: #666; font-size: 1rem;">
+            You're signing in with <strong>{{ account.provider|title }}</strong>
+        </p>
+        {% if account.get_brand.name %}
+        <p style="color: #888; font-size: 0.9rem; margin-top: 0.5rem;">
+            {{ account.get_brand.name }}
+        </p>
+        {% endif %}
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        {% if form.non_field_errors %}
+            <div class="error" style="margin-bottom: 1rem; padding: 0.75rem; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px;">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        {% if form.username %}
+        <div class="form-group">
+            <label for="{{ form.username.id_for_label }}">Username</label>
+            {{ form.username }}
+            {% if form.username.errors %}
+                <div class="error">{{ form.username.errors }}</div>
+            {% endif %}
+            {% if form.username.help_text %}
+                <small style="display: block; margin-top: 0.25rem; color: #666;">
+                    {{ form.username.help_text }}
+                </small>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if form.email %}
+        <div class="form-group">
+            <label for="{{ form.email.id_for_label }}">Email</label>
+            {{ form.email }}
+            {% if form.email.errors %}
+                <div class="error">{{ form.email.errors }}</div>
+            {% endif %}
+            {% if form.email.help_text %}
+                <small style="display: block; margin-top: 0.25rem; color: #666;">
+                    {{ form.email.help_text }}
+                </small>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <button type="submit" class="btn" style="width: 100%; margin-top: 1rem;">
+            Continue to Artinerary
+        </button>
+    </form>
+    
+    <p class="form-footer" style="margin-top: 1.5rem;">
+        By continuing, you agree to our Terms of Service and Privacy Policy.
+    </p>
+</div>
+
+<style>
+.form-container {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+{% endblock %}

@@ -314,14 +314,17 @@ class UserProfileViewTests(TestCase):
             },
         )
 
-        # Should redirect to profile
+        # Should redirect to OTP verification (email changed)
         self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse("user_profile:verify_email_change"))
 
-        # Check that profile was updated
+        # Check that profile was updated but email is NOT changed yet
         self.user.refresh_from_db()
         self.user.profile.refresh_from_db()
 
-        self.assertEqual(self.user.email, "newemail@example.com")
+        # Email should NOT be updated yet (needs OTP verification)
+        self.assertEqual(self.user.email, "test@example.com")
+        # But profile fields should be updated
         self.assertEqual(self.user.profile.full_name, "Test User Full")
         self.assertEqual(self.user.profile.about, "Updated about section")
         self.assertEqual(self.user.profile.privacy, "PRIVATE")

@@ -80,7 +80,18 @@ class SignupViewTests(TestCase):
                 "password2": "newpass123",
             },
         )
+        # Should redirect to OTP verification
         self.assertEqual(response.status_code, 302)
-        self.assertTrue(User.objects.filter(username="newuser").exists())
-        user = User.objects.get(username="newuser")
-        self.assertEqual(user.email, "new@example.com")
+        self.assertRedirects(response, reverse("accounts:verify_otp"))
+
+        # User should NOT be created yet (waiting for OTP verification)
+        self.assertFalse(User.objects.filter(username="newuser").exists())
+
+        # OTP record should be created
+        from accounts.models import EmailVerificationOTP
+
+        self.assertTrue(
+            EmailVerificationOTP.objects.filter(
+                email="new@example.com", username="newuser"
+            ).exists()
+        )

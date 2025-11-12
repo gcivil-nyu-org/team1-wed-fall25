@@ -24,5 +24,24 @@ class SignupForm(UserCreationForm):
         return user
 
 
+class OTPVerificationForm(forms.Form):
+    """Form for OTP verification"""
+
+    otp = forms.CharField(
+        max_length=6,
+        min_length=6,
+        label="Verification Code",
+        widget=forms.TextInput(
+            attrs={"placeholder": "Enter 6-digit code", "autofocus": True}
+        ),
+    )
+
+    def clean_otp(self):
+        otp = self.cleaned_data.get("otp")
+        if not otp.isdigit():
+            raise forms.ValidationError("OTP must contain only digits.")
+        return otp
+
+
 class EmailOrUsernameAuthenticationForm(AuthenticationForm):
     username = forms.CharField(label="Email or Username", max_length=254)
