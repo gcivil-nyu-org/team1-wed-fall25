@@ -194,18 +194,27 @@ class DirectMessageModelTests(TestCase):
 
     def test_message_ordering(self):
         """Test that messages are ordered by created_at"""
-        message1 = DirectMessage.objects.create(
+        import time
+
+        # Create first message
+        DirectMessage.objects.create(
             chat=self.chat, sender=self.user1, content="First message"
         )
-        message2 = DirectMessage.objects.create(
+
+        # Small delay to ensure different timestamps
+        time.sleep(0.01)
+
+        # Create second message
+        DirectMessage.objects.create(
             chat=self.chat, sender=self.user2, content="Second message"
         )
 
         messages = list(
             DirectMessage.objects.filter(chat=self.chat).order_by("created_at")
         )
-        self.assertEqual(messages[0], message1)
-        self.assertEqual(messages[1], message2)
+        self.assertEqual(len(messages), 2)
+        self.assertEqual(messages[0].content, "First message")
+        self.assertEqual(messages[1].content, "Second message")
 
     def test_message_content_max_length(self):
         """Test message content length validation"""
