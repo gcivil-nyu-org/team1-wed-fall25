@@ -280,3 +280,173 @@ class ResendOTPViewTests(TestCase):
         # Should redirect to signup
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse("accounts:signup"))
+
+
+class LogoutViewTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username="testuser", email="test@example.com", password="testpass123"
+        )
+
+    def test_logout_authenticated_user(self):
+        """Test logging out an authenticated user"""
+        # Log in
+        self.client.login(username="testuser", password="testpass123")
+
+        # Logout via POST
+        response = self.client.post(reverse("accounts:logout"))
+
+        # Should redirect to login
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse("accounts:login"))
+
+        # User should not be authenticated
+        response = self.client.get(reverse("accounts:login"))
+        self.assertNotIn("_auth_user_id", self.client.session)
+
+    def test_logout_get_request(self):
+        """Test logout works with GET request too"""
+        # Log in
+        self.client.login(username="testuser", password="testpass123")
+
+        # Logout via GET
+        response = self.client.get(reverse("accounts:logout"))
+
+        # Should redirect to login
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse("accounts:login"))
+
+
+class SignupFormValidationTests(TestCase):
+    def test_signup_with_existing_username(self):
+        """Test signup with existing username fails"""
+        User.objects.create_user(
+            username="testuser", email="test1@example.com", password="testpass123"
+        )
+
+        form = SignupForm(
+            data={
+                "username": "testuser",
+                "email": "test2@example.com",
+                "password1": "testpass123",
+                "password2": "testpass123",
+            }
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("username", form.errors)
+
+    def test_signup_with_mismatched_passwords(self):
+        """Test signup with mismatched passwords fails"""
+        form = SignupForm(
+            data={
+                "username": "newuser",
+                "email": "new@example.com",
+                "password1": "testpass123",
+                "password2": "differentpass",
+            }
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("password2", form.errors)
+
+    def test_signup_with_weak_password(self):
+        """Test signup with weak password fails"""
+        form = SignupForm(
+            data={
+                "username": "newuser",
+                "email": "new@example.com",
+                "password1": "123",
+                "password2": "123",
+            }
+        )
+        self.assertFalse(form.is_valid())
+
+
+class OTPEdgeCasesTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+    def test_verify_otp_with_nonexistent_record(self):
+        """Test verifying OTP when no record exists"""
+        # Set session but no OTP record
+        session = self.client.session
+        session["pending_verification_email"] = "nonexistent@example.com"
+        session.save()
+
+        response = self.client.post(reverse("accounts:verify_otp"), {"otp": "123456"})
+
+        # Should stay on verification page with error
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(User.objects.filter(email="nonexistent@example.com").exists())
+
+    def test_resend_otp_with_nonexistent_record(self):
+        """Test resending OTP when no record exists"""
+        # Set session but no OTP record
+        session = self.client.session
+        session["pending_verification_email"] = "nonexistent@example.com"
+        session.save()
+
+        response = self.client.get(reverse("accounts:resend_otp"))
+
+        # Should redirect to signup
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse("accounts:signup"))
+
+    def test_multiple_otp_records_same_email(self):
+        """Test that old OTP records are deleted on new signup"""
+        # Create old OTP record
+        old_otp = EmailVerificationOTP.objects.create(
+            email="test@example.com",
+            username="olduser",
+            password_hash="oldpassword",
+        )
+
+        # Sign up with same email
+        self.client.post(
+            reverse("accounts:signup"),
+            {
+                "username": "newuser",
+                "email": "test@example.com",
+                "password1": "newpass123",
+                "password2": "newpass123",
+            },
+        )
+
+        # Old unverified OTP should be deleted
+        self.assertFalse(
+            EmailVerificationOTP.objects.filter(
+                id=old_otp.id, is_verified=False
+            ).exists()
+        )
+
+        # New OTP should exist
+        self.assertTrue(
+            EmailVerificationOTP.objects.filter(
+                email="test@example.com", username="newuser", is_verified=False
+            ).exists()
+        )
+
+
+class CustomLoginViewTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username="testuser", email="test@example.com", password="testpass123"
+        )
+
+    def test_authenticated_user_redirect(self):
+        """Test that authenticated users are redirected"""
+        # Log in first
+        self.client.login(username="testuser", password="testpass123")
+
+        # Try to access login page
+        response = self.client.get(reverse("accounts:login"))
+
+        # Should redirect to home
+        self.assertEqual(response.status_code, 302)
+
+    def test_login_page_accessible_when_not_authenticated(self):
+        """Test login page is accessible to non-authenticated users"""
+        response = self.client.get(reverse("accounts:login"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Login")

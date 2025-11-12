@@ -160,3 +160,265 @@ class EmailChangeOTPTests(TestCase):
         # Email should not have changed
         user.refresh_from_db()
         self.assertEqual(user.email, "alice@old.com")
+
+
+class VerifyEmailChangeEdgeCasesTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username="testuser", email="test@example.com", password="password123"
+        )
+
+    def test_verify_email_change_without_session(self):
+        """Test accessing verify email change without pending email in session"""
+        self.client.login(username="testuser", password="password123")
+        response = self.client.get(reverse("user_profile:verify_email_change"))
+
+        # Should redirect to edit profile
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse("user_profile:edit_profile"))
+
+    def test_verify_email_change_with_invalid_otp(self):
+        """Test verification with invalid OTP"""
+        self.client.login(username="testuser", password="password123")
+
+        # Create OTP record
+        new_email = "newemail@example.com"
+        EmailVerificationOTP.objects.create(
+            email=new_email,
+            username="testuser",
+            otp="123456",
+        )
+
+        # Set session
+        session = self.client.session
+        session["pending_email_change"] = new_email
+        session.save()
+
+        # Try with wrong OTP
+        response = self.client.post(
+            reverse("user_profile:verify_email_change"), {"otp": "999999"}
+        )
+
+        # Should stay on verify page with error
+        self.assertEqual(response.status_code, 200)
+
+        # Email should not have changed
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.email, "test@example.com")
+
+    def test_resend_email_change_otp_without_session(self):
+        """Test resending OTP without pending email in session"""
+        self.client.login(username="testuser", password="password123")
+        response = self.client.get(reverse("user_profile:resend_email_change_otp"))
+
+        # Should redirect to edit profile
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse("user_profile:edit_profile"))
+
+
+class ProfileViewTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user1 = User.objects.create_user(
+            username="user1", email="user1@example.com", password="password123"
+        )
+        self.user2 = User.objects.create_user(
+            username="user2", email="user2@example.com", password="password123"
+        )
+
+    def test_view_own_profile(self):
+        """Test viewing own profile"""
+        self.client.login(username="user1", password="password123")
+        response = self.client.get(reverse("user_profile:profile_view", args=["user1"]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "user1")
+
+    def test_view_other_user_profile(self):
+        """Test viewing another user's profile"""
+        self.client.login(username="user1", password="password123")
+        response = self.client.get(reverse("user_profile:profile_view", args=["user2"]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "user2")
+
+    def test_view_nonexistent_profile(self):
+        """Test viewing nonexistent user profile"""
+        self.client.login(username="user1", password="password123")
+        response = self.client.get(
+            reverse("user_profile:profile_view", args=["nonexistent"])
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+
+class RemoveProfileImageTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username="testuser", email="test@example.com", password="password123"
+        )
+
+    def test_remove_profile_image_success(self):
+        """Test removing profile image"""
+        self.client.login(username="testuser", password="password123")
+
+        # Note: This tests the view logic, not actual file deletion
+        response = self.client.post(
+            reverse("user_profile:remove_profile_image"), follow=True
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_remove_profile_image_requires_login(self):
+        """Test that removing profile image requires authentication"""
+        response = self.client.post(reverse("user_profile:remove_profile_image"))
+
+        # Should redirect to login
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/accounts/login", response.url)
+
+
+class FollowUnfollowTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user1 = User.objects.create_user(
+            username="user1", email="user1@example.com", password="password123"
+        )
+        self.user2 = User.objects.create_user(
+            username="user2", email="user2@example.com", password="password123"
+        )
+
+    def test_follow_user(self):
+        """Test following another user"""
+        self.client.login(username="user1", password="password123")
+        response = self.client.post(
+            reverse("user_profile:follow_user", args=["user2"]), follow=True
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        # Check follow relationship exists
+        from user_profile.models import Follow
+
+        self.assertTrue(
+            Follow.objects.filter(follower=self.user1, following=self.user2).exists()
+        )
+
+    def test_unfollow_user(self):
+        """Test unfollowing a user"""
+        from user_profile.models import Follow
+
+        # First follow the user
+        Follow.objects.create(follower=self.user1, following=self.user2)
+
+        self.client.login(username="user1", password="password123")
+        response = self.client.post(
+            reverse("user_profile:unfollow_user", args=["user2"]), follow=True
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        # Check follow relationship no longer exists
+        self.assertFalse(
+            Follow.objects.filter(follower=self.user1, following=self.user2).exists()
+        )
+
+    def test_cannot_follow_self(self):
+        """Test that user cannot follow themselves"""
+        self.client.login(username="user1", password="password123")
+        response = self.client.post(
+            reverse("user_profile:follow_user", args=["user1"]), follow=True
+        )
+
+        # Should handle gracefully
+        self.assertEqual(response.status_code, 200)
+
+    def test_follow_requires_login(self):
+        """Test that following requires authentication"""
+        response = self.client.post(reverse("user_profile:follow_user", args=["user2"]))
+
+        # Should redirect to login
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/accounts/login", response.url)
+
+
+class FollowersFollowingListTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username="testuser", email="test@example.com", password="password123"
+        )
+        self.follower = User.objects.create_user(
+            username="follower", email="follower@example.com", password="password123"
+        )
+
+    def test_followers_list(self):
+        """Test viewing followers list"""
+        from user_profile.models import Follow
+
+        Follow.objects.create(follower=self.follower, following=self.user)
+
+        self.client.login(username="testuser", password="password123")
+        response = self.client.get(
+            reverse("user_profile:followers_list", args=["testuser"])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "follower")
+
+    def test_following_list(self):
+        """Test viewing following list"""
+        from user_profile.models import Follow
+
+        following_user = User.objects.create_user(
+            username="following", email="following@example.com", password="password123"
+        )
+        Follow.objects.create(follower=self.user, following=following_user)
+
+        self.client.login(username="testuser", password="password123")
+        response = self.client.get(
+            reverse("user_profile:following_list", args=["testuser"])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "following")
+
+
+class UserSearchTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username="testuser", email="test@example.com", password="password123"
+        )
+        self.searchable_user = User.objects.create_user(
+            username="searchme",
+            email="searchme@example.com",
+            password="password123",
+        )
+
+    def test_user_search_with_query(self):
+        """Test searching for users"""
+        self.client.login(username="testuser", password="password123")
+        response = self.client.get(reverse("user_profile:user_search"), {"q": "search"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "searchme")
+
+    def test_user_search_without_query(self):
+        """Test search page without query"""
+        self.client.login(username="testuser", password="password123")
+        response = self.client.get(reverse("user_profile:user_search"))
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_user_search_no_results(self):
+        """Test search with no matching users"""
+        self.client.login(username="testuser", password="password123")
+        response = self.client.get(
+            reverse("user_profile:user_search"), {"q": "nonexistent"}
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "searchme")
