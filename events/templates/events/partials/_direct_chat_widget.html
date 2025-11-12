@@ -483,7 +483,22 @@
         };
         activeChatId = chatId;
         updateUI();
-        loadMessages(chatId);
+        
+        // Load messages and restore position
+        await loadMessages(chatId, true);
+        
+        // Restore last read position if available, otherwise scroll to bottom
+        setTimeout(() => {
+            const messagesDiv = document.getElementById(`chat-messages-${chatId}`);
+            if (messagesDiv) {
+                if (lastReadPositions[chatId] !== undefined) {
+                    messagesDiv.scrollTop = lastReadPositions[chatId];
+                } else {
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                }
+            }
+        }, 100);
+        
         startPolling(chatId);
     }
     
@@ -555,6 +570,20 @@
         
         lastUIState = currentState;
         
+        // Get existing chat windows to preserve them and their scroll positions
+        const existingChatWindows = {};
+        const scrollPositions = {};
+        container.querySelectorAll('.chat-window').forEach(window => {
+            const chatId = parseInt(window.dataset.chatId);
+            existingChatWindows[chatId] = window;
+            
+            // Save scroll position
+            const messagesDiv = window.querySelector('.chat-window-messages');
+            if (messagesDiv) {
+                scrollPositions[chatId] = messagesDiv.scrollTop;
+            }
+        });
+        
         container.innerHTML = '';
         
         // Always show Chats button if there are any chats
@@ -569,12 +598,28 @@
             container.appendChild(conversationsButton);
         }
         
-        // Add minimized chat tabs
+        // Add minimized chat tabs and active chat windows
         Object.values(openChats).forEach(chat => {
             if (chat.minimized) {
                 container.appendChild(createChatTab(chat));
             } else if (chat.chatId === activeChatId) {
-                container.appendChild(createChatWindow(chat));
+                // Reuse existing chat window if available to preserve messages
+                if (existingChatWindows[chat.chatId]) {
+                    container.appendChild(existingChatWindows[chat.chatId]);
+                    
+                    // Restore scroll position after a brief delay to ensure DOM is ready
+                    setTimeout(() => {
+                        const messagesDiv = document.getElementById(`chat-messages-${chat.chatId}`);
+                        if (messagesDiv && scrollPositions[chat.chatId] !== undefined) {
+                            messagesDiv.scrollTop = scrollPositions[chat.chatId];
+                        }
+                    }, 0);
+                } else {
+                    const newWindow = createChatWindow(chat);
+                    container.appendChild(newWindow);
+                    // Load messages for new window
+                    loadMessages(chat.chatId);
+                }
             }
         });
         
@@ -674,6 +719,14 @@
             activeChatId = chat.chatId;
             chat.minimized = false;
             updateUI();
+            
+            // Restore last read position after UI update
+            setTimeout(() => {
+                const messagesDiv = document.getElementById(`chat-messages-${chat.chatId}`);
+                if (messagesDiv && lastReadPositions[chat.chatId] !== undefined) {
+                    messagesDiv.scrollTop = lastReadPositions[chat.chatId];
+                }
+            }, 0);
         });
         
         return tab;
@@ -791,9 +844,19 @@
     };
     
     window.closeChat = function(chatId) {
+        // Save current scroll position before closing
+        const messagesDiv = document.getElementById(`chat-messages-${chatId}`);
+        if (messagesDiv) {
+            lastReadPositions[chatId] = messagesDiv.scrollTop;
+        }
+        
         delete openChats[chatId];
         if (activeChatId === chatId) {
             activeChatId = null;
+        }
+        // Clear message cache when closing chat
+        if (loadedMessageIds[chatId]) {
+            delete loadedMessageIds[chatId];
         }
         updateUI();
     };
@@ -801,6 +864,12 @@
     window.minimizeChat = function(chatId) {
         const chat = openChats[chatId];
         if (chat) {
+            // Save current scroll position as last read position
+            const messagesDiv = document.getElementById(`chat-messages-${chatId}`);
+            if (messagesDiv) {
+                lastReadPositions[chatId] = messagesDiv.scrollTop;
+            }
+            
             chat.minimized = true;
             activeChatId = null;
             updateUI();
@@ -829,14 +898,21 @@
             
             if (data.success) {
                 input.value = '';
-                loadMessages(chatId);
+                // Load new message immediately
+                await loadMessages(chatId);
             }
         } catch (error) {
             console.error('Error sending message:', error);
         }
     };
     
-    async function loadMessages(chatId) {
+    // Track loaded message IDs to prevent duplicates
+    const loadedMessageIds = {};
+    
+    // Track last read message position for each chat
+    const lastReadPositions = {};
+    
+    async function loadMessages(chatId, isInitialLoad = false) {
         try {
             const response = await fetch(`/events/chat/${chatId}/api/`);
             const data = await response.json();
@@ -844,12 +920,31 @@
             const messagesDiv = document.getElementById(`chat-messages-${chatId}`);
             if (!messagesDiv) return;
             
-            // Always update messages - no complex logic
-            messagesDiv.innerHTML = '';
+            // Check if this is the first load for this chat
+            const isFirstLoad = !loadedMessageIds[chatId];
             
+            // Initialize message ID set for current chat
+            if (!loadedMessageIds[chatId]) {
+                loadedMessageIds[chatId] = new Set();
+            }
+            
+            // Save scroll position (user might be scrolling)
+            const wasAtBottom = messagesDiv.scrollHeight - messagesDiv.scrollTop <= messagesDiv.clientHeight + 50;
+            
+            // Only add new messages
+            let hasNewMessages = false;
             data.messages.forEach(msg => {
+                // Skip already loaded messages
+                if (loadedMessageIds[chatId].has(msg.id)) {
+                    return;
+                }
+                
+                hasNewMessages = true;
+                loadedMessageIds[chatId].add(msg.id);
+                
                 const messageDiv = document.createElement('div');
                 messageDiv.className = `chat-message-item ${msg.is_own ? 'own' : ''}`;
+                messageDiv.dataset.messageId = msg.id;
                 
                 if (!msg.is_own) {
                     messageDiv.innerHTML += `
@@ -865,8 +960,15 @@
                 messagesDiv.appendChild(messageDiv);
             });
             
-            // Always scroll to bottom
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            // Auto-scroll behavior
+            if (hasNewMessages && !isInitialLoad) {
+                // Only auto-scroll if user was at bottom (not on initial load)
+                if (wasAtBottom) {
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                    // Update last read position when auto-scrolling
+                    lastReadPositions[chatId] = messagesDiv.scrollHeight;
+                }
+            }
         } catch (error) {
             console.error('Error loading messages:', error);
         }

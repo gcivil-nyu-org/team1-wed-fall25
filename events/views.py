@@ -60,7 +60,14 @@ def create(request):
     else:
         form = EventForm()
 
-    return render(request, "events/create.html", {"form": form})
+    # Get all locations for dropdown
+    from loc_detail.models import PublicArt
+
+    locations = PublicArt.objects.filter(
+        latitude__isnull=False, longitude__isnull=False
+    ).order_by("title")
+
+    return render(request, "events/create.html", {"form": form, "locations": locations})
 
 
 @login_required
@@ -344,8 +351,14 @@ def chat_send(request, slug):
 
     try:
         post_chat_service(event=event, user=request.user, message=message)
-        messages.success(request, "Message sent!")
+        # Success notification removed to prevent page layout shift
+
+        # Return JSON response for AJAX requests
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse({"success": True})
     except ValueError as e:
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse({"success": False, "error": str(e)}, status=400)
         messages.error(request, str(e))
 
     return redirect(event.get_absolute_url() + "#chat")
@@ -465,9 +478,17 @@ def update_event(request, slug):
         EventInvite.objects.filter(event=event).values_list("invitee_id", flat=True)
     )
 
+    # Get all locations for dropdown
+    from loc_detail.models import PublicArt
+
+    locations = PublicArt.objects.filter(
+        latitude__isnull=False, longitude__isnull=False
+    ).order_by("title")
+
     context = {
         "form": form,
         "event": event,
+        "locations": locations,
         "existing_locations": existing_locations,
         "existing_invites": existing_invites,
         "is_update": True,

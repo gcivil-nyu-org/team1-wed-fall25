@@ -501,6 +501,8 @@ document.addEventListener('DOMContentLoaded', function() {
 <script>
 (function() {
     const chatMessages = document.querySelector('.chat-messages');
+    const chatForm = document.getElementById('chat-form');
+    const chatInput = document.getElementById('chat-message-input');
     const eventSlug = '{{ event.slug }}';
     let lastMessageId = null;
     
@@ -509,6 +511,40 @@ document.addEventListener('DOMContentLoaded', function() {
     if (messages.length > 0) {
         lastMessageId = parseInt(messages[messages.length - 1].dataset.messageId) || null;
     }
+    
+    // Handle form submission with AJAX to prevent page reload
+    chatForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const message = chatInput.value.trim();
+        if (!message) return;
+        
+        const formData = new FormData(chatForm);
+        
+        fetch(chatForm.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                chatInput.value = '';
+                // Immediately fetch new messages to show the sent message
+                return fetch(`/events/${eventSlug}/chat/api/`);
+            }
+            throw new Error('Failed to send message');
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.messages && data.messages.length > 0) {
+                loadNewMessages(data.messages);
+                lastMessageId = data.messages[data.messages.length - 1].id;
+            }
+        })
+        .catch(error => console.error('Error sending message:', error));
+    });
     
     // Auto-refresh chat every 1 second
     setInterval(function() {
@@ -529,6 +565,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 1000);
     
     function loadNewMessages(messages) {
+        // Save current scroll position
+        const wasAtBottom = chatMessages.scrollHeight - chatMessages.scrollTop <= chatMessages.clientHeight + 50;
+        
         chatMessages.innerHTML = '';
         
         if (messages.length === 0) {
@@ -571,8 +610,10 @@ document.addEventListener('DOMContentLoaded', function() {
             chatMessages.appendChild(messageDiv);
         });
         
-        // Always scroll to bottom to show latest message
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        // Only auto-scroll if user was at bottom
+        if (wasAtBottom) {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
     }
     
     function escapeHtml(text) {

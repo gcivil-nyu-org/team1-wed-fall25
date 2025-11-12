@@ -185,6 +185,7 @@
     .form-actions {
         margin-top: 2.5rem;
         display: flex;
+        flex-direction: column;
         gap: 0.875rem;
         padding-top: 2rem;
         border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -213,9 +214,9 @@
     }
     .cancel-button {
         padding: 0.875rem 1.75rem;
-        background: rgba(255, 255, 255, 0.05);
-        color: rgba(255, 255, 255, 0.7);
-        border: 1px solid rgba(255, 255, 255, 0.15);
+        background: rgba(235, 87, 87, 0.15);
+        color: #ff8b8b;
+        border: 1px solid rgba(235, 87, 87, 0.3);
         border-radius: 8px;
         font-size: 1rem;
         font-weight: 400;
@@ -225,11 +226,12 @@
         justify-content: center;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         letter-spacing: 0.3px;
+        margin-top: 1rem;
     }
     .cancel-button:hover {
-        background: rgba(255, 255, 255, 0.1);
-        border-color: rgba(255, 255, 255, 0.3);
-        color: rgba(255, 255, 255, 0.9);
+        background: rgba(235, 87, 87, 0.25);
+        border-color: rgba(235, 87, 87, 0.5);
+        color: #ff6b6b;
         transform: translateY(-2px);
     }
     .error {
@@ -280,16 +282,11 @@
         
         <!-- Starting Location -->
         <div class="form-group">
-            <label for="id_start_location">Starting Location *</label>
-            <input type="hidden" name="start_location" id="id_start_location" required>
+            <label for="{{ form.start_location.id_for_label }}">Starting Location *</label>
+            {{ form.start_location }}
             {% if form.start_location.errors %}
                 <div class="error">{{ form.start_location.errors }}</div>
             {% endif %}
-            
-            <div class="location-search-container">
-                <input type="text" id="location-search" placeholder="Search for an art location...">
-                <div id="location-results" class="autocomplete-results"></div>
-            </div>
         </div>
         
         <!-- Description -->
@@ -306,10 +303,12 @@
             <label>Additional Locations (optional)</label>
             <div id="locations-chips" class="chips-container"></div>
             <div class="counter" id="locations-counter">0/5</div>
-            <div class="location-search-container">
-                <input type="text" id="extra-location-search" placeholder="Search for locations to add...">
-                <div id="extra-location-results" class="autocomplete-results"></div>
-            </div>
+            <select id="extra-location-select" class="form-select">
+                <option value="">Select a location to add...</option>
+                {% for location in locations %}
+                <option value="{{ location.id }}" data-title="{{ location.title }}">{{ location.title }}</option>
+                {% endfor %}
+            </select>
         </div>
         
         <!-- Invite Members -->
@@ -335,9 +334,7 @@
             <button type="submit" class="submit-button">
                 {% if is_update %}Update Event{% else %}Create Event{% endif %}
             </button>
-            {% if is_update %}
-            <a href="{% url 'events:detail' event.slug %}" class="cancel-button">Cancel</a>
-            {% endif %}
+            <a href="{% if is_update %}{% url 'events:detail' event.slug %}{% else %}{% url 'events:public' %}{% endif %}" class="cancel-button">Cancel</a>
         </div>
     </form>
     </div>
