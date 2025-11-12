@@ -63,67 +63,55 @@ if (locationSearch) {
     });
 }
 
-// Additional locations autocomplete
-const extraLocationSearch = document.getElementById('extra-location-search');
-const extraLocationResults = document.getElementById('extra-location-results');
+// Additional locations dropdown
+const extraLocationSelect = document.getElementById('extra-location-select');
 const locationsChips = document.getElementById('locations-chips');
 const locationsCounter = document.getElementById('locations-counter');
 
-if (extraLocationSearch) {
-    extraLocationSearch.addEventListener('input', debounce(async function(e) {
-        const term = e.target.value.trim();
+console.log('Elements found:', {
+    extraLocationSelect: !!extraLocationSelect,
+    locationsChips: !!locationsChips,
+    locationsCounter: !!locationsCounter
+});
+
+if (extraLocationSelect && locationsChips && locationsCounter) {
+    extraLocationSelect.addEventListener('change', function(e) {
+        const selectedOption = e.target.options[e.target.selectedIndex];
+        const id = selectedOption.value;
+        const title = selectedOption.dataset.title;
         
-        if (term.length < 2) {
-            extraLocationResults.style.display = 'none';
+        console.log('Location selected:', { id, title });
+        
+        if (!id) return; // Empty selection
+        
+        if (selectedLocations.length >= MAX_LOCATIONS) {
+            alert(`Maximum ${MAX_LOCATIONS} locations allowed`);
+            e.target.value = ''; // Reset selection
             return;
         }
         
-        try {
-            const response = await fetch(`/events/api/locations/search/?q=${encodeURIComponent(term)}`);
-            const data = await response.json();
-            
-            if (data.results && data.results.length > 0) {
-                extraLocationResults.innerHTML = data.results.map(loc => `
-                    <div class="autocomplete-item" data-id="${loc.id}" data-title="${loc.t}" data-artist="${loc.a}">
-                        <strong>${loc.t}</strong> by ${loc.a}
-                    </div>
-                `).join('');
-                extraLocationResults.style.display = 'block';
-            } else {
-                extraLocationResults.style.display = 'none';
-            }
-        } catch (error) {
-            console.error('Error fetching locations:', error);
+        if (selectedLocations.some(loc => loc.id === id)) {
+            alert('Location already added');
+            e.target.value = ''; // Reset selection
+            return;
         }
-    }, 300));
-    
-    extraLocationResults.addEventListener('click', function(e) {
-        const item = e.target.closest('.autocomplete-item');
-        if (item) {
-            const id = item.dataset.id;
-            const title = item.dataset.title;
-            const artist = item.dataset.artist;
-            
-            if (selectedLocations.length >= MAX_LOCATIONS) {
-                alert(`Maximum ${MAX_LOCATIONS} locations allowed`);
-                return;
-            }
-            
-            if (selectedLocations.some(loc => loc.id === id)) {
-                alert('Location already added');
-                return;
-            }
-            
-            selectedLocations.push({ id, title, artist });
-            renderLocationChips();
-            
-            extraLocationSearch.value = '';
-            extraLocationResults.style.display = 'none';
-        }
+        
+        selectedLocations.push({ id, title });
+        console.log('selectedLocations after push:', selectedLocations);
+        renderLocationChips();
+        
+        e.target.value = ''; // Reset selection
     });
 }
 
 function renderLocationChips() {
+    if (!locationsChips || !locationsCounter) {
+        console.error('Cannot render chips: elements not found');
+        return;
+    }
+    
+    console.log('Rendering chips for:', selectedLocations);
+    
     locationsChips.innerHTML = selectedLocations.map((loc, index) => `
         <div class="chip">
             ${loc.title}
@@ -246,9 +234,8 @@ if (form) {
 // Close autocomplete when clicking outside
 document.addEventListener('click', function(e) {
     if (!e.target.closest('.location-search-container') && !e.target.closest('.user-search-container')) {
-        locationResults.style.display = 'none';
-        extraLocationResults.style.display = 'none';
-        userResults.style.display = 'none';
+        if (locationResults) locationResults.style.display = 'none';
+        if (userResults) userResults.style.display = 'none';
     }
 });
 

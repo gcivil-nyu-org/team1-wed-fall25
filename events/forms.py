@@ -1,6 +1,7 @@
 from django import forms
 from .models import Event
 from .validators import validate_future_datetime
+from loc_detail.models import PublicArt
 
 
 class EventForm(forms.ModelForm):
@@ -10,7 +11,16 @@ class EventForm(forms.ModelForm):
         widgets = {
             "start_time": forms.DateTimeInput(attrs={"type": "datetime-local"}),
             "description": forms.Textarea(attrs={"rows": 4, "maxlength": 300}),
+            "start_location": forms.Select(attrs={"class": "form-select"}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Populate start_location dropdown with all locations
+        self.fields["start_location"].queryset = PublicArt.objects.filter(
+            latitude__isnull=False, longitude__isnull=False
+        ).order_by("title")
+        self.fields["start_location"].empty_label = "Select a location..."
 
     def clean_title(self):
         title = self.cleaned_data.get("title", "").strip()
