@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Login Cancelled - Artinerary{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div style="text-align: center;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">⚠️</div>
+        <h1>Login Cancelled</h1>
+        <p style="color: #666; margin: 1.5rem 0;">
+            You cancelled the login process.
+        </p>
+        
+        <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem;">
+            <a href="{% url 'accounts:login' %}" class="btn">
+                Try Again
+            </a>
+            <a href="{% url 'artinerary:index' %}" class="btn" style="background: #95a5a6;">
+                Go Home
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

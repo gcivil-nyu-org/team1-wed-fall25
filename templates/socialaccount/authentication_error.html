@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Authentication Error - Artinerary{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div style="text-align: center;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">❌</div>
+        <h1>Authentication Error</h1>
+        
+        {% if provider %}
+        <p style="color: #666; margin: 1rem 0;">
+            There was an error connecting with <strong>{{ provider.name }}</strong>.
+        </p>
+        {% else %}
+        <p style="color: #666; margin: 1rem 0;">
+            There was an error during authentication.
+        </p>
+        {% endif %}
+        
+        {% if exception %}
+        <div style="padding: 1rem; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; margin: 1.5rem 0;">
+            <p style="color: #721c24; font-size: 0.9rem; margin: 0;">
+                {{ exception }}
+            </p>
+        </div>
+        {% endif %}
+        
+        <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem; flex-wrap: wrap;">
+            <a href="{% url 'accounts:login' %}" class="btn">
+                Try Again
+            </a>
+            <a href="{% url 'artinerary:index' %}" class="btn" style="background: #95a5a6;">
+                Go Home
+            </a>
+        </div>
+        
+        <p style="margin-top: 2rem; font-size: 0.9rem; color: #999;">
+            If this problem persists, please contact support.
+        </p>
+    </div>
+</div>
+{% endblock %}
