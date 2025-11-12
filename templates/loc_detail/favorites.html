@@ -56,69 +56,72 @@
         <!-- Favorites Grid -->
         <div class="art-grid">
             {% for favorite in page_obj %}
-                <div class="art-card">
-                    <div class="card-header-with-favorite">
-                        <h3 class="art-title">
-                            <a href="{% url 'loc_detail:art_detail' favorite.art.id %}">
-                                {{ favorite.art.title|default:"Untitled" }}
-                            </a>
-                        </h3>
-                        <button class="btn-remove-favorite" 
-                                data-art-id="{{ favorite.art.id }}"
-                                title="Remove from favorites">
-                            ❤️
-                        </button>
+                    <a href="{% url 'loc_detail:art_detail' art.id %}" class="art-card">
+                    <!-- Favorite Button -->
+                    
+                    <div class="art-card-header">
+                        <div class="art-header">
+                            <div>
+                                <h3 class="art-title">{{ art.title|default:"Untitled" }}</h3>
+                            {% if art.borough %}
+                                <span class="art-badge">{{ art.borough }}</span>
+                            {% endif %}
+                                <button class="favorite-icon {% if art.id in user_favorites %}favorited{% endif %}" 
+                                        data-art-id="{{ art.id }}"
+                                        onclick="event.preventDefault(); toggleFavorite('{{ art.id }}', this);">
+                                    ❤
+                                </button>
+                            </div>
+
+                        {% if art.image %}
+                            <div>
+                                {{ art.square_thumbnail|safe }}
+                            </div>
+                        {% endif %}
+                        </div>
                     </div>
                     
-                    {% if favorite.art.borough %}
-                        <span class="badge borough-badge">{{ favorite.art.borough }}</span>
-                    {% endif %}
-
-                    <div class="art-info">
-                        <p class="artist">
-                            <strong>Artist:</strong> {{ favorite.art.artist_name|default:"Unknown Artist" }}
+                    <div class="art-card-body">
+                        <p class="art-artist">
+                            <strong>Artist:</strong> {{ art.artist_name|default:"Unknown Artist" }}
                         </p>
                         
-                        {% if favorite.art.location %}
-                            <p class="location">
-                                <strong>Location:</strong> {{ favorite.art.location|truncatewords:15 }}
+                        {% if art.location %}
+                            <p class="art-location">
+                                <strong>Location:</strong> {{ art.location|truncatewords:15 }}
                             </p>
                         {% endif %}
-
-                        {% if favorite.art.medium %}
-                            <p class="medium">
-                                <strong>Medium:</strong> {{ favorite.art.medium|truncatewords:8 }}
+                        
+                        {% if art.medium %}
+                            <p class="art-medium">
+                                <strong>Medium:</strong> {{ art.medium|truncatewords:10 }}
                             </p>
                         {% endif %}
-
-                        {% if favorite.art.year_created %}
-                            <p class="year">
-                                <strong>Year:</strong> {{ favorite.art.year_created }}
+                        
+                        {% if art.year_created %}
+                            <p class="art-year">
+                                <strong>Year:</strong> {{ art.year_created }}
                             </p>
                         {% endif %}
                         
                         <!-- Rating Display -->
-                        {% if favorite.art.get_total_reviews > 0 %}
+                        {% if art.get_total_reviews > 0 %}
                         <div class="art-rating">
                             <span class="art-rating-stars">
                                 {% for i in "12345" %}
-                                    {% if forloop.counter <= favorite.art.get_average_rating %}★{% else %}☆{% endif %}
+                                    {% if forloop.counter <= art.get_average_rating %}★{% else %}☆{% endif %}
                                 {% endfor %}
                             </span>
-                            <span class="art-rating-score">{{ favorite.art.get_average_rating }}</span>
-                            <span class="art-rating-count">({{ favorite.art.get_total_reviews }} reviews)</span>
+                            <span class="art-rating-score">{{ art.get_average_rating }}</span>
+                            <span class="art-rating-count">({{ art.get_total_reviews }})</span>
                         </div>
                         {% endif %}
-                        
-                        <p class="added-date">
-                            <small>Added to favorites: {{ favorite.added_at|date:"M d, Y" }}</small>
-                        </p>
                     </div>
-
-                    <a href="{% url 'loc_detail:art_detail' favorite.art.id %}" class="card-link">
-                        View Details →
-                    </a>
-                </div>
+                    
+                    <div class="art-card-footer">
+                        <span class="view-details">View Details →</span>
+                    </div>
+                </a>
             {% endfor %}
         </div>
 
@@ -214,84 +217,12 @@
     font-size: 14px;
 }
 
-.btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 14px;
-}
-
-.btn-primary {
-    background-color: #007bff;
-    color: white;
-}
-
-.btn-primary:hover {
-    background-color: #0056b3;
-}
-
-.btn-secondary {
-    background-color: #6c757d;
-    color: white;
-    margin-left: 10px;
-}
-
-.btn-secondary:hover {
-    background-color: #545b62;
-}
-
-.results-summary {
-    margin-bottom: 20px;
-    color: #666;
-}
-
 /* Match art_list.html styling */
 .art-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 25px;
     margin-bottom: 30px;
-}
-
-.art-card {
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 20px;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-}
-
-.art-card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    transform: translateY(-2px);
-}
-
-.card-header-with-favorite {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 10px;
-}
-
-.art-title {
-    margin: 0;
-    font-size: 20px;
-    color: #2c3e50;
-    flex: 1;
-}
-
-.art-title a {
-    color: #2c3e50;
-    text-decoration: none;
-    transition: color 0.2s ease;
-}
-
-.art-title a:hover {
-    color: #3498db;
 }
 
 .btn-remove-favorite {
@@ -343,11 +274,6 @@
     padding: 8px 0;
     border-top: 1px solid #e0e0e0;
     border-bottom: 1px solid #e0e0e0;
-}
-
-.art-rating-stars {
-    color: #fbbc04;
-    font-size: 16px;
 }
 
 .art-rating-score {

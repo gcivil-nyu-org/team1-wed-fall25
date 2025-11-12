@@ -24,4 +24,14 @@ urlpatterns = [
         views.api_comment_reaction,
         name="api_comment_reaction",
     ),
+    path(
+        "api/comment/<int:comment_id>/report",
+        views.api_report_comment,
+        name="api_report_comment",
+    ),
+    path(
+        "api/image/<int:image_id>/delete",
+        views.api_delete_comment_image,
+        name="api_delete_image",
+    ),
 ]

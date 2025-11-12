@@ -2,29 +2,9 @@
 
 {% block events_content %}
 <style>
-.invitations-wrapper {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    min-height: calc(100vh - 200px);
-    padding: 3rem 1rem;
-}
 .invitations {
     max-width: 900px;
     margin: 0 auto;
-}
-.page-header {
-    text-align: center;
-    margin-bottom: 3rem;
-    animation: fadeInDown 0.6s ease-out;
-}
-@keyframes fadeInDown {
-    from {
-        opacity: 0;
-        transform: translateY(-30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 .page-header h2 {
     color: white;
@@ -169,21 +149,13 @@
     box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
 }
 .empty-state {
+    margin-top: 20px;
     text-align: center;
     padding: 4rem 2rem;
     background: rgba(255, 255, 255, 0.98);
     backdrop-filter: blur(10px);
     border-radius: 24px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    animation: fadeIn 0.8s ease-out 0.4s backwards;
-}
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+    /* box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); */
 }
 .empty-icon {
     font-size: 5rem;
@@ -222,11 +194,6 @@
 
 <div class="invitations-wrapper">
     <div class="invitations">
-        <div class="page-header">
-            <h2>💌 Your Invitations</h2>
-            <p>Respond to event invitations from friends</p>
-        </div>
-        
         {% if invites %}
         <div class="invites-list">
             {% for invite in invites %}

@@ -2,115 +2,16 @@
 
 {% block content %}
 <style>
-body {
-    background: #0f0f0f;
-    min-height: 100vh;
-}
 .events-container {
     max-width: 1400px;
     margin: 0 auto;
     padding: 0;
 }
-.events-header {
-    background: rgba(20, 20, 30, 0.8);
-    backdrop-filter: blur(20px);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    padding: 1.5rem 2rem;
-    animation: slideDown 0.8s ease-out;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-.events-header h1 {
-    margin: 0 0 1.25rem 0;
-    color: #ffffff;
-    font-size: 2.25rem;
-    font-weight: 300;
-    text-align: center;
-    letter-spacing: 2px;
-}
-.tabs-nav {
-    display: flex;
-    gap: 0.75rem;
+.events-title {
+    display:flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-.tab {
-    padding: 0.75rem 1.75rem;
-    text-decoration: none;
-    color: rgba(255, 255, 255, 0.6);
-    border-radius: 8px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    font-weight: 400;
-    font-size: 0.95rem;
-    position: relative;
-    overflow: hidden;
-    border: 1px solid transparent;
-    letter-spacing: 0.3px;
-}
-.tab::before {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, #667eea 0%, #f093fb 100%);
-    transform: scaleX(0);
-    transition: transform 0.3s ease;
-}
-.tab:hover {
-    color: rgba(255, 255, 255, 0.9);
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.1);
-}
-.tab:hover::before {
-    transform: scaleX(1);
-}
-.tab.active {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-.tab.active::before {
-    display: none;
-}
-.btn-create {
-    margin-left: auto;
-    padding: 0.75rem 1.75rem;
-    background: rgba(17, 153, 142, 0.15);
-    color: #5affe8;
-    text-decoration: none;
-    border-radius: 8px;
-    font-weight: 400;
-    font-size: 0.95rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 1px solid rgba(17, 153, 142, 0.3);
-    white-space: nowrap;
-    letter-spacing: 0.3px;
-}
-.btn-create:hover {
-    background: rgba(17, 153, 142, 0.25);
-    border-color: rgba(17, 153, 142, 0.5);
-    transform: translateY(-2px);
-}
-.btn-create:active {
-    transform: translateY(0);
-}
-.events-content {
-    /* Content styling handled by individual pages */
+    margin-bottom: 20px;
 }
 @media (max-width: 768px) {
     .events-header {
@@ -119,34 +20,25 @@ body {
     .events-header h1 {
         font-size: 2rem;
     }
-    .tabs-nav {
-        flex-direction: column;
-        width: 100%;
-    }
-    .tab, .btn-create {
-        width: 100%;
-        text-align: center;
-    }
-    .btn-create {
-        margin-left: 0;
-    }
 }
 </style>
 
 <div class="events-container">
     <div class="events-header">
-        <h1>EVENTS</h1>
-        <div class="tabs-nav">
+        <div class="events-title">
+            <h1>Events</h1>
+            <a href="{% url 'events:create' %}" class="btn btn-primary">
+                Create Event
+            </a>
+        </div>
+        <div class="nav nav-tabs">
             <a href="{% url 'events:public' %}" 
-               class="tab {% if request.path == '/events/public/' %}active{% endif %}">
+               class="nav-link {% if request.path == '/events/public/' %}active{% endif %}">
                 Public Events
             </a>
             <a href="{% url 'events:invitations' %}" 
-               class="tab {% if request.path == '/events/invitations/' %}active{% endif %}">
+               class="nav-link {% if request.path == '/events/invitations/' %}active{% endif %}">
                 Invitations
-            </a>
-            <a href="{% url 'events:create' %}" class="btn-create">
-                Create Event
             </a>
         </div>
     </div>

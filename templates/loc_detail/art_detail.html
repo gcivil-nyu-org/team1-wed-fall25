@@ -1,405 +1,15 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}{{ art.title|default:"Untitled" }} - Artinerary{% endblock %}
-
-{% block extra_head %}
-<style>
-    .favorite-button {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background-color: #fff;
-        border: 2px solid #e74c3c;
-        color: #e74c3c;
-        padding: 10px 20px;
-        font-size: 16px;
-        font-weight: bold;
-        cursor: pointer;
-        border-radius: 5px;
-        transition: all 0.3s ease;
-    }
-    .favorite-button:hover {
-        background-color: #e74c3c;
-        color: white;
-    }
-    .favorite-button.favorited {
-        background-color: #e74c3c;
-        color: white;
-    }
-    .favorite-button .heart {
-        font-size: 20px;
-    }
-    
-    /* Rating Summary */
-    .rating-summary {
-        background: #f8f9fa;
-        padding: 20px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        display: flex;
-        align-items: center;
-        gap: 30px;
-    }
-    .rating-score {
-        text-align: center;
-    }
-    .rating-number {
-        font-size: 48px;
-        font-weight: bold;
-        color: #333;
-    }
-    .rating-stars {
-        color: #fbbc04;
-        font-size: 24px;
-    }
-    .rating-count {
-        color: #666;
-        margin-top: 5px;
-    }
-    
-    /* Star Rating Input */
-    .star-rating {
-        display: flex;
-        flex-direction: row-reverse;
-        justify-content: flex-end;
-        gap: 5px;
-        font-size: 32px;
-        margin: 15px 0;
-    }
-    .star-rating input {
-        display: none;
-    }
-    .star-rating label {
-        cursor: pointer;
-        color: #ddd;
-        transition: color 0.2s;
-    }
-    .star-rating input:checked ~ label,
-    .star-rating label:hover,
-    .star-rating label:hover ~ label {
-        color: #fbbc04;
-    }
-    
-    /* Review Form */
-    .review-form-container {
-        background: #fff;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 30px;
-    }
-    .review-form-container h3 {
-        margin-top: 0;
-        font-size: 18px;
-        font-weight: 600;
-    }
-    .review-textarea {
-        width: 100%;
-        min-height: 60px;
-        max-height: 300px;
-        padding: 12px;
-        border: 1px solid #dadce0;
-        border-radius: 4px;
-        font-size: 14px;
-        font-family: inherit;
-        resize: none;
-        box-sizing: border-box;
-        overflow-y: hidden;
-        transition: min-height 0.2s ease;
-    }
-    .review-textarea:focus {
-        outline: none;
-        border-color: #4285f4;
-        min-height: 100px;
-    }
-    .btn-review {
-        background: #1a73e8;
-        color: white;
-        border: none;
-        padding: 10px 24px;
-        border-radius: 4px;
-        font-weight: 500;
-        cursor: pointer;
-        margin-top: 10px;
-    }
-    .btn-review:hover {
-        background: #1557b0;
-    }
-    
-    /* Comments List */
-    .reviews-list {
-        margin-top: 30px;
-    }
-    .reviews-list h3 {
-        font-size: 20px;
-        font-weight: 600;
-        margin-bottom: 20px;
-    }
-    .review-item {
-        border-bottom: 1px solid #e0e0e0;
-        padding: 20px 0;
-    }
-    .review-header {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 10px;
-    }
-    .review-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: #4285f4;
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        font-size: 16px;
-        flex-shrink: 0;
-    }
-    .review-author-info {
-        flex: 1;
-    }
-    .review-author {
-        font-weight: 600;
-        color: #202124;
-    }
-    .review-meta {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 13px;
-        color: #5f6368;
-        margin-top: 2px;
-    }
-    .review-rating {
-        color: #fbbc04;
-        font-size: 14px;
-    }
-    .review-body {
-        margin: 12px 0;
-        color: #3c4043;
-        line-height: 1.6;
-    }
-    .review-actions {
-        display: flex;
-        gap: 15px;
-        margin-top: 10px;
-    }
-    .reaction-btn {
-        background: none;
-        border: none;
-        cursor: pointer;
-        color: #5f6368;
-        font-size: 13px;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        padding: 5px 10px;
-        border-radius: 4px;
-        transition: background 0.2s;
-    }
-    .reaction-btn:hover {
-        background: #f1f3f4;
-    }
-    .reaction-btn.active {
-        color: #1a73e8;
-        font-weight: 600;
-    }
-    .reply-btn {
-        background: none;
-        border: none;
-        cursor: pointer;
-        color: #1a73e8;
-        font-size: 13px;
-        font-weight: 600;
-        padding: 5px 10px;
-    }
-    .reply-btn:hover {
-        text-decoration: underline;
-    }
-    
-    .action-btn {
-        background: none;
-        border: none;
-        cursor: pointer;
-        color: #5f6368;
-        font-size: 13px;
-        padding: 5px 10px;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-    .action-btn:hover {
-        color: #1a73e8;
-    }
-    
-    /* Review Badges */
-    .review-badges {
-        display: flex;
-        gap: 8px;
-        margin-top: 8px;
-        flex-wrap: wrap;
-    }
-    .review-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 4px 10px;
-        border-radius: 12px;
-        font-size: 11px;
-        font-weight: 600;
-        text-transform: uppercase;
-    }
-    .badge-verified {
-        background: #e8f5e9;
-        color: #2e7d32;
-    }
-    .badge-local {
-        background: #e3f2fd;
-        color: #1565c0;
-    }
-    .badge-helpful {
-        background: #fff3e0;
-        color: #e65100;
-    }
-    
-    /* Review Image */
-    .review-image {
-        margin: 12px 0;
-        border-radius: 8px;
-        overflow: hidden;
-        max-width: 400px;
-    }
-    .review-image img {
-        width: 100%;
-        height: auto;
-        display: block;
-    }
-
-    /* Detail Image */
-    .detail-image {
-        width: 100%;
-        max-height: 500px;
-        overflow: hidden;
-        margin-bottom: 20px;
-    }
-
-    .detail-image.placeholder {
-        width: 100%;
-        height: 300px;
-        background: #f1f3f4;
-        border: 2px dashed #dadce0;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #5f6368;
-        font-size: 16px;
-    }
-    
-    /* Image Upload */
-    .image-upload-container {
-        margin: 15px 0;
-    }
-    .image-upload-label {
-        display: inline-block;
-        padding: 8px 16px;
-        background: #f1f3f4;
-        border: 1px solid #dadce0;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 13px;
-        color: #5f6368;
-        transition: background 0.2s;
-    }
-    .image-upload-label:hover {
-        background: #e8eaed;
-    }
-    .image-upload-input {
-        display: none;
-    }
-    .image-preview {
-        margin-top: 10px;
-        max-width: 200px;
-        border-radius: 4px;
-        overflow: hidden;
-        display: none;
-    }
-    .image-preview img {
-        width: 100%;
-        height: auto;
-        display: block;
-    }
-    
-    /* Replies */
-    .replies-container {
-        margin-left: 52px;
-        margin-top: 15px;
-        padding-top: 15px;
-        border-top: 1px solid #f1f3f4;
-    }
-    .reply-item {
-        padding: 12px 0;
-    }
-    .reply-form {
-        margin-top: 15px;
-        margin-left: 52px;
-        display: none;
-    }
-    .reply-form.active {
-        display: block;
-    }
-    .reply-textarea {
-        width: 100%;
-        min-height: 60px;
-        max-height: 200px;
-        padding: 10px;
-        border: 1px solid #dadce0;
-        border-radius: 4px;
-        font-size: 13px;
-        font-family: inherit;
-        resize: none;
-        box-sizing: border-box;
-        overflow-y: hidden;
-        transition: min-height 0.2s ease;
-    }
-    .reply-textarea:focus {
-        outline: none;
-        border-color: #4285f4;
-        min-height: 80px;
-    }
-    .reply-actions {
-        margin-top: 10px;
-        display: flex;
-        gap: 10px;
-    }
-    .btn-cancel {
-        background: none;
-        border: 1px solid #dadce0;
-        color: #5f6368;
-        padding: 8px 16px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: 500;
-    }
-    .btn-cancel:hover {
-        background: #f1f3f4;
-    }
-    
-    .no-reviews {
-        text-align: center;
-        padding: 40px 20px;
-        color: #5f6368;
-    }
-</style>
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/locdetail/locdetail.css' %}">
 {% endblock %}
 
 {% block content %}
 <div class="art-detail-container">
     <div class="breadcrumb">
-        <a href="{% url 'loc_detail:index' %}">← Back to Gallery</a>
+        <a href="{% url 'loc_detail:index' %}">← Back to Artworks</a>
     </div>
 
     <div class="detail-grid">
@@ -407,42 +17,43 @@
             <div class="detail-header">
                 <h1 class="detail-title">{{ art.title|default:"Untitled" }}</h1>
                 {% if art.borough %}
-                    <span class="detail-badge">{{ art.borough }}</span>
+                    <span class="art-badge">{{ art.borough }}</span>
                 {% endif %}
             </div>
-
 
             {% if art.image %}
                 <div class="detail-image">
                     {{ art.art_image|safe }}
                 </div>
             {% else %}
-                <div class="detail-image placeholder">
+                <div class="detail-image placeholder-image">
                     <p>No image available</p>
                 </div>
             {% endif %}
-
 
             <!-- Action Buttons -->
             <div class="action-buttons" style="display: flex; gap: 10px; margin-bottom: 20px;">
                 <button 
                     id="favorite-button" 
-                    class="favorite-button {% if is_favorited %}favorited{% endif %}"
+                    class="btn btn-outline-primary"
                     data-art-id="{{ art.id }}"
                     data-favorited="{{ is_favorited|yesno:'true,false' }}"
                 >
-                    <span class="heart">&#10084;</span>
+                    <span class="heart {% if is_favorited %}favorited{% endif %}">&#10084;</span>
                     <span id="favorite-text">{% if is_favorited %}Remove from Favorites{% else %}Add to Favorites{% endif %}</span>
                 </button>
 
                 <button 
                     id="add-to-itinerary-button" 
-                    class="favorite-button"
+                    class="btn btn-outline-primary"
                     data-art-id="{{ art.id }}"
                     data-art-title="{{ art.title|default:'Untitled' }}"
-                    style="border-color: #3498db; color: #3498db;"
                 >
-                    <span style="font-size: 20px;">📍</span>
+                    <span style="font-size: 20px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" class="pin">
+                            <path d="M480-480q33 0 56.5-23.5T560-560q0-33-23.5-56.5T480-640q-33 0-56.5 23.5T400-560q0 33 23.5 56.5T480-480Zm0 400Q319-217 239.5-334.5T160-552q0-150 96.5-239T480-880q127 0 223.5 89T800-552q0 100-79.5 217.5T480-80Z"/>
+                        </svg>
+                    </span>
                     <span>Add to Itinerary</span>
                 </button>
             </div>
@@ -546,50 +157,7 @@
                 {% endif %}
                 
                 <!-- Review Form -->
-                {% if user_review %}
-                <div class="review-form-container">
-                    <h3>Edit Your Review</h3>
-                    <form method="post" class="review-form" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <input type="hidden" name="comment_id" value="{{ user_review.id }}">
-                        
-                        <div class="star-rating" id="edit-star-rating">
-                            <input type="radio" name="rating" value="5" id="edit-star5" {% if user_review.rating == 5 %}checked{% endif %}>
-                            <label for="edit-star5">★</label>
-                            <input type="radio" name="rating" value="4" id="edit-star4" {% if user_review.rating == 4 %}checked{% endif %}>
-                            <label for="edit-star4">★</label>
-                            <input type="radio" name="rating" value="3" id="edit-star3" {% if user_review.rating == 3 %}checked{% endif %}>
-                            <label for="edit-star3">★</label>
-                            <input type="radio" name="rating" value="2" id="edit-star2" {% if user_review.rating == 2 %}checked{% endif %}>
-                            <label for="edit-star2">★</label>
-                            <input type="radio" name="rating" value="1" id="edit-star1" {% if user_review.rating == 1 %}checked{% endif %}>
-                            <label for="edit-star1">★</label>
-                        </div>
-                        
-                        <textarea 
-                            name="comment" 
-                            rows="4" 
-                            placeholder="Share details of your experience at this location..."
-                            required
-                            class="review-textarea"
-                        >{{ user_review.comment }}</textarea>
-                        
-                        <div class="image-upload-container">
-                            <label for="edit-image-upload" class="image-upload-label">
-                                📷 Add or Change Photo
-                            </label>
-                            <input type="file" id="edit-image-upload" name="image" accept="image/*" class="image-upload-input">
-                            <div class="image-preview" id="edit-image-preview">
-                                {% if user_review.image %}
-                                <img src="{{ user_review.image.url }}" alt="Review image">
-                                {% endif %}
-                            </div>
-                        </div>
-                        
-                        <button type="submit" class="btn-review">Update Review</button>
-                    </form>
-                </div>
-                {% else %}
+                {% if user_review is None %}
                 <div class="review-form-container">
                     <h3>Share Your Experience</h3>
                     <form method="post" class="review-form" enctype="multipart/form-data">
@@ -617,11 +185,29 @@
                         ></textarea>
                         
                         <div class="image-upload-container">
-                            <label for="image-upload" class="image-upload-label">
-                                📷 Add Photo
-                            </label>
-                            <input type="file" id="image-upload" name="image" accept="image/*" class="image-upload-input">
-                            <div class="image-preview" id="image-preview"></div>
+                            <div style="margin-bottom: 15px;">
+                                <p style="font-size: 14px; color: #5f6368; margin-bottom: 10px;">
+                                    Add photos to your review (Max 5 images)
+                                </p>
+                                
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                    <label for="images-upload-single" class="image-upload-label">
+                                        📷 Add Photo
+                                    </label>
+                                    <input type="file" id="images-upload-single" accept="image/*" class="image-upload-input">
+                                    
+                                    <label for="images-upload" class="image-upload-label">
+                                        📁 Add Multiple
+                                    </label>
+                                    <input type="file" id="images-upload" name="images" accept="image/*" multiple class="image-upload-input" data-max="5">
+                                </div>
+                            </div>
+                            
+                            <div id="drop-area" class="drop-area">
+                                <p style="margin: 0; color: #5f6368; font-size: 14px;">Or drag and drop images here</p>
+                            </div>
+                            
+                            <div class="image-previews" id="image-previews"></div>
                         </div>
                         
                         <button type="submit" class="btn-review">Post Review</button>
@@ -649,6 +235,11 @@
                                             <span>{{ comment.created_at|date:"M d, Y" }}</span>
                                         </div>
                                         <div class="review-badges">
+                                            {% if comment.images.count > 0 %}
+                                            <span class="review-badge badge-photos">
+                                                📷 {{ comment.images.count }} Photo{{ comment.images.count|pluralize }}
+                                            </span>
+                                            {% endif %}
                                             {% if comment.likes_count >= 5 %}
                                             <span class="review-badge badge-helpful">
                                                 ⭐ Helpful
@@ -664,35 +255,113 @@
                                 </div>
                                 <div class="review-body">{{ comment.comment }}</div>
                                 
-                                {% if comment.image %}
-                                <div class="review-image">
-                                    <img src="{{ comment.image.url }}" alt="Review photo">
+                                {% if comment.images.all %}
+                                <div class="review-images">
+                                    {% for image in comment.images.all %}
+                                    <img src="{{ image.image.url }}" alt="Review photo" onclick="openImageModal(this.src)">
+                                    {% endfor %}
                                 </div>
                                 {% endif %}
                                 
-                                <div class="review-actions">
-                                    <button class="reaction-btn like-btn {% if comment.user_reaction_status == 'like' %}active{% endif %}" 
-                                            data-comment-id="{{ comment.id }}"
-                                            data-reaction="like">
-                                        <span class="icon">👍</span>
-                                        <span class="count">{{ comment.likes_count }}</span>
-                                    </button>
-                                    <button class="reaction-btn dislike-btn {% if comment.user_reaction_status == 'dislike' %}active{% endif %}"
-                                            data-comment-id="{{ comment.id }}"
-                                            data-reaction="dislike">
-                                        <span class="icon">👎</span>
-                                        <span class="count">{{ comment.dislikes_count }}</span>
-                                    </button>
-                                    <button class="reply-btn" data-comment-id="{{ comment.id }}">Reply</button>
-                                    <button class="action-btn share-btn" data-comment-id="{{ comment.id }}">
-                                        <span>🔗</span> Share
-                                    </button>
-                                    <button class="action-btn report-btn" data-comment-id="{{ comment.id }}">
-                                        <span>⚠️</span> Report
-                                    </button>
-                                </div>
+                                {% if comment.user == user %}
+                                    <button class="btn-review btn-edit-comment" data-comment-id="{{ comment.id }}">Edit</button>
+
+                                    <div class="review-form-container review-edit" hidden>
+                                        <h3>Edit Your Review</h3>
+                                        <form method="post" class="review-form" enctype="multipart/form-data">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="comment_id" value="{{ user_review.id }}">
+                                            
+                                            <div class="star-rating" id="edit-star-rating">
+                                                <input type="radio" name="rating" value="5" id="edit-star5" {% if user_review.rating == 5 %}checked{% endif %}>
+                                                <label for="edit-star5">★</label>
+                                                <input type="radio" name="rating" value="4" id="edit-star4" {% if user_review.rating == 4 %}checked{% endif %}>
+                                                <label for="edit-star4">★</label>
+                                                <input type="radio" name="rating" value="3" id="edit-star3" {% if user_review.rating == 3 %}checked{% endif %}>
+                                                <label for="edit-star3">★</label>
+                                                <input type="radio" name="rating" value="2" id="edit-star2" {% if user_review.rating == 2 %}checked{% endif %}>
+                                                <label for="edit-star2">★</label>
+                                                <input type="radio" name="rating" value="1" id="edit-star1" {% if user_review.rating == 1 %}checked{% endif %}>
+                                                <label for="edit-star1">★</label>
+                                            </div>
+                                            
+                                            <textarea 
+                                                name="comment" 
+                                                rows="4" 
+                                                placeholder="Share details of your experience at this location..."
+                                                required
+                                                class="review-textarea"
+                                            >{{ user_review.comment }}</textarea>
+                                            
+                                            <!-- Existing Images -->
+                                            {% if user_review.images.all %}
+                                            <div style="margin: 15px 0;">
+                                                <p style="font-size: 14px; color: #5f6368; margin-bottom: 10px;">Your uploaded photos:</p>
+                                                <div class="existing-images" id="existing-images-{{ user_review.id }}">
+                                                    {% for image in user_review.images.all %}
+                                                    <div class="existing-image-item" data-image-id="{{ image.id }}">
+                                                        <img src="{{ image.image.url }}" alt="Review photo">
+                                                        <button type="button" class="delete-image-btn" onclick="deleteExistingImage('{{ image.id }}', '{{ user_review.id }}')">×</button>
+                                                    </div>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                                
+                                            <div class="image-upload-container">
+                                                <div style="margin-bottom: 15px;">
+                                                    <p style="font-size: 14px; color: #5f6368; margin-bottom: 10px;">
+                                                        Add more photos (Max 5 total)
+                                                    </p>
+                                                    
+                                                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                                        <label for="edit-images-single" class="image-upload-label">
+                                                            📷 Add Photo
+                                                        </label>
+                                                        <input type="file" id="edit-images-single" accept="image/*" class="image-upload-input">
+                                                        
+                                                        <label for="edit-images-multiple" class="image-upload-label">
+                                                            📁 Add Multiple
+                                                        </label>
+                                                        <input type="file" id="edit-images-multiple" name="images" accept="image/*" multiple class="image-upload-input" data-max="5">
+                                                    </div>
+                                                </div>
+                                                
+                                                <div id="edit-drop-area" class="drop-area">
+                                                    <p style="margin: 0; color: #5f6368; font-size: 14px;">Or drag and drop images here</p>
+                                                </div>
+                                                
+                                                <div class="image-previews" id="edit-image-previews"></div>
+                                            </div>
+                                            
+                                            <button type="submit" class="btn-review">Update Review</button>
+                                        </form>
+                                    </div>
+                                {% else %}
+                                        <div class="review-actions">
+                                            <button class="reaction-btn like-btn {% if comment.user_reaction_status == 'like' %}active{% endif %}" 
+                                                    data-comment-id="{{ comment.id }}"
+                                                    data-reaction="like">
+                                                <span class="icon">👍</span>
+                                                <span class="count">{{ comment.likes_count }}</span>
+                                            </button>
+                                            <button class="reaction-btn dislike-btn {% if comment.user_reaction_status == 'dislike' %}active{% endif %}"
+                                                    data-comment-id="{{ comment.id }}"
+                                                    data-reaction="dislike">
+                                                <span class="icon">👎</span>
+                                                <span class="count">{{ comment.dislikes_count }}</span>
+                                            </button>
+                                            <button class="reply-btn" data-comment-id="{{ comment.id }}">Reply</button>
+                                            <!-- <button class="action-btn share-btn" data-comment-id="{{ comment.id }}">
+                                                <span>🔗</span> Share
+                                            </button> -->
+                                            <button class="action-btn report-btn" data-comment-id="{{ comment.id }}">
+                                                <span>⚠️</span> Report
+                                            </button>
+                                        </div>
+                                {% endif %}
                                 
-                                <!-- Reply Form (hidden by default) -->
+                                <!-- Reply Form -->
                                 <div class="reply-form" id="reply-form-{{ comment.id }}">
                                     <form method="post">
                                         {% csrf_token %}
@@ -799,373 +468,111 @@
     </div>
 </div>
 
-<script>
-    // CSRF token helper
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
 
-    const csrftoken = getCookie('csrftoken');
-
-    // Favorite button functionality
-    document.addEventListener('DOMContentLoaded', function() {
-        const favoriteBtn = document.getElementById('favorite-button');
-        const favoriteText = document.getElementById('favorite-text');
+<!-- Report Modal -->
+<div class="modal-overlay" id="reportModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Report Review</h2>
+            <button class="modal-close" onclick="closeReportModal()">×</button>
+        </div>
         
-        if (favoriteBtn) {
-            favoriteBtn.addEventListener('click', function() {
-                const artId = this.getAttribute('data-art-id');
-                const isFavorited = this.getAttribute('data-favorited') === 'true';
-                
-                fetch(`/loc_detail/api/favorite/${artId}/toggle`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrftoken
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.favorited) {
-                        favoriteBtn.classList.add('favorited');
-                        favoriteText.textContent = 'Remove from Favorites';
-                        favoriteBtn.setAttribute('data-favorited', 'true');
-                        alert('Location added to favourites');
-                    } else {
-                        favoriteBtn.classList.remove('favorited');
-                        favoriteText.textContent = 'Add to Favorites';
-                        favoriteBtn.setAttribute('data-favorited', 'false');
-                        alert('Location removed from favourites');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error toggling favorite:', error);
-                    alert('Failed to update favorites. Please try again.');
-                });
-            });
-        }
+        <p style="color: #5f6368; margin-bottom: 20px;">Help us understand what's wrong with this review.</p>
         
-        // Star rating functionality
-        const starRating = document.querySelector('.star-rating');
-        if (starRating) {
-            const inputs = starRating.querySelectorAll('input');
-            inputs.forEach(input => {
-                input.addEventListener('change', function() {
-                    // Visual feedback handled by CSS
-                });
-            });
-        }
-        
-        // Edit star rating functionality
-        const editStarRating = document.getElementById('edit-star-rating');
-        if (editStarRating) {
-            const inputs = editStarRating.querySelectorAll('input');
-            inputs.forEach(input => {
-                input.addEventListener('change', function() {
-                    // Visual feedback handled by CSS
-                });
-            });
-        }
-        
-        // Reply button functionality
-        const replyBtns = document.querySelectorAll('.reply-btn');
-        replyBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                const commentId = this.getAttribute('data-comment-id');
-                const replyForm = document.getElementById(`reply-form-${commentId}`);
-                if (replyForm) {
-                    replyForm.classList.toggle('active');
-                }
-            });
-        });
-        
-        // Like/Dislike functionality with proper toggle
-        const reactionBtns = document.querySelectorAll('.reaction-btn');
-        reactionBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                const commentId = this.getAttribute('data-comment-id');
-                const reaction = this.getAttribute('data-reaction');
-                const commentItem = this.closest('[data-comment-id="' + commentId + '"]');
-                const likeBtn = commentItem.querySelector('.like-btn');
-                const dislikeBtn = commentItem.querySelector('.dislike-btn');
-                const likeBtnCount = likeBtn.querySelector('.count');
-                const dislikeBtnCount = dislikeBtn.querySelector('.count');
-                
-                // Check current state
-                const isLikeActive = likeBtn.classList.contains('active');
-                const isDislikeActive = dislikeBtn.classList.contains('active');
-                
-                fetch(`/loc_detail/api/comment/${commentId}/reaction`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'X-CSRFToken': csrftoken
-                    },
-                    body: `reaction=${reaction}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Update counts
-                        likeBtnCount.textContent = data.likes;
-                        dislikeBtnCount.textContent = data.dislikes;
-                        
-                        // Update active states based on action
-                        if (reaction === 'like') {
-                            if (data.action === 'removed') {
-                                // Like was removed
-                                likeBtn.classList.remove('active');
-                            } else {
-                                // Like was added or changed from dislike
-                                likeBtn.classList.add('active');
-                                dislikeBtn.classList.remove('active');
-                            }
-                        } else {
-                            if (data.action === 'removed') {
-                                // Dislike was removed
-                                dislikeBtn.classList.remove('active');
-                            } else {
-                                // Dislike was added or changed from like
-                                dislikeBtn.classList.add('active');
-                                likeBtn.classList.remove('active');
-                            }
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-            });
-        });
-        
-        // Image upload preview
-        const imageUpload = document.getElementById('image-upload');
-        const imagePreview = document.getElementById('image-preview');
-        const editImageUpload = document.getElementById('edit-image-upload');
-        const editImagePreview = document.getElementById('edit-image-preview');
-        
-        if (imageUpload) {
-            imageUpload.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        imagePreview.innerHTML = '<img src="' + e.target.result + '" alt="Preview">';
-                        imagePreview.style.display = 'block';
-                    }
-                    reader.readAsDataURL(file);
-                }
-            });
-        }
-        
-        if (editImageUpload) {
-            editImageUpload.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        editImagePreview.innerHTML = '<img src="' + e.target.result + '" alt="Preview">';
-                        editImagePreview.style.display = 'block';
-                    }
-                    reader.readAsDataURL(file);
-                }
-            });
-        }
-        
-        // Share button functionality (placeholder)
-        const shareBtns = document.querySelectorAll('.share-btn');
-        shareBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                alert('Share functionality will be implemented soon!');
-            });
-        });
-        
-        // Report button functionality (placeholder)
-        const reportBtns = document.querySelectorAll('.report-btn');
-        reportBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                if (confirm('Report this review for violating community guidelines?')) {
-                    alert('Report functionality will be implemented soon. Thank you for helping keep our community safe!');
-                }
-            });
-        });
-        
-        // Auto-expanding textarea functionality
-        function autoExpandTextarea(textarea) {
-            textarea.style.height = 'auto';
-            textarea.style.height = Math.min(textarea.scrollHeight, parseInt(getComputedStyle(textarea).maxHeight)) + 'px';
-        }
-        
-        // Apply to all textareas
-        const textareas = document.querySelectorAll('.review-textarea, .reply-textarea');
-        textareas.forEach(textarea => {
-            // Auto-expand on input
-            textarea.addEventListener('input', function() {
-                autoExpandTextarea(this);
-            });
-            
-            // Auto-expand on focus
-            textarea.addEventListener('focus', function() {
-                autoExpandTextarea(this);
-            });
-            
-            // Reset on blur if empty
-            textarea.addEventListener('blur', function() {
-                if (!this.value.trim()) {
-                    this.style.height = '';
-                }
-            });
-        });
-    });
-    
-    function cancelReply(commentId) {
-        const replyForm = document.getElementById(`reply-form-${commentId}`);
-        if (replyForm) {
-            replyForm.classList.remove('active');
-        }
-    }
-    
-    // Add to Itinerary functionality
-    const addToItineraryBtn = document.getElementById('add-to-itinerary-button');
-    if (addToItineraryBtn) {
-        addToItineraryBtn.addEventListener('click', function() {
-            const artId = this.getAttribute('data-art-id');
-            const artTitle = this.getAttribute('data-art-title');
-            showAddToItineraryModal(artId, artTitle);
-        });
-    }
-    
-    function showAddToItineraryModal(locationId, locationTitle) {
-        // Create modal HTML
-        const modalHTML = `
-            <div id="itinerary-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;">
-                <div style="background: white; padding: 30px; border-radius: 10px; max-width: 500px; width: 90%;">
-                    <h3 style="margin-top: 0;">Add "${locationTitle}" to Itinerary</h3>
-                    <div style="margin: 20px 0;">
-                        <label style="display: block; margin-bottom: 10px; font-weight: bold;">Select an existing itinerary:</label>
-                        <select id="existing-itinerary" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;">
-                            <option value="">Loading...</option>
-                        </select>
-                    </div>
-                    <div style="text-align: center; margin: 15px 0; color: #666;">OR</div>
-                    <div style="margin: 20px 0;">
-                        <label style="display: block; margin-bottom: 10px; font-weight: bold;">Create a new itinerary:</label>
-                        <input type="text" id="new-itinerary-title" placeholder="Enter itinerary name" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;">
-                    </div>
-                    <div style="display: flex; gap: 10px; margin-top: 20px;">
-                        <button onclick="closeItineraryModal()" style="flex: 1; padding: 10px; background: #ddd; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">Cancel</button>
-                        <button onclick="submitAddToItinerary('${locationId}')" style="flex: 1; padding: 10px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">Add</button>
-                    </div>
-                    <div id="itinerary-message" style="margin-top: 15px; padding: 10px; border-radius: 5px; display: none;"></div>
+        <div class="report-reasons" id="reportReasons">
+            <label class="reason-option">
+                <input type="checkbox" name="report_reason" value="spam">
+                <div class="reason-label">
+                    <div class="reason-title">Spam or misleading</div>
+                    <div class="reason-description">Promotional content, fake reviews, or misleading information</div>
                 </div>
-            </div>
-        `;
+            </label>
+            
+            <label class="reason-option">
+                <input type="checkbox" name="report_reason" value="harassment">
+                <div class="reason-label">
+                    <div class="reason-title">Harassment or bullying</div>
+                    <div class="reason-description">Targeting an individual with unwanted behavior</div>
+                </div>
+            </label>
+            
+            <label class="reason-option">
+                <input type="checkbox" name="report_reason" value="hate">
+                <div class="reason-label">
+                    <div class="reason-title">Hate speech or discrimination</div>
+                    <div class="reason-description">Content promoting hatred based on identity or protected attributes</div>
+                </div>
+            </label>
+            
+            <label class="reason-option">
+                <input type="checkbox" name="report_reason" value="violence">
+                <div class="reason-label">
+                    <div class="reason-title">Violence or dangerous content</div>
+                    <div class="reason-description">Threats, glorification of violence, or dangerous activities</div>
+                </div>
+            </label>
+            
+            <label class="reason-option">
+                <input type="checkbox" name="report_reason" value="sexual">
+                <div class="reason-label">
+                    <div class="reason-title">Sexual content</div>
+                    <div class="reason-description">Inappropriate sexual content or exploitation</div>
+                </div>
+            </label>
+            
+            <label class="reason-option">
+                <input type="checkbox" name="report_reason" value="misinformation">
+                <div class="reason-label">
+                    <div class="reason-title">False information</div>
+                    <div class="reason-description">Deliberately misleading or factually incorrect content</div>
+                </div>
+            </label>
+            
+            <label class="reason-option">
+                <input type="checkbox" name="report_reason" value="copyright">
+                <div class="reason-label">
+                    <div class="reason-title">Copyright violation</div>
+                    <div class="reason-description">Unauthorized use of copyrighted material</div>
+                </div>
+            </label>
+            
+            <label class="reason-option">
+                <input type="checkbox" name="report_reason" value="personal">
+                <div class="reason-label">
+                    <div class="reason-title">Personal information shared</div>
+                    <div class="reason-description">Sharing someone's private information without consent</div>
+                </div>
+            </label>
+            
+            <label class="reason-option">
+                <input type="checkbox" name="report_reason" value="other">
+                <div class="reason-label">
+                    <div class="reason-title">Other</div>
+                    <div class="reason-description">Something else that violates community guidelines</div>
+                </div>
+            </label>
+        </div>
         
-        // Remove existing modal if any
-        const existingModal = document.getElementById('itinerary-modal');
-        if (existingModal) {
-            existingModal.remove();
-        }
+        <textarea 
+            class="additional-info-textarea" 
+            id="additionalInfo" 
+            placeholder="Additional details (optional)..."
+        ></textarea>
         
-        // Add modal to body
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-        
-        // Load user's itineraries
-        fetch('/itineraries/api/user-itineraries/')
-            .then(response => response.json())
-            .then(data => {
-                const select = document.getElementById('existing-itinerary');
-                if (data.itineraries && data.itineraries.length > 0) {
-                    select.innerHTML = '<option value="">-- Select an itinerary --</option>' +
-                        data.itineraries.map(itin => 
-                            `<option value="${itin.id}">${itin.title} (${itin.stop_count} stops)</option>`
-                        ).join('');
-                } else {
-                    select.innerHTML = '<option value="">No itineraries yet</option>';
-                }
-            })
-            .catch(error => {
-                console.error('Error loading itineraries:', error);
-                const select = document.getElementById('existing-itinerary');
-                select.innerHTML = '<option value="">Error loading itineraries</option>';
-            });
-    }
-    
-    window.closeItineraryModal = function() {
-        const modal = document.getElementById('itinerary-modal');
-        if (modal) {
-            modal.remove();
-        }
-    };
-    
-    window.submitAddToItinerary = function(locationId) {
-        const existingItineraryId = document.getElementById('existing-itinerary').value;
-        const newItineraryTitle = document.getElementById('new-itinerary-title').value.trim();
-        const messageDiv = document.getElementById('itinerary-message');
-        
-        // Validate input
-        if (!existingItineraryId && !newItineraryTitle) {
-            messageDiv.textContent = 'Please select an existing itinerary or create a new one';
-            messageDiv.style.display = 'block';
-            messageDiv.style.background = '#fee';
-            messageDiv.style.color = '#c00';
-            return;
-        }
-        
-        // Prepare form data
-        const formData = new FormData();
-        formData.append('location_id', locationId);
-        if (newItineraryTitle) {
-            formData.append('new_itinerary_title', newItineraryTitle);
-        } else {
-            formData.append('itinerary_id', existingItineraryId);
-        }
-        
-        // Submit request
-        fetch('/itineraries/api/add-to-itinerary/', {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': csrftoken
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                messageDiv.textContent = data.message;
-                messageDiv.style.display = 'block';
-                messageDiv.style.background = '#efe';
-                messageDiv.style.color = '#060';
-                
-                // Close modal after 1.5 seconds
-                setTimeout(() => {
-                    closeItineraryModal();
-                }, 1500);
-            } else {
-                messageDiv.textContent = data.error || 'Failed to add to itinerary';
-                messageDiv.style.display = 'block';
-                messageDiv.style.background = '#fee';
-                messageDiv.style.color = '#c00';
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            messageDiv.textContent = 'An error occurred. Please try again.';
-            messageDiv.style.display = 'block';
-            messageDiv.style.background = '#fee';
-            messageDiv.style.color = '#c00';
-        });
-    };
-</script>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeReportModal()">Cancel</button>
+            <button class="btn-submit-report" onclick="submitReport()">Submit Report</button>
+        </div>
+    </div>
+</div>
+
+<!-- Image Modal -->
+<div class="modal-overlay" id="imageModal" onclick="closeImageModal()">
+    <div class="modal-content" style="max-width: 90%; max-height: 90vh; padding: 0; background: transparent;" onclick="event.stopPropagation()">
+        <button class="modal-close" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 30px; cursor: pointer; z-index: 10;" onclick="closeImageModal()">×</button>
+        <img id="modalImage" style="max-width: 100%; max-height: 90vh; object-fit: contain; border-radius: 8px;">
+    </div>
+</div>
+
+<script src="{% static 'js/locdetail/locdetail.js' %}"></script>
 {% endblock %}

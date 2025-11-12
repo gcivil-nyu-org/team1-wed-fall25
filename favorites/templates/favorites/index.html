@@ -32,45 +32,6 @@
         opacity: 0.95;
     }
 
-    /* Modern Tabs */
-    .nav-tabs {
-        border-bottom: 2px solid #e0e0e0;
-        margin-bottom: 30px;
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-    }
-
-    .nav-tabs .nav-item {
-        margin-bottom: -2px;
-    }
-
-    .nav-tabs .nav-link {
-        border: none;
-        border-bottom: 3px solid transparent;
-        color: #666;
-        font-weight: 500;
-        padding: 15px 30px;
-        transition: all 0.3s ease;
-        background: none;
-        font-size: 1.1rem;
-    }
-
-    .nav-tabs .nav-link:hover {
-        color: #667eea;
-        border-bottom-color: #667eea;
-        background: rgba(102, 126, 234, 0.05);
-    }
-
-    .nav-tabs .nav-link.active {
-        color: #667eea;
-        border-bottom-color: #667eea;
-        background: rgba(102, 126, 234, 0.1);
-    }
-
-    .nav-tabs .nav-link i {
-        margin-right: 8px;
-    }
 
     /* Tab Content */
     .tab-content {
@@ -106,65 +67,12 @@
         gap: 25px;
     }
 
-    .art-card {
-        background: white;
-        border: 1px solid #e0e0e0;
-        border-radius: 12px;
-        padding: 20px;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    }
-
-    .art-card:hover {
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-        transform: translateY(-4px);
-    }
-
     .card-header-with-favorite {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
         margin-bottom: 15px;
-    }
-
-    .art-title {
-        margin: 0;
-        font-size: 1.3rem;
-        flex: 1;
-    }
-
-    .art-title a {
-        color: #2c3e50;
-        text-decoration: none;
-    }
-
-    .art-title a:hover {
-        color: #667eea;
-    }
-
-    .btn-remove-favorite {
-        background: none;
-        border: none;
-        font-size: 1.5rem;
-        cursor: pointer;
-        color: #e74c3c;
-        transition: transform 0.2s ease;
-        padding: 0;
-        margin-left: 10px;
-    }
-
-    .btn-remove-favorite:hover {
-        transform: scale(1.2);
-    }
-
-    .borough-badge {
-        display: inline-block;
-        background: #667eea;
-        color: white;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        margin-bottom: 12px;
+        padding: 1rem 1.5rem;
     }
 
     /* Events Grid */
@@ -292,57 +200,6 @@
         flex-wrap: wrap;
     }
 
-    .btn {
-        padding: 10px 20px;
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: 500;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
-        font-size: 0.95rem;
-    }
-
-    .btn-primary {
-        background: #667eea;
-        color: white;
-    }
-
-    .btn-primary:hover {
-        background: #5568d3;
-    }
-
-    .btn-outline-primary {
-        background: transparent;
-        border: 2px solid #667eea;
-        color: #667eea;
-    }
-
-    .btn-outline-primary:hover {
-        background: #667eea;
-        color: white;
-    }
-
-    .btn-warning {
-        background: #ffc107;
-        color: #333;
-    }
-
-    .btn-warning:hover {
-        background: #e0a800;
-    }
-
-    .btn-outline-warning {
-        background: transparent;
-        border: 2px solid #ffc107;
-        color: #ffc107;
-    }
-
-    .btn-outline-warning:hover {
-        background: #ffc107;
-        color: #333;
-    }
-
     /* Search and Filter */
     .search-filter-container {
         background: #f8f9fa;
@@ -399,9 +256,8 @@
 
 {% block content %}
 <div class="favorites-container">
-    <div class="page-header">
-        <h1><i class="fas fa-star"></i> My Favorites</h1>
-        <p>Your curated collection of art, events, and itineraries</p>
+    <div>
+        <h1>Favorites</h1>
     </div>
 
     <!-- Tabs Navigation -->
