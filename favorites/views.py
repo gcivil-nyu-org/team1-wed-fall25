@@ -25,6 +25,9 @@ def favorites_view(request):
 
     # Art Favorites
     if active_tab == "art":
+        # Check if user has any favorites at all (before filtering)
+        has_any_favorites = UserFavoriteArt.objects.filter(user=request.user).exists()
+
         favorite_art = (
             UserFavoriteArt.objects.filter(user=request.user)
             .select_related("art")
@@ -69,6 +72,7 @@ def favorites_view(request):
                 "boroughs": boroughs,
                 "search_query": search_query,
                 "borough_filter": borough_filter,
+                "has_any_favorites": has_any_favorites,
             }
         )
 
