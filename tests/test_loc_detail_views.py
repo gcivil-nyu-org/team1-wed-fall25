@@ -496,13 +496,13 @@ class FavoritesViewTests(TestCase):
 
     def test_favorites_requires_login(self):
         """Test that favorites view requires authentication"""
-        response = self.client.get(reverse("loc_detail:favorites"))
+        response = self.client.get(reverse("favorites:index"))
         self.assertEqual(response.status_code, 302)
 
     def test_favorites_view_authenticated(self):
         """Test favorites view with authenticated user"""
         self.client.login(username="testuser", password="testpass123")
-        response = self.client.get(reverse("favorites:index"))
+        response = self.client.get(reverse("favorites:index") + "?tab=art")
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "favorites/index.html")
@@ -510,7 +510,7 @@ class FavoritesViewTests(TestCase):
     def test_favorites_shows_only_user_favorites(self):
         """Test that only user's favorites are shown"""
         self.client.login(username="testuser", password="testpass123")
-        response = self.client.get(reverse("favorites:index"))
+        response = self.client.get(reverse("favorites:index") + "?tab=art")
 
         self.assertContains(response, "Favorite Art 1")
         self.assertContains(response, "Favorite Art 2")
@@ -519,7 +519,7 @@ class FavoritesViewTests(TestCase):
     def test_favorites_search_by_title(self):
         """Test search functionality in favorites"""
         self.client.login(username="testuser", password="testpass123")
-        response = self.client.get(reverse("favorites:index"), {"search": "Art 1"})
+        response = self.client.get(reverse("favorites:index") + "?tab=art&search=Art 1")
 
         self.assertContains(response, "Favorite Art 1")
         self.assertNotContains(response, "Favorite Art 2")
@@ -527,7 +527,9 @@ class FavoritesViewTests(TestCase):
     def test_favorites_filter_by_borough(self):
         """Test filtering favorites by borough"""
         self.client.login(username="testuser", password="testpass123")
-        response = self.client.get(reverse("favorites:index"), {"borough": "Manhattan"})
+        response = self.client.get(
+            reverse("favorites:index") + "?tab=art&borough=Manhattan"
+        )
 
         self.assertContains(response, "Favorite Art 1")
         self.assertNotContains(response, "Favorite Art 2")
@@ -540,7 +542,7 @@ class FavoritesViewTests(TestCase):
         )
 
         self.client.login(username="user2", password="testpass123")
-        response = self.client.get(reverse("favorites:index"))
+        response = self.client.get(reverse("favorites:index") + "?tab=art")
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context["page_obj"]), 0)
@@ -553,7 +555,7 @@ class FavoritesViewTests(TestCase):
             UserFavoriteArt.objects.create(user=self.user, art=art)
 
         self.client.login(username="testuser", password="testpass123")
-        response = self.client.get(reverse("favorites:index"))
+        response = self.client.get(reverse("favorites:index") + "?tab=art")
 
         # Should have pagination (page size is 20)
         self.assertTrue(response.context["page_obj"].has_next())
@@ -562,7 +564,7 @@ class FavoritesViewTests(TestCase):
     def test_favorites_ordered_by_recent(self):
         """Test that favorites are ordered by most recently added"""
         self.client.login(username="testuser", password="testpass123")
-        response = self.client.get(reverse("favorites:index"))
+        response = self.client.get(reverse("favorites:index") + "?tab=art")
 
         favorites = response.context["page_obj"].object_list
         # Verify we have 2 favorites
@@ -575,14 +577,14 @@ class FavoritesViewTests(TestCase):
     def test_favorites_total_count(self):
         """Test that total count is correct"""
         self.client.login(username="testuser", password="testpass123")
-        response = self.client.get(reverse("favorites:index"))
+        response = self.client.get(reverse("favorites:index") + "?tab=art")
 
         self.assertEqual(len(response.context["page_obj"]), 2)
 
     def test_favorites_boroughs_list(self):
         """Test that unique boroughs from favorites are shown"""
         self.client.login(username="testuser", password="testpass123")
-        response = self.client.get(reverse("favorites:index"))
+        response = self.client.get(reverse("favorites:index") + "?tab=art")
 
         boroughs = list(response.context["boroughs"])
         self.assertIn("Manhattan", boroughs)

@@ -1,4 +1,4 @@
-{% if page_obj %}
+{% if has_any_favorites %}
     <!-- Search and Filter Controls -->
     <div class="filters-section">
         <form method="get" class="search-filter-form">
@@ -31,17 +31,18 @@
         </form>
     </div>
 
-    <!-- Favorites Grid -->
-    <div class="art-grid">
-        {% for favorite in page_obj %}
-            <a class="art-card" href="{% url 'loc_detail:art_detail' favorite.art.id %}">
+    {% if page_obj %}
+        <!-- Favorites Grid -->
+        <div class="art-grid">
+            {% for favorite in page_obj %}
+                <a class="art-card" href="{% url 'loc_detail:art_detail' favorite.art.id %}">
                     <div class="art-card-header">
                         <div class="art-header">
                             <div>
                                 <h3 class="art-title">{{ favorite.art.title|default:"Untitled" }}</h3>
-                            {% if favorite.art.borough %}
-                                <span class="art-badge">{{ favorite.art.borough }}</span>
-                            {% endif %}
+                                {% if favorite.art.borough %}
+                                    <span class="art-badge">{{ favorite.art.borough }}</span>
+                                {% endif %}
                                 <button class="btn-remove-favorite favorite-icon favorited" 
                                         data-art-id="{{ favorite.art.id }}"
                                         onclick="event.preventDefault(); toggleFavorite('{{ favorite.art.id }}', this);">
@@ -49,11 +50,11 @@
                                 </button>
                             </div>
 
-                        {% if favorite.art.image %}
-                            <div>
-                                {{ favorite.art.square_thumbnail|safe }}
-                            </div>
-                        {% endif %}
+                            {% if favorite.art.image %}
+                                <div>
+                                    {{ favorite.art.square_thumbnail|safe }}
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     
@@ -97,38 +98,57 @@
                     <div class="art-card-footer">
                         <span class="view-details">View Details →</span>
                     </div>
-</a>
-        {% endfor %}
-    </div>
+                </a>
+            {% endfor %}
+        </div>
 
-    <!-- Pagination -->
-    {% if page_obj.has_other_pages %}
-        <div style="text-align: center; margin-top: 30px;">
-            <nav aria-label="Pagination">
-                <ul class="pagination" style="display: inline-flex; list-style: none; padding: 0; gap: 5px;">
-                    {% if page_obj.has_previous %}
-                        <li><a class="btn btn-outline-primary" href="?tab=art&page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if borough_filter %}&borough={{ borough_filter }}{% endif %}">First</a></li>
-                        <li><a class="btn btn-outline-primary" href="?tab=art&page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if borough_filter %}&borough={{ borough_filter }}{% endif %}">Previous</a></li>
-                    {% endif %}
-                    
-                    <li><span class="btn btn-primary">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
-                    
-                    {% if page_obj.has_next %}
-                        <li><a class="btn btn-outline-primary" href="?tab=art&page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if borough_filter %}&borough={{ borough_filter }}{% endif %}">Next</a></li>
-                        <li><a class="btn btn-outline-primary" href="?tab=art&page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if borough_filter %}&borough={{ borough_filter }}{% endif %}">Last</a></li>
-                    {% endif %}
-                </ul>
-            </nav>
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+            <div style="text-align: center; margin-top: 30px;">
+                <nav aria-label="Pagination">
+                    <ul class="pagination" style="display: inline-flex; list-style: none; padding: 0; gap: 5px;">
+                        {% if page_obj.has_previous %}
+                            <li><a class="btn btn-outline-primary" href="?tab=art&page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if borough_filter %}&borough={{ borough_filter }}{% endif %}">First</a></li>
+                            <li><a class="btn btn-outline-primary" href="?tab=art&page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if borough_filter %}&borough={{ borough_filter }}{% endif %}">Previous</a></li>
+                        {% endif %}
+                        
+                        <li><span class="btn btn-primary">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                        
+                        {% if page_obj.has_next %}
+                            <li><a class="btn btn-outline-primary" href="?tab=art&page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if borough_filter %}&borough={{ borough_filter }}{% endif %}">Next</a></li>
+                            <li><a class="btn btn-outline-primary" href="?tab=art&page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if borough_filter %}&borough={{ borough_filter }}{% endif %}">Last</a></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        {% endif %}
+    {% else %}
+        <!-- No Search Results -->
+        <div class="empty-state">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 120px; height: 120px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px;">
+                <i class="fas fa-search" style="font-size: 3.5rem; color: white;"></i>
+            </div>
+            <h3 style="font-size: 1.8rem; font-weight: 600; margin-bottom: 15px;">Oops! No Locations Found</h3>
+            <p style="font-size: 1.05rem; max-width: 500px; margin: 0 auto 35px;">We couldn't find any favorited art locations matching your search criteria.</p>
+            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                <a href="?tab=art" class="btn btn-primary" style="padding: 10px 24px; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 8px; border-radius: 6px; text-decoration: none; font-weight: 500;">
+                    Back to Favorites
+                </a>
+                <a href="{% url 'loc_detail:index' %}" class="btn btn-outline-primary" style="padding: 10px 24px; font-size: 0.95rem; border-radius: 6px; text-decoration: none; font-weight: 500;">Browse All Art</a>
+            </div>
         </div>
     {% endif %}
 {% else %}
+    <!-- No Favorites at All -->
     <div class="empty-state">
-        <i class="fas fa-palette"></i>
-        <h3>No Favorite Art Locations Yet</h3>
-        <p>Start exploring NYC public art and add pieces to your favorites!</p>
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 120px; height: 120px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px;">
+            <i class="fas fa-palette" style="font-size: 3.5rem; color: white;"></i>
+        </div>
+        <h3 style="font-size: 1.8rem; font-weight: 600; margin-bottom: 15px;">No Favorite Art Locations Yet</h3>
+        <p style="font-size: 1.05rem; max-width: 500px; margin: 0 auto 35px;">Start exploring NYC public art and add pieces to your favorites!</p>
         <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-            <a href="{% url 'loc_detail:index' %}" class="btn btn-primary">Browse All Art</a>
-            <a href="{% url 'artinerary:index' %}" class="btn btn-outline-primary">View Map</a>
+            <a href="{% url 'loc_detail:index' %}" class="btn btn-primary" style="padding: 12px 28px; font-size: 1rem;">Browse All Art</a>
+            <a href="{% url 'artinerary:index' %}" class="btn btn-outline-primary" style="padding: 12px 28px; font-size: 1rem;">View Map</a>
         </div>
     </div>
 {% endif %}
