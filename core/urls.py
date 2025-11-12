@@ -20,6 +20,7 @@ from django.urls import include, path
 
 urlpatterns = [
     path("accounts/", include("accounts.urls")),
+    path("accounts/", include("allauth.urls")),  # Add allauth URLs
     path("artinerary/", include("artinerary.urls")),
     path("loc_detail/", include("loc_detail.urls")),
     path("events/", include(("events.urls", "events"), namespace="events")),
