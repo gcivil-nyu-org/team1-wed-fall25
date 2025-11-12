@@ -9,7 +9,7 @@
         </div>
         <form method="post" action="{% url 'events:join' event.slug %}">
             {% csrf_token %}
-            <button type="submit" class="btn-join">Join Event Now</button>
+            <button type="submit" class="btn btn-primary">Join Event Now</button>
         </form>
     
     {% elif event.visibility == 'PUBLIC_INVITE' %}
@@ -25,7 +25,7 @@
         {% else %}
             <form method="post" action="{% url 'events:request_join' event.slug %}">
                 {% csrf_token %}
-                <button type="submit" class="btn-request">Request to Join</button>
+                <button type="submit" class="btn btn-primary">Request to Join</button>
             </form>
         {% endif %}
     
@@ -79,7 +79,6 @@
     margin: 0 0 1.5rem 0;
     padding-bottom: 1rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    color: #ffffff;
     font-size: 1.5rem;
     font-weight: 400;
     letter-spacing: 0.5px;
@@ -100,43 +99,9 @@
 }
 .cta-message p {
     margin: 0;
-    color: rgba(255, 255, 255, 0.8);
     line-height: 1.6;
     font-weight: 300;
     font-size: 0.9rem;
-}
-.btn-join, .btn-request {
-    width: 100%;
-    padding: 0.875rem 1.25rem;
-    border: 1px solid;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    font-weight: 400;
-    letter-spacing: 0.3px;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-}
-.btn-join {
-    background: rgba(17, 153, 142, 0.15);
-    color: #5affe8;
-    border-color: rgba(17, 153, 142, 0.3);
-}
-.btn-join:hover {
-    background: rgba(17, 153, 142, 0.25);
-    border-color: rgba(17, 153, 142, 0.5);
-    transform: translateY(-2px);
-}
-.btn-request {
-    background: rgba(102, 126, 234, 0.15);
-    color: #8b9cff;
-    border-color: rgba(102, 126, 234, 0.3);
-}
-.btn-request:hover {
-    background: rgba(102, 126, 234, 0.25);
-    border-color: rgba(102, 126, 234, 0.5);
-    transform: translateY(-2px);
 }
 .request-status {
     padding: 1.25rem;
@@ -187,7 +152,6 @@
 }
 .event-preview h3 {
     margin: 0 0 1.25rem 0;
-    color: rgba(255, 255, 255, 0.9);
     font-size: 1.125rem;
     font-weight: 400;
     letter-spacing: 0.3px;
@@ -195,13 +159,12 @@
 .preview-item {
     margin-bottom: 1rem;
     padding: 0.875rem 1rem;
-    background: rgba(255, 255, 255, 0.05);
     border-radius: 8px;
     border-left: 2px solid rgba(102, 126, 234, 0.3);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background-color: #fff;
 }
 .preview-item:hover {
-    background: rgba(255, 255, 255, 0.08);
     border-left-color: rgba(102, 126, 234, 0.6);
 }
 .preview-item div {
@@ -209,14 +172,12 @@
 }
 .preview-item strong {
     display: block;
-    color: rgba(255, 255, 255, 0.9);
     margin-bottom: 0.25rem;
     font-weight: 400;
     font-size: 0.875rem;
 }
 .preview-item p {
     margin: 0;
-    color: rgba(255, 255, 255, 0.7);
     line-height: 1.5;
     font-weight: 300;
     font-size: 0.875rem;
