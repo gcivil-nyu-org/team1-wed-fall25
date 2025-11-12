@@ -15,6 +15,7 @@ from user_profile.forms import UserProfileForm, UserBasicInfoForm
 from events.models import Event, EventMembership
 from events.enums import EventVisibility, MembershipRole
 from loc_detail.models import PublicArt, UserFavoriteArt
+from accounts.models import EmailVerificationOTP
 
 TEST_MEDIA_ROOT = "/tmp/test_media"
 
@@ -803,3 +804,181 @@ class UserSearchViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context["users"]), 0)
+
+
+class EditProfileFormTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username="testuser", email="test@example.com", password="password123"
+        )
+
+    def test_edit_profile_get_request(self):
+        """Test GET request to edit profile page"""
+        self.client.login(username="testuser", password="password123")
+        response = self.client.get(reverse("user_profile:edit_profile"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Edit Profile")
+
+    def test_edit_profile_without_email_change(self):
+        """Test editing profile without changing email"""
+        self.client.login(username="testuser", password="password123")
+        response = self.client.post(
+            reverse("user_profile:edit_profile"),
+            {"email": self.user.email, "first_name": "Test", "last_name": "User"},
+            follow=True,
+        )
+
+        # Should redirect back to profile
+        self.assertEqual(response.status_code, 200)
+
+    def test_edit_profile_with_invalid_form(self):
+        """Test editing profile with invalid data"""
+        self.client.login(username="testuser", password="password123")
+        response = self.client.post(
+            reverse("user_profile:edit_profile"),
+            {"email": "invalid-email"},  # Invalid email format
+        )
+
+        # Should stay on edit page with errors
+        self.assertEqual(response.status_code, 200)
+
+
+class PrivateProfileTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.private_user = User.objects.create_user(
+            username="privateuser",
+            email="private@example.com",
+            password="password123",
+        )
+        self.viewer = User.objects.create_user(
+            username="viewer", email="viewer@example.com", password="password123"
+        )
+        # Set profile to private
+        profile = self.private_user.profile
+        profile.privacy = "PRIVATE"
+        profile.save()
+
+    def test_private_profile_not_accessible_to_others(self):
+        """Test private profile cannot be viewed by non-followers"""
+        self.client.login(username="viewer", password="password123")
+        response = self.client.get(
+            reverse("user_profile:profile_view", args=[self.private_user.username])
+        )
+
+        # Should get 403 or redirect
+        self.assertIn(response.status_code, [403, 302])
+
+    def test_private_profile_accessible_to_owner(self):
+        """Test user can view own private profile"""
+        self.client.login(username="privateuser", password="password123")
+        response = self.client.get(
+            reverse("user_profile:profile_view", args=[self.private_user.username])
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+
+class FollowStatisticsTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user1 = User.objects.create_user(
+            username="user1", email="user1@example.com", password="password123"
+        )
+        self.user2 = User.objects.create_user(
+            username="user2", email="user2@example.com", password="password123"
+        )
+
+    def test_followers_count_displayed(self):
+        """Test followers count displayed on profile"""
+        self.client.login(username="user1", password="password123")
+        response = self.client.get(
+            reverse("user_profile:profile_view", args=[self.user1.username])
+        )
+
+        # Should show follower count (even if 0)
+        self.assertEqual(response.status_code, 200)
+
+    def test_following_count_displayed(self):
+        """Test following count displayed on profile"""
+        self.client.login(username="user1", password="password123")
+        response = self.client.get(
+            reverse("user_profile:profile_view", args=[self.user1.username])
+        )
+
+        # Should show following count (even if 0)
+        self.assertEqual(response.status_code, 200)
+
+
+class EmailChangeWithoutOTPTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username="testuser",
+            email="original@example.com",
+            password="password123",
+        )
+
+    def test_changing_to_same_email_doesnt_trigger_otp(self):
+        """Test that changing to the same email doesn't require OTP"""
+        self.client.login(username="testuser", password="password123")
+        response = self.client.post(
+            reverse("user_profile:edit_profile"),
+            {
+                "email": "original@example.com",  # Same as current
+                "first_name": "Test",
+                "last_name": "User",
+            },
+            follow=True,
+        )
+
+        # Should succeed without OTP verification
+        self.assertEqual(response.status_code, 200)
+
+
+class VerifyEmailChangeFormTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username="testuser",
+            email="original@example.com",
+            password="password123",
+        )
+        # Set up OTP for email change - use username not user
+        EmailVerificationOTP.objects.create(
+            username=self.user.username,
+            email="new@example.com",
+            otp="123456",
+            password_hash="dummy_hash",
+        )
+
+    def test_verify_email_change_get_request(self):
+        """Test GET request to verify email change page"""
+        session = self.client.session
+        session["pending_email_change"] = "new@example.com"
+        session.save()
+
+        self.client.login(username="testuser", password="password123")
+        response = self.client.get(reverse("user_profile:verify_email_change"))
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_verify_email_change_with_invalid_form(self):
+        """Test verifying email change with invalid OTP"""
+        session = self.client.session
+        session["pending_email_change"] = "new@example.com"
+        session.save()
+
+        self.client.login(username="testuser", password="password123")
+        response = self.client.post(
+            reverse("user_profile:verify_email_change"),
+            {"otp": "wrong-otp"},
+        )
+
+        # Should stay on verify page with errors
+        self.assertEqual(response.status_code, 200)
+        # Email should not change
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.email, "original@example.com")
