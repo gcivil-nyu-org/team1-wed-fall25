@@ -119,3 +119,40 @@ class ItineraryViewTests(TestCase):
         response = self.client.get(reverse("itineraries:detail", args=[itinerary.pk]))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "itineraries/detail.html")
+
+    def test_create_itinerary_with_one_stop(self):
+        """Test creating an itinerary with minimum one stop (today's change)"""
+        self.client.login(username="testuser", password="testpass123")
+        response = self.client.post(
+            reverse("itineraries:create"),
+            {
+                "title": "Single Stop Tour",
+                "description": "Test with one stop",
+                "stops-TOTAL_FORMS": "1",
+                "stops-INITIAL_FORMS": "0",
+                "stops-MIN_NUM_FORMS": "1",
+                "stops-MAX_NUM_FORMS": "1000",
+                "stops-0-location": self.location1.id,
+                "stops-0-order": "1",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Itinerary.objects.filter(title="Single Stop Tour").exists())
+        itinerary = Itinerary.objects.get(title="Single Stop Tour")
+        self.assertEqual(itinerary.stops.count(), 1)
+
+    def test_detail_view_map_with_stops(self):
+        """Test detail view includes map data for stops"""
+        self.client.login(username="testuser", password="testpass123")
+        itinerary = Itinerary.objects.create(user=self.user, title="Map Test Tour")
+        ItineraryStop.objects.create(
+            itinerary=itinerary, location=self.location1, order=1
+        )
+        ItineraryStop.objects.create(
+            itinerary=itinerary, location=self.location2, order=2
+        )
+        response = self.client.get(reverse("itineraries:detail", args=[itinerary.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "itinerary-map")
+        self.assertContains(response, str(self.location1.latitude))
+        self.assertContains(response, str(self.location2.latitude))

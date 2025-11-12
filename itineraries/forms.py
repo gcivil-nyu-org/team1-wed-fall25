@@ -80,8 +80,8 @@ ItineraryStopFormSet = inlineformset_factory(
     Itinerary,
     ItineraryStop,
     form=ItineraryStopForm,
-    extra=1,
+    extra=0,  # Don't show extra empty forms (min_num will handle the minimum)
     can_delete=True,
-    min_num=1,
+    min_num=1,  # Show and require at least 1 stop
     validate_min=True,
 )

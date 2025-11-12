@@ -77,6 +77,12 @@
     letter-spacing: 0.3px;
     line-height: 1.4;
 }
+.event-card h3 a {
+    transition: color 0.3s ease;
+}
+.event-card h3 a:hover {
+    color: #667eea !important;
+}
 .event-card p {
     margin: 0.625rem 0;
     display: flex;
@@ -218,7 +224,7 @@
         <div class="events-grid">
             {% for event in page_obj %}
             <div class="event-card">
-                <h3>{{ event.title }}</h3>
+                <h3><a href="{% url 'events:detail' event.slug %}" style="text-decoration: none; color: inherit;">{{ event.title }}</a></h3>
                 <p><strong>Host:</strong> {{ event.host.username }}</p>
                 <p><strong>Date:</strong> {{ event.start_time|date:"F j, Y g:i A" }}</p>
                 <p><strong>Location:</strong> {{ event.start_location.title }}</p>

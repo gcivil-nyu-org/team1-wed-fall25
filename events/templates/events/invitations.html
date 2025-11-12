@@ -71,6 +71,19 @@
     background-clip: text;
     padding-right: 3rem;
 }
+.invite-card h3 a {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    transition: all 0.3s ease;
+}
+.invite-card h3 a:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
 .invite-card p {
     margin: 0.875rem 0;
     color: #555;
@@ -198,7 +211,7 @@
         <div class="invites-list">
             {% for invite in invites %}
             <div class="invite-card">
-                <h3>{{ invite.event.title }}</h3>
+                <h3><a href="{% url 'events:detail' invite.event.slug %}" style="text-decoration: none; color: inherit;">{{ invite.event.title }}</a></h3>
                 <p><strong>👤 From:</strong> {{ invite.event.host.username }}</p>
                 <p><strong>📅 When:</strong> {{ invite.event.start_time|date:"F j, Y g:i A" }}</p>
                 <p><strong>📍 Where:</strong> {{ invite.event.start_location.title }}</p>
