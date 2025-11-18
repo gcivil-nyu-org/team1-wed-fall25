@@ -40,6 +40,7 @@ ALLOWED_HOSTS = [
     "artinerary-prod.us-east-2.elasticbeanstalk.com",
     "localhost",
     ".elasticbeanstalk.com",
+    "artinerary.app",
 ]
 
 
