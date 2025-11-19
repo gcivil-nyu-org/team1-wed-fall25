@@ -329,6 +329,41 @@ class ItineraryCreateViewTests(TestCase):
         self.assertEqual(Itinerary.objects.count(), 1)
         self.assertEqual(ItineraryStop.objects.count(), 1)
 
+    def test_create_with_sequential_ordering(self):
+        """Test creating itinerary ensures sequential ordering"""
+        self.client.login(username="testuser", password="testpass123")
+
+        # Create second location
+        location2 = PublicArt.objects.create(
+            title="Art 2",
+            latitude=Decimal("40.7480"),
+            longitude=Decimal("-73.8448"),
+            external_id="art002",
+        )
+
+        # Submit with non-sequential orders
+        data = {
+            "title": "New Tour",
+            "description": "Test description",
+            "stops-TOTAL_FORMS": "2",
+            "stops-INITIAL_FORMS": "0",
+            "stops-MIN_NUM_FORMS": "0",
+            "stops-MAX_NUM_FORMS": "1000",
+            "stops-0-location": self.location.id,
+            "stops-0-order": "5",  # Non-sequential
+            "stops-1-location": location2.id,
+            "stops-1-order": "10",  # Non-sequential
+        }
+        response = self.client.post(reverse("itineraries:create"), data)
+
+        self.assertEqual(response.status_code, 302)
+
+        # Verify orders are sequential
+        itinerary = Itinerary.objects.get(title="New Tour")
+        stops = list(itinerary.stops.order_by("order"))
+        self.assertEqual(stops[0].order, 1)
+        self.assertEqual(stops[1].order, 2)
+
 
 class ItineraryEditViewTests(TestCase):
     """Tests for itinerary edit view"""

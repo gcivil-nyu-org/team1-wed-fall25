@@ -21,28 +21,24 @@ class UserProfileForm(forms.ModelForm):
                     "maxlength": 500,
                 }
             ),
-            # "contact_info": forms.TextInput(
-            #     attrs={
-            #         "class": "form-control",
-            #         "placeholder": "Email, phone, or social media",
-            #     }
-            # ),
             "privacy": forms.Select(attrs={"class": "form-control"}),
             "profile_image": forms.FileInput(
-                attrs={"class": "form-control", "accept": "image/*"}
+                attrs={
+                    "class": "form-control",
+                    "accept": "image/*",
+                    "id": "profile-image-input",  # Add ID for JavaScript
+                }
             ),
         }
         labels = {
             "full_name": "Full Name",
             "about": "About Yourself",
-            # "contact_info": "Contact Information",
             "privacy": "Profile Privacy",
             "profile_image": "Profile Picture",
         }
         help_texts = {
             "about": "Maximum 500 characters",
             "privacy": "Public profiles can be viewed by anyone",
-            # "contact_info": "This will only be visible to users who follow you",
         }
 
     def clean_profile_image(self):

@@ -41,22 +41,22 @@
             
             <div class="profile-actions">
                 {% if is_own_profile %}
-                    <a href="{% url 'user_profile:edit_profile' %}" class="btn">
-                        Edit Profile
+                    <a href="{% url 'user_profile:edit_profile' %}" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Edit Profile
                     </a>
                 {% else %}
                     {% if is_following %}
                         <form method="post" action="{% url 'user_profile:unfollow_user' profile_user.username %}" style="display:inline;">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-secondary">
-                                Unfollow
+                            <button type="submit" class="btn btn-outline-primary">
+                                <i class="fas fa-user-minus"></i> Unfollow
                             </button>
                         </form>
                     {% else %}
                         <form method="post" action="{% url 'user_profile:follow_user' profile_user.username %}" style="display:inline;">
                             {% csrf_token %}
-                            <button type="submit" class="btn">
-                                Follow
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-user-plus"></i> Follow
                             </button>
                         </form>
                     {% endif %}
