@@ -201,6 +201,10 @@
                                     </label>
                                     <input type="file" id="images-upload" name="images" accept="image/*" multiple class="image-upload-input" data-max="5">
                                 </div>
+
+                                <div id="image-size-error" style="display: none; color: #d32f2f; font-size: 14px; margin-top: 10px; padding: 10px; background: #ffebee; border-radius: 4px; border-left: 4px solid #d32f2f;">
+                                    <strong>⚠️ Image size error:</strong> <span id="error-message"></span>
+                                </div>
                             </div>
                             
                             <div id="drop-area" class="drop-area">
@@ -325,6 +329,11 @@
                                                         </label>
                                                         <input type="file" id="edit-images-multiple" name="images" accept="image/*" multiple class="image-upload-input" data-max="5">
                                                     </div>
+
+                                                    <div id="edit-image-size-error" style="display: none; color: #d32f2f; font-size: 14px; margin-top: 10px; padding: 10px; background: #ffebee; border-radius: 4px; border-left: 4px solid #d32f2f;">
+                                                        <strong>⚠️ Image size error:</strong> <span id="edit-error-message"></span>
+                                                    </div>
+
                                                 </div>
                                                 
                                                 <div id="edit-drop-area" class="drop-area">
@@ -406,6 +415,9 @@
                                                     data-reaction="dislike">
                                                 <span class="icon">👎</span>
                                                 <span class="count">{{ reply.dislikes_count }}</span>
+                                            </button>
+                                            <button class="action-btn report-btn" data-comment-id="{{ comment.id }}">
+                                                <span>⚠️</span> Report
                                             </button>
                                         </div>
                                     </div>
@@ -575,4 +587,195 @@
 </div>
 
 <script src="{% static 'js/locdetail/locdetail.js' %}"></script>
+<script>
+// Image size validation
+(function() {
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+    const MAX_FILES = 5;
+
+    function validateImageSize(file) {
+        if (!file) {
+            return { valid: true, message: '' };
+        }
+        
+        if (file.size > MAX_FILE_SIZE) {
+            const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+            const maxSizeMB = (MAX_FILE_SIZE / (1024 * 1024)).toFixed(0);
+            return {
+                valid: false,
+                message: `One of your files "${file.name}" is ${sizeMB}MB. Maximum allowed size is ${maxSizeMB}MB per image.`
+            };
+        }
+        
+        return { valid: true, message: '' };
+    }
+
+    function validateMultipleImages(files) {
+        const validFiles = [];
+        const errors = [];
+        
+        if (files.length > MAX_FILES) {
+            return {
+                valid: false,
+                message: `You can only upload up to ${MAX_FILES} images. You selected ${files.length} images.`,
+                validFiles: []
+            };
+        }
+        
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const validation = validateImageSize(file);
+            
+            if (validation.valid) {
+                validFiles.push(file);
+            } else {
+                errors.push(validation.message);
+            }
+        }
+        
+        if (errors.length > 0) {
+            return {
+                valid: false,
+                message: errors.join('<br>'),
+                validFiles: validFiles
+            };
+        }
+        
+        return {
+            valid: true,
+            message: '',
+            validFiles: validFiles
+        };
+    }
+
+    function showImageError(message, errorDivId, errorMessageId) {
+        const errorDiv = document.getElementById(errorDivId);
+        const errorMessage = document.getElementById(errorMessageId);
+        
+        if (errorDiv && errorMessage) {
+            errorMessage.innerHTML = message;
+            errorDiv.style.display = 'block';
+            errorDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
+    function hideImageError(errorDivId) {
+        const errorDiv = document.getElementById(errorDivId);
+        if (errorDiv) {
+            errorDiv.style.display = 'none';
+        }
+    }
+
+    function attachImageValidation(inputId, errorDivId, errorMessageId) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        
+        input.addEventListener('change', function(e) {
+            hideImageError(errorDivId);
+            
+            const files = e.target.files;
+            if (!files || files.length === 0) return;
+            
+            const validation = validateMultipleImages(files);
+            
+            if (!validation.valid) {
+                showImageError(validation.message, errorDivId, errorMessageId);
+                e.target.value = '';
+                return;
+            }
+        });
+    }
+
+    function validateFormImages(form, errorDivId, errorMessageId) {
+        hideImageError(errorDivId);
+        
+        const fileInputs = form.querySelectorAll('input[type="file"][name="images"]');
+        let allValid = true;
+        const allErrors = [];
+        
+        fileInputs.forEach(input => {
+            if (input.files && input.files.length > 0) {
+                const validation = validateMultipleImages(input.files);
+                if (!validation.valid) {
+                    allErrors.push(validation.message);
+                    allValid = false;
+                }
+            }
+        });
+        
+        if (!allValid) {
+            showImageError(allErrors.join('<br>'), errorDivId, errorMessageId);
+            return false;
+        }
+        
+        return true;
+    }
+
+    // Initialize validation when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        // Attach validation to new review form inputs
+        attachImageValidation('images-upload', 'image-size-error', 'error-message');
+        attachImageValidation('images-upload-single', 'image-size-error', 'error-message');
+        
+        // Attach validation to edit review form inputs
+        attachImageValidation('edit-images-multiple', 'edit-image-size-error', 'edit-error-message');
+        attachImageValidation('edit-images-single', 'edit-image-size-error', 'edit-error-message');
+        
+        // Validate on form submission for new review
+        const reviewForms = document.querySelectorAll('.review-form');
+        reviewForms.forEach(form => {
+            // Skip edit forms
+            if (form.querySelector('#edit-images-multiple')) {
+                form.addEventListener('submit', function(e) {
+                    if (!validateFormImages(form, 'edit-image-size-error', 'edit-error-message')) {
+                        e.preventDefault();
+                        return false;
+                    }
+                });
+            } else {
+                form.addEventListener('submit', function(e) {
+                    if (!validateFormImages(form, 'image-size-error', 'error-message')) {
+                        e.preventDefault();
+                        return false;
+                    }
+                });
+            }
+        });
+        
+        // Handle drag and drop validation for new review
+        const dropArea = document.getElementById('drop-area');
+        if (dropArea) {
+            dropArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                hideImageError('image-size-error');
+                
+                const files = e.dataTransfer.files;
+                if (files && files.length > 0) {
+                    const validation = validateMultipleImages(files);
+                    if (!validation.valid) {
+                        showImageError(validation.message, 'image-size-error', 'error-message');
+                    }
+                }
+            });
+        }
+        
+        // Handle drag and drop validation for edit review
+        const editDropArea = document.getElementById('edit-drop-area');
+        if (editDropArea) {
+            editDropArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                hideImageError('edit-image-size-error');
+                
+                const files = e.dataTransfer.files;
+                if (files && files.length > 0) {
+                    const validation = validateMultipleImages(files);
+                    if (!validation.valid) {
+                        showImageError(validation.message, 'edit-image-size-error', 'edit-error-message');
+                    }
+                }
+            });
+        }
+    });
+})();
+</script>
 {% endblock %}
