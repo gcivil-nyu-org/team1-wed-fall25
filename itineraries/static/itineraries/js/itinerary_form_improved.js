@@ -1,5 +1,6 @@
 /**
  * Improved Itinerary Form with Drag-and-Drop Functionality
+ * FIXED VERSION - Properly handles deletions and reordering
  */
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -20,9 +21,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     /**
      * Update stop numbers and order fields after reordering
+     * FIXED: Properly handles visible vs hidden stops
      */
     function updateStopNumbers() {
-        const stops = container.querySelectorAll('.stop-item');
+        const stops = Array.from(container.querySelectorAll('.stop-item'))
+            .filter(stop => stop.style.display !== 'none');
+        
         stops.forEach((stop, index) => {
             // Update visible stop number
             const stopNumSpan = stop.querySelector('.stop-num');
@@ -73,11 +77,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     /**
      * Remove a stop form
+     * FIXED: Properly marks for deletion and renumbers remaining stops
      */
     function removeStop(stopElement) {
-        // Check if this is the last remaining stop
-        const stops = container.querySelectorAll('.stop-item');
-        if (stops.length <= 1) {
+        // Check if this is the last remaining visible stop
+        const visibleStops = Array.from(container.querySelectorAll('.stop-item'))
+            .filter(stop => stop.style.display !== 'none');
+        
+        if (visibleStops.length <= 1) {
             alert('You must have at least one stop in your itinerary.');
             return;
         }
@@ -93,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Hide the element
             stopElement.style.display = 'none';
         } else {
-            // Remove from DOM entirely
+            // Remove from DOM entirely (new unsaved stop)
             stopElement.remove();
             
             // Update total forms count
@@ -101,7 +108,7 @@ document.addEventListener('DOMContentLoaded', function() {
             managementForm.value = totalForms - 1;
         }
         
-        // Update stop numbers
+        // Update stop numbers for remaining visible stops
         updateStopNumbers();
     }
     
@@ -120,6 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     /**
      * Form validation before submit
+     * FIXED: Only validates visible stops
      */
     function validateForm(e) {
         const visibleStops = Array.from(container.querySelectorAll('.stop-item'))
@@ -131,12 +139,19 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         }
         
-        // Check for duplicate locations
+        // Check for duplicate locations among visible stops
         const locationIds = [];
         let hasDuplicate = false;
         
         visibleStops.forEach(stop => {
             const locationSelect = stop.querySelector('[name$="-location"]');
+            const deleteInput = stop.querySelector('[name$="-DELETE"]');
+            
+            // Skip if marked for deletion
+            if (deleteInput && deleteInput.checked) {
+                return;
+            }
+            
             if (locationSelect && locationSelect.value) {
                 if (locationIds.includes(locationSelect.value)) {
                     hasDuplicate = true;
@@ -151,6 +166,21 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('You cannot add the same location multiple times to an itinerary.');
             return false;
         }
+        
+        // Ensure order values are sequential for visible stops
+        visibleStops.forEach((stop, index) => {
+            const orderField = stop.querySelector('.order-field');
+            const deleteInput = stop.querySelector('[name$="-DELETE"]');
+            
+            // Skip if marked for deletion
+            if (deleteInput && deleteInput.checked) {
+                return;
+            }
+            
+            if (orderField) {
+                orderField.value = index + 1;
+            }
+        });
         
         return true;
     }

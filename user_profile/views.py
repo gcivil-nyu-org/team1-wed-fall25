@@ -93,10 +93,22 @@ def edit_profile(request):
             or ""
         )
 
+        # Check if user wants to remove current image
+        remove_image = request.POST.get("remove_image") == "true"
+
         profile_form = UserProfileForm(request.POST, request.FILES, instance=profile)
         user_form = UserBasicInfoForm(request.POST, instance=request.user)
 
         if profile_form.is_valid() and user_form.is_valid():
+            # Handle image removal before saving
+            should_remove_image = remove_image and profile.profile_image
+
+            if should_remove_image:
+                try:
+                    profile.profile_image.delete(save=False)
+                except Exception as e:
+                    print(f"Error deleting file from storage: {e}")
+
             # Detect email change (compare to original_email)
             new_email = user_form.cleaned_data.get("email") or request.POST.get("email")
             old_email = original_email
@@ -149,7 +161,13 @@ def edit_profile(request):
 
                 # Save profile fields but do NOT save the user's email
                 # until verification
-                profile_form.save()
+                profile_instance = profile_form.save(commit=False)
+
+                # FIXED: Ensure image removal persists
+                if should_remove_image:
+                    profile_instance.profile_image = None
+
+                profile_instance.save()
 
                 messages.success(
                     request,
@@ -159,9 +177,24 @@ def edit_profile(request):
                 return redirect("user_profile:verify_email_change")
 
             # Either email not changed or OAuth user => save immediately
-            profile_form.save()
+            profile_instance = profile_form.save(commit=False)
+
+            # FIXED: Ensure image removal persists even when no email change
+            if should_remove_image:
+                profile_instance.profile_image = None
+
+            profile_instance.save()
             user_form.save()
-            messages.success(request, "Your profile has been updated successfully!")
+
+            # Show appropriate success message
+            if remove_image:
+                messages.success(
+                    request,
+                    "Your profile is updated and the image is removed successfully!",
+                )
+            else:
+                messages.success(request, "Your profile has been updated successfully!")
+
             return redirect("user_profile:profile_view", username=request.user.username)
     else:
         profile_form = UserProfileForm(instance=profile)
@@ -172,33 +205,32 @@ def edit_profile(request):
     return render(request, "user_profile/edit_profile.html", context)
 
 
+# Remove the old remove_profile_image view or keep it for backward compatibility
 @login_required
 @require_POST
 def remove_profile_image(request):
-    """Remove user's profile image"""
-    try:
-        profile = UserProfile.objects.get(user=request.user)
+    """
+    Remove user's profile image
+    This view is called directly to remove the image
+    """
+    profile = request.user.profile
 
-        if profile.profile_image:
-            try:
-                profile.profile_image.delete(save=False)
-            except Exception as e:
-                print(f"Error deleting file from storage: {e}")
+    if profile.profile_image:
+        try:
+            # Delete the file from storage
+            profile.profile_image.delete(save=False)
+        except Exception as e:
+            print(f"Error deleting file from storage: {e}")
 
-            profile.profile_image = None
-            profile.save()
+        # Set to None and save
+        profile.profile_image = None
+        profile.save()
 
-            messages.success(request, "Profile image removed successfully!")
-        else:
-            messages.info(request, "No profile image to remove.")
+        messages.success(request, "Your profile image has been removed successfully!")
+    else:
+        messages.info(request, "You don't have a profile image to remove.")
 
-    except UserProfile.DoesNotExist:
-        messages.error(request, "User profile not found.")
-    except Exception as e:
-        print(f"Error in remove_profile_image: {e}")
-        messages.error(request, "An error occurred while removing the image.")
-
-    return redirect("user_profile:edit_profile")
+    return redirect("user_profile:profile_view", username=request.user.username)
 
 
 @login_required

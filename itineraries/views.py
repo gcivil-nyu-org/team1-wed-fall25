@@ -1,5 +1,6 @@
 """
 Views for the itineraries app
+FIXED VERSION - Addresses all reported issues
 """
 
 from django.shortcuts import render, redirect, get_object_or_404
@@ -73,12 +74,41 @@ def itinerary_create(request):
         if form.is_valid() and formset.is_valid():
             try:
                 with transaction.atomic():
+                    # Save itinerary first
                     itinerary = form.save(commit=False)
                     itinerary.user = request.user
                     itinerary.save()
 
-                    formset.instance = itinerary
-                    formset.save()
+                    # Collect valid stops
+                    stops_data = []
+                    for form_instance in formset.forms:
+                        if (
+                            form_instance.cleaned_data
+                            and not form_instance.cleaned_data.get("DELETE", False)
+                        ):
+                            location = form_instance.cleaned_data.get("location")
+                            if location:
+                                stops_data.append(
+                                    {
+                                        "location": location,
+                                        "visit_time": form_instance.cleaned_data.get(
+                                            "visit_time"
+                                        ),
+                                        "notes": form_instance.cleaned_data.get(
+                                            "notes", ""
+                                        ),
+                                    }
+                                )
+
+                    # Create stops with sequential ordering
+                    for i, stop_data in enumerate(stops_data):
+                        ItineraryStop.objects.create(
+                            itinerary=itinerary,
+                            location=stop_data["location"],
+                            order=i + 1,
+                            visit_time=stop_data["visit_time"],
+                            notes=stop_data["notes"],
+                        )
 
                     messages.success(
                         request, f'Itinerary "{itinerary.title}" created successfully!'
@@ -116,7 +146,7 @@ def itinerary_create(request):
 
 @login_required
 def itinerary_edit(request, pk):
-    """View for editing an existing itinerary"""
+    """View for editing an existing itinerary - FIXED VERSION"""
     itinerary = get_object_or_404(Itinerary, pk=pk, user=request.user)
 
     if request.method == "POST":
@@ -126,8 +156,44 @@ def itinerary_edit(request, pk):
         if form.is_valid() and formset.is_valid():
             try:
                 with transaction.atomic():
+                    # Save the itinerary form
                     form.save()
-                    formset.save()
+
+                    # Collect new stops data
+                    new_stops_data = []
+
+                    for form_instance in formset.forms:
+                        # Skip if marked for deletion
+                        if form_instance.cleaned_data.get("DELETE", False):
+                            continue
+
+                        # Only process if has location
+                        location = form_instance.cleaned_data.get("location")
+                        if location:
+                            new_stops_data.append(
+                                {
+                                    "location": location,
+                                    "visit_time": form_instance.cleaned_data.get(
+                                        "visit_time"
+                                    ),
+                                    "notes": form_instance.cleaned_data.get(
+                                        "notes", ""
+                                    ),
+                                }
+                            )
+
+                    # Delete ALL existing stops
+                    itinerary.stops.all().delete()
+
+                    # Recreate stops with new sequential ordering
+                    for i, stop_data in enumerate(new_stops_data):
+                        ItineraryStop.objects.create(
+                            itinerary=itinerary,
+                            location=stop_data["location"],
+                            order=i + 1,
+                            visit_time=stop_data["visit_time"],
+                            notes=stop_data["notes"],
+                        )
 
                     messages.success(
                         request, f'Itinerary "{itinerary.title}" updated successfully!'
@@ -291,9 +357,6 @@ def favorite_itinerary(request, pk):
     from .models import ItineraryFavorite
 
     itinerary = get_object_or_404(Itinerary, pk=pk)
-
-    # Check if user has permission to favorite (can't favorite own itineraries)
-    # Actually, users can favorite their own itineraries for easy access
 
     try:
         # Create favorite (idempotent)
