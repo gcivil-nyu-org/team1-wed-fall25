@@ -18,14 +18,14 @@
         </li>
         <li class="nav-item">
             <a class="nav-link active" href="{% url 'itineraries:favorites' %}">
-                <i class="fas fa-star me-1"></i>Favorites
+                <i class="fas fa-heart me-1"></i>Favorites
             </a>
         </li>
     </ul>
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="display-4">
-            <i class="fas fa-star me-2"></i>Favorite Itineraries
+            <i class="fas fa-heart me-2"></i>Favorite Itineraries
         </h1>
         <a href="{% url 'itineraries:create' %}" class="btn btn-primary btn-lg">
             <i class="fas fa-plus me-2"></i>Create New Itinerary
@@ -45,7 +45,7 @@
                                 </a>
                             </h5>
                             <span class="badge bg-warning text-dark">
-                                <i class="fas fa-star"></i>
+                                <i class="fas fa-heart"></i>
                             </span>
                         </div>
                         
@@ -111,7 +111,7 @@
                             <form method="post" action="{% url 'itineraries:unfavorite' itinerary.pk %}" class="d-inline">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-sm btn-outline-warning">
-                                    <i class="fas fa-star me-1"></i>Unfavorite
+                                    <i class="fas fa-heart me-1"></i>Unfavorite
                                 </button>
                             </form>
                         </div>
@@ -123,7 +123,7 @@
     {% else %}
         <div class="text-center py-5">
             <div class="empty-state">
-                <i class="fas fa-star fa-4x mb-3"></i>
+                <i class="fas fa-heart fa-4x mb-3"></i>
                 <h3>No Favorite Itineraries Yet</h3>
                 <p class="mb-4">Start favoriting itineraries to see them here!</p>
                 <a href="{% url 'itineraries:list' %}" class="btn btn-primary btn-lg">

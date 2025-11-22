@@ -50,14 +50,14 @@
             <form method="post" action="{% url 'itineraries:unfavorite' itinerary.pk %}" class="d-inline">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-warning" title="Remove from favorites">
-                    <i class="fas fa-star me-1"></i>Unfavorite
+                    <i class="fas fa-heart me-1"></i>Unfavorite
                 </button>
             </form>
             {% else %}
             <form method="post" action="{% url 'itineraries:favorite' itinerary.pk %}" class="d-inline">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-outline-warning" title="Add to favorites">
-                    <i class="far fa-star me-1"></i>Favorite
+                    <i class="far fa-heart me-1"></i>Favorite
                 </button>
             </form>
             {% endif %}

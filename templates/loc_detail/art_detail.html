@@ -39,7 +39,7 @@
                     data-art-id="{{ art.id }}"
                     data-favorited="{{ is_favorited|yesno:'true,false' }}"
                 >
-                    <span class="heart {% if is_favorited %}favorited{% endif %}">&#10084;</span>
+                    <span class="heart {% if is_favorited %}favorited{% endif %}"><i class="fas fa-heart"></i></span>
                     <span id="favorite-text">{% if is_favorited %}Remove from Favorites{% else %}Add to Favorites{% endif %}</span>
                 </button>
 

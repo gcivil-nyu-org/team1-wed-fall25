@@ -5,7 +5,7 @@
                 <div class="art-card-header">
                     <h3 class="itinerary-title">{{ itinerary.title }}</h3>
                     <span class="badge bg-warning text-dark">
-                        <i class="fas fa-star"></i>
+                        <i class="fas fa-heart"></i>
                     </span>
                 </div>
                 
@@ -64,7 +64,7 @@
                         <form method="post" action="{% url 'itineraries:unfavorite' itinerary.pk %}" style="display: inline;">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-warning">
-                                <i class="fas fa-star"></i> Unfavorite
+                                <i class="fas fa-heart"></i> Unfavorite
                             </button>
                         </form>
                     </div>

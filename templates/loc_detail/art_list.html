@@ -75,7 +75,7 @@
                                 <button class="favorite-icon {% if art.id in user_favorites %}favorited{% endif %}" 
                                         data-art-id="{{ art.id }}"
                                         onclick="event.preventDefault(); toggleFavorite('{{ art.id }}', this);">
-                                    ❤
+                                    <i class="fas fa-heart"></i>
                                 </button>
                             </div>
 

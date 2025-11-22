@@ -238,12 +238,16 @@
                     {% if event.is_favorited %}
                     <form method="post" action="{% url 'events:unfavorite' event.slug %}" style="display:inline; flex: 0.3;">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-outline-primary favorited" style="width: 100%;" title="Remove from favorites">★</button>
+                        <button type="submit" class="btn btn-outline-primary favorited" style="width: 100%;" title="Remove from favorites">
+                            <i class="fas fa-heart"></i>
+                        </button>
                     </form>
                     {% else %}
                     <form method="post" action="{% url 'events:favorite' event.slug %}" style="display:inline; flex: 0.3;">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-outline-primary" style="width: 100%;" title="Add to favorites">☆</button>
+                        <button type="submit" class="btn btn-outline-primary" style="width: 100%;" title="Add to favorites">
+                            <i class="fas fa-heart"></i>
+                        </button>
                     </form>
                     {% endif %}
                     
