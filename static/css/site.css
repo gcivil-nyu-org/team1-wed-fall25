@@ -292,16 +292,16 @@ nav {
     .form-actions {
         flex-direction: column;
     }
-    
+
     .form-actions .btn {
         width: 100%;
         min-width: auto;
     }
-    
+
     .profile-actions {
         flex-direction: column;
     }
-    
+
     .profile-actions .btn {
         width: 100%;
         min-width: auto;
@@ -491,7 +491,7 @@ main {
     background: #7f8c8d;
 }
 
-.art-grid {
+/* .art-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 1.5rem;
@@ -514,12 +514,12 @@ main {
 .art-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-}
+} */
 
 .art-card-header {
     padding: 1.5rem;
-    background: #f8f9fa;
-    border-bottom: 1px solid #e9ecef;
+    /* background: #f8f9fa; */
+    /* border-bottom: 1px solid #e9ecef; */
     align-self: stretch;
 }
 
@@ -531,7 +531,7 @@ main {
 
 .art-title {
     font-size: 1.25rem;
-    color: #2c3e50;
+    /* color: #2c3e50; */
     margin-bottom: 0.5rem;
 }
 
@@ -552,7 +552,7 @@ main {
 .art-card-body p {
     margin-bottom: 0.75rem;
     font-size: 0.9rem;
-    color: #555;
+    /* color: #555; */
 }
 
 .art-card-body p:last-child {
@@ -561,8 +561,8 @@ main {
 
 .art-card-footer {
     padding: 1rem 1.5rem;
-    background: #f8f9fa;
-    border-top: 1px solid #e9ecef;
+    /* background: #f8f9fa; */
+    /* border-top: 1px solid #e9ecef; */
     align-self: stretch;
 }
 
@@ -571,8 +571,17 @@ main {
     font-size: 16px;
 }
 
+.art-thumbnail {
+    border: 1px solid #ccc;
+    object-fit: cover;
+    object-position: top;
+    width: 100px;
+    height: 100px;
+    margin-left: 10px;
+}
+
 .view-details {
-    color: #3498db;
+    /* color: #3498db; */
     font-weight: 500;
     font-size: 0.9rem;
 }
@@ -1294,7 +1303,7 @@ main {
 
 .event-meta {
     font-size: 0.9rem;
-    color: #7f8c8d;
+    /* color: #7f8c8d; */
     margin-bottom: 0.5rem;
 }
 
@@ -1626,4 +1635,22 @@ main {
     .search-input-wrapper {
         flex-direction: column;
     }
+}
+
+.content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.content-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    overflow: hidden;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    border: 1px solid #fff;
+    color: var(--text-color);
 }

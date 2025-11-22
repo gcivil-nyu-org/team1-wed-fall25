@@ -33,9 +33,9 @@
 
     {% if page_obj %}
         <!-- Favorites Grid -->
-        <div class="art-grid">
+        <div class="content-grid">
             {% for favorite in page_obj %}
-                <a class="art-card" href="{% url 'loc_detail:art_detail' favorite.art.id %}">
+                <a class="content-card" href="{% url 'loc_detail:art_detail' favorite.art.id %}">
                     <div class="art-card-header">
                         <div class="art-header">
                             <div>

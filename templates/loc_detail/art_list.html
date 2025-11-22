@@ -13,10 +13,10 @@
     }
     .art-rating-score {
         font-weight: 600;
-        color: #202124;
+        /* color: #202124; */
     }
     .art-rating-count {
-        color: #5f6368;
+        /* color: #5f6368; */
         font-size: 13px;
     }
 </style>
@@ -60,9 +60,9 @@
     </div>
 
     {% if page_obj %}
-        <div class="art-grid">
+        <div class="content-grid">
             {% for art in page_obj %}
-                <a href="{% url 'loc_detail:art_detail' art.id %}" class="art-card">
+                <a href="{% url 'loc_detail:art_detail' art.id %}" class="content-card">
                     <!-- Favorite Button -->
                     
                     <div class="art-card-header">

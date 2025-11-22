@@ -115,13 +115,6 @@
     /* color: #ffb3c6; */
     border: 1px solid rgba(250, 112, 154, 0.3);
 }
-.card-actions {
-    display: flex;
-    gap: 0.625rem;
-    margin-top: 1.25rem;
-    padding-top: 1.25rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
 .btn-join, .btn-view, .btn-joined {
     flex: 1;
     padding: 0.625rem 1rem;
@@ -219,19 +212,28 @@
         
         <!-- Events grid -->
         {% if page_obj.object_list %}
-        <div class="events-grid">
+        <div class="content-grid">
             {% for event in page_obj %}
-            <div class="event-card">
-                <h3><a href="{% url 'events:detail' event.slug %}" style="text-decoration: none; color: inherit;">{{ event.title }}</a></h3>
-                <p><strong>Host:</strong> {{ event.host.username }}</p>
-                <p><strong>Date:</strong> {{ event.start_time|date:"F j, Y g:i A" }}</p>
-                <p><strong>Location:</strong> {{ event.start_location.title }}</p>
+            <div class="content-card">
+                <div class="art-card-header">
+                    <h3>
+                        <a href="{% url 'events:detail' event.slug %}" style="text-decoration: none; color: inherit;">{{ event.title }}</a>
+                    </h3>
+                </div>
+                <div class="art-card-body">
+                    {% if event.description %}
+                    <p>{{ event.description|truncatewords:20 }}</p>
+                    {% endif %}
+                    <p><strong>Host:</strong> {{ event.host.username }}</p>
+                    <p><strong>Date:</strong> {{ event.start_time|date:"F j, Y g:i A" }}</p>
+                    <p><strong>Location:</strong> {{ event.start_location.title }}</p>
+                    
+                    <span class="visibility-badge {% if event.visibility == 'PUBLIC_OPEN' %}badge-open{% else %}badge-invite{% endif %}">
+                        {% if event.visibility == 'PUBLIC_OPEN' %}Open{% else %}Invite Only{% endif %}
+                    </span>
+                </div>
                 
-                <span class="visibility-badge {% if event.visibility == 'PUBLIC_OPEN' %}badge-open{% else %}badge-invite{% endif %}">
-                    {% if event.visibility == 'PUBLIC_OPEN' %}Open{% else %}Invite Only{% endif %}
-                </span>
-                
-                <div class="card-actions">
+                <div class="art-card-footer">
                     <!-- Favorite/Unfavorite Button -->
                     {% if event.is_favorited %}
                     <form method="post" action="{% url 'events:unfavorite' event.slug %}" style="display:inline; flex: 0.3;">
