@@ -41,13 +41,13 @@ export function createPopupContent(point) {
     // View Details button
     const detailBtn = document.createElement('a');
     detailBtn.href = `/loc_detail/art/${point.id}/`;
-    detailBtn.className = 'btn-view-details';
+    detailBtn.className = 'btn btn-primary';
     detailBtn.textContent = 'View Details';
     actions.appendChild(detailBtn);
 
     // Add to Itinerary button
     const itineraryBtn = document.createElement('button');
-    itineraryBtn.className = 'btn-add-itinerary';
+    itineraryBtn.className = 'btn btn-outline-primary';
     itineraryBtn.innerHTML = '<i class="fas fa-route"></i>';
     itineraryBtn.title = 'Add to Itinerary';
     itineraryBtn.onclick = function (e) {

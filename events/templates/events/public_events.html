@@ -162,7 +162,7 @@
     border-color: rgba(240, 147, 251, 0.5);
     transform: translateY(-2px);
 }
-.btn-favorite {
+/* .btn-favorite {
     padding: 0.625rem 0.75rem;
     border: none;
     border-radius: 8px;
@@ -176,7 +176,6 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     text-align: center;
     background: rgba(250, 112, 154, 0.15);
-    /* color: #ffb3c6; */
     border: 1px solid rgba(250, 112, 154, 0.3);
 }
 .btn-favorite:hover {
@@ -186,14 +185,13 @@
 }
 .btn-favorite.favorited {
     background: rgba(17, 153, 142, 0.15);
-    /* color: #5affe8; */
     border: 1px solid rgba(17, 153, 142, 0.3);
 }
 .btn-favorite.favorited:hover {
     background: rgba(17, 153, 142, 0.25);
     border-color: rgba(17, 153, 142, 0.5);
     transform: translateY(-2px);
-}
+} */
 </style>
 
 <div>
@@ -238,24 +236,24 @@
                     {% if event.is_favorited %}
                     <form method="post" action="{% url 'events:unfavorite' event.slug %}" style="display:inline; flex: 0.3;">
                         {% csrf_token %}
-                        <button type="submit" class="btn-favorite favorited" style="width: 100%;" title="Remove from favorites">★</button>
+                        <button type="submit" class="btn btn-outline-primary favorited" style="width: 100%;" title="Remove from favorites">★</button>
                     </form>
                     {% else %}
                     <form method="post" action="{% url 'events:favorite' event.slug %}" style="display:inline; flex: 0.3;">
                         {% csrf_token %}
-                        <button type="submit" class="btn-favorite" style="width: 100%;" title="Add to favorites">☆</button>
+                        <button type="submit" class="btn btn-outline-primary" style="width: 100%;" title="Add to favorites">☆</button>
                     </form>
                     {% endif %}
                     
                     {% if event.joined %}
-                    <button class="btn-joined" disabled>Joined</button>
+                    <button class="btn btn-outline-primary" disabled>Joined</button>
                     {% else %}
                     <form method="post" action="{% url 'events:join' event.slug %}" style="display:inline; flex: 1;">
                         {% csrf_token %}
-                        <button type="submit" class="btn-join" style="width: 100%;">Join Event</button>
+                        <button type="submit" class="btn btn-outline-primary" style="width: 100%;">Join Event</button>
                     </form>
                     {% endif %}
-                    <a href="{% url 'events:detail' event.slug %}" class="btn-view">View Details</a>
+                    <a href="{% url 'events:detail' event.slug %}" class="btn btn-outline-primary">View Details</a>
                 </div>
             </div>
             {% endfor %}

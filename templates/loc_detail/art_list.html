@@ -135,8 +135,8 @@
         {% if page_obj.has_other_pages %}
             <div class="pagination">
                 {% if page_obj.has_previous %}
-                    <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if borough_filter %}&borough={{ borough_filter }}{% endif %}" class="page-link">« First</a>
-                    <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if borough_filter %}&borough={{ borough_filter }}{% endif %}" class="page-link">‹ Previous</a>
+                    <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if borough_filter %}&borough={{ borough_filter }}{% endif %}" class="btn btn-outline-primary">« First</a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if borough_filter %}&borough={{ borough_filter }}{% endif %}" class="btn btn-outline-primary">‹ Previous</a>
                 {% endif %}
 
                 <span class="page-current">
@@ -144,8 +144,8 @@
                 </span>
 
                 {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if borough_filter %}&borough={{ borough_filter }}{% endif %}" class="page-link">Next ›</a>
-                    <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if borough_filter %}&borough={{ borough_filter }}{% endif %}" class="page-link">Last »</a>
+                    <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if borough_filter %}&borough={{ borough_filter }}{% endif %}" class="btn btn-outline-primary">Next ›</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if borough_filter %}&borough={{ borough_filter }}{% endif %}" class="btn btn-outline-primary">Last »</a>
                 {% endif %}
             </div>
         {% endif %}

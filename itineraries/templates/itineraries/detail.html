@@ -20,7 +20,7 @@
         <div>
             <h1 class="display-5">{{ itinerary.title }}</h1>
             {% if itinerary.description %}
-            <p class="lead text-muted">{{ itinerary.description }}</p>
+            <p class="lead">{{ itinerary.description }}</p>
             {% endif %}
             {% if itinerary.date %}
             <div class="mb-2">
@@ -30,7 +30,7 @@
                 </span>
             </div>
             {% endif %}
-            <small class="text-muted">
+            <small>
                 <i class="fas fa-clock me-1"></i>Created {{ itinerary.created_at|date:"F d, Y" }}
                 {% if itinerary.updated_at != itinerary.created_at %}
                 | Updated {{ itinerary.updated_at|date:"F d, Y" }}
@@ -88,10 +88,10 @@
                                             <i class="fas fa-external-link-alt small"></i>
                                         </a>
                                     </h6>
-                                    <p class="mb-1 small text-muted">
+                                    <p class="mb-1 small">
                                         <i class="fas fa-user me-1"></i>{{ stop.location.artist_name|default:"Unknown Artist" }}
                                     </p>
-                                    <p class="mb-1 small text-muted">
+                                    <p class="mb-1 small">
                                         <i class="fas fa-map-marker-alt me-1"></i>{{ stop.location.location|default:"Location not specified" }}
                                         {% if stop.location.borough %}
                                         <span class="badge bg-secondary">{{ stop.location.borough }}</span>

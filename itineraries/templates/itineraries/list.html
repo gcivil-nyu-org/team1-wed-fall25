@@ -28,25 +28,25 @@
                         </h5>
                         
                         {% if itinerary.description %}
-                        <p class="card-text text-muted">
+                        <p class="card-text">
                             {{ itinerary.description|truncatewords:20 }}
                         </p>
                         {% endif %}
 
                         <div class="itinerary-meta mb-3">
-                            <small class="text-muted">
+                            <small>
                                 <i class="fas fa-map-marker-alt me-1"></i>
                                 {{ itinerary.stops.count }} stop{{ itinerary.stops.count|pluralize }}
                             </small>
                             <br>
                             {% if itinerary.date %}
-                            <small class="text-muted">
+                            <small>
                                 <i class="fas fa-calendar me-1"></i>
                                 Planned for {{ itinerary.date|date:"M d, Y" }}
                             </small>
                             <br>
                             {% endif %}
-                            <small class="text-muted">
+                            <small>
                                 <i class="fas fa-clock me-1"></i>
                                 Created {{ itinerary.created_at|date:"M d, Y" }}
                             </small>
@@ -54,18 +54,18 @@
 
                         {% if itinerary.stops.all %}
                         <div class="stops-preview mb-3">
-                            <small class="text-muted d-block mb-2">
+                            <small class="d-block mb-2">
                                 <strong>Stops:</strong>
                             </small>
                             <ol class="small mb-0 ps-3">
                                 {% for stop in itinerary.stops.all|slice:":3" %}
                                 <li class="text-truncate">
                                     {{ stop.location.title|default:"Untitled" }}
-                                    <span class="text-muted">at {{ stop.visit_time|time:"g:i A" }}</span>
+                                    <span>at {{ stop.visit_time|time:"g:i A" }}</span>
                                 </li>
                                 {% endfor %}
                                 {% if itinerary.stops.count > 3 %}
-                                <li class="text-muted">
+                                <li>
                                     + {{ itinerary.stops.count|add:"-3" }} more...
                                 </li>
                                 {% endif %}
@@ -113,9 +113,9 @@
     {% else %}
         <div class="text-center py-5">
             <div class="empty-state">
-                <i class="fas fa-route fa-4x text-muted mb-3"></i>
-                <h3 class="text-muted">No Itineraries Yet</h3>
-                <p class="text-muted mb-4">Start planning your art journey by creating your first itinerary!</p>
+                <i class="fas fa-route fa-4x mb-3"></i>
+                <h3>No Itineraries Yet</h3>
+                <p class="mb-4">Start planning your art journey by creating your first itinerary!</p>
                 <a href="{% url 'itineraries:create' %}" class="btn btn-primary btn-lg">
                     <i class="fas fa-plus me-2"></i>Create Your First Itinerary
                 </a>
