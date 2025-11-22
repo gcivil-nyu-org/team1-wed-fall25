@@ -8,6 +8,7 @@
     --white: #fff;
     --highlight: #667eea;
     --highlight-transparent: #667eea40;
+    --danger: #bd2130;
 }
 
 body {
@@ -212,6 +213,17 @@ nav {
     border-color: #bd2130;
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-outline-danger {
+    background: transparent;
+    border: 2px solid var(--danger);
+    color: var(--danger);
+}
+
+.btn-outline-danger:hover {
+    background: var(--danger);
+    color: white;
 }
 
 .btn-link {
@@ -562,9 +574,9 @@ main {
 
 .art-card-footer {
     padding: 1rem 1.5rem;
-    /* background: #f8f9fa; */
-    /* border-top: 1px solid #e9ecef; */
     align-self: stretch;
+    display: flex;
+    gap: 8px;
 }
 
 .art-rating-stars {

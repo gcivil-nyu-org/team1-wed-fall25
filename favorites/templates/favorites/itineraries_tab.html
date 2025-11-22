@@ -4,9 +4,6 @@
             <a class="content-card" href="{% url 'itineraries:detail' itinerary.pk %}">
                 <div class="art-card-header">
                     <h3 class="itinerary-title">{{ itinerary.title }}</h3>
-                    <span class="badge bg-warning text-dark">
-                        <i class="fas fa-heart"></i>
-                    </span>
                 </div>
                 
                 <div class="itinerary-body">
@@ -58,15 +55,15 @@
                     {% endif %}
 
                     <div class="action-buttons">
-                        <span class="btn btn-primary">
-                            <i class="fas fa-eye"></i> View Itinerary
-                        </span>
                         <form method="post" action="{% url 'itineraries:unfavorite' itinerary.pk %}" style="display: inline;">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-warning">
-                                <i class="fas fa-heart"></i> Unfavorite
+                            <button type="submit" class="btn btn-outline-primary">
+                                <i class="fas fa-heart favorited"></i>
                             </button>
                         </form>
+                        <span class="btn btn-outline-primary">
+                            <i class="fas fa-eye"></i> View
+                        </span>
                     </div>
                 </div>
             </a>

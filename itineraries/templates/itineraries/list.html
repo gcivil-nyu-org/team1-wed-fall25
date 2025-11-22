@@ -78,36 +78,24 @@
                     </div>
 
                     <div class="art-card-footer">
-                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                            <div class="btn-group" role="group">
-                                <a href="{% url 'itineraries:detail' itinerary.pk %}" class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-eye me-1"></i>View
-                                </a>
-                                <a href="{% url 'itineraries:edit' itinerary.pk %}" class="btn btn-sm btn-outline-secondary">
-                                    <i class="fas fa-edit me-1"></i>Edit
-                                </a>
-                                <a href="{% url 'itineraries:delete' itinerary.pk %}" class="btn btn-sm btn-outline-danger">
-                                    <i class="fas fa-trash me-1"></i>Remove
-                                </a>
-                            </div>
-                            <div>
-                                {% if itinerary.is_favorited %}
-                                <form method="post" action="{% url 'itineraries:unfavorite' itinerary.pk %}" class="d-inline">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-warning" title="Remove from favorites">
-                                        <i class="fas fa-heart"></i>
-                                    </button>
-                                </form>
-                                {% else %}
-                                <form method="post" action="{% url 'itineraries:favorite' itinerary.pk %}" class="d-inline">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-outline-warning" title="Add to favorites">
-                                        <i class="far fa-heart"></i>
-                                    </button>
-                                </form>
-                                {% endif %}
-                            </div>
-                        </div>
+                        {% if itinerary.is_favorited %}
+                        <form method="post" action="{% url 'itineraries:unfavorite' itinerary.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-primary" title="Remove from favorites">
+                                <i class="fas fa-heart favorited"></i>
+                            </button>
+                        </form>
+                        {% else %}
+                        <form method="post" action="{% url 'itineraries:favorite' itinerary.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-primary" title="Add to favorites">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                        <a href="{% url 'itineraries:detail' itinerary.pk %}" class="btn btn-outline-primary">
+                            <i class="fas fa-eye me-1"></i>View
+                        </a>
                     </div>
                 </div>
             </div>

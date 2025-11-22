@@ -206,7 +206,7 @@
                     <option value="-start_time" {% if sort == '-start_time' %}selected{% endif %}>Latest First</option>
                 </select>
                 
-                <button class="btn btn-outline-primary" type="submit">Apply Filters</button>
+                <button class="btn btn-primary" type="submit">Search</button>
             </form>
         </div>
         
@@ -259,7 +259,7 @@
                         <button type="submit" class="btn btn-outline-primary" style="width: 100%;">Join Event</button>
                     </form>
                     {% endif %}
-                    <a href="{% url 'events:detail' event.slug %}" class="btn btn-outline-primary">View Details</a>
+                    <a href="{% url 'events:detail' event.slug %}" class="btn btn-outline-primary">View</a>
                 </div>
             </div>
             {% endfor %}
