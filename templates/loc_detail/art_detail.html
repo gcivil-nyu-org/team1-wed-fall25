@@ -39,7 +39,7 @@
                     data-art-id="{{ art.id }}"
                     data-favorited="{{ is_favorited|yesno:'true,false' }}"
                 >
-                    <span class="heart {% if is_favorited %}favorited{% endif %}">&#10084;</span>
+                    <span class="heart {% if is_favorited %}favorited{% endif %}"><i class="fas fa-heart"></i></span>
                     <span id="favorite-text">{% if is_favorited %}Remove from Favorites{% else %}Add to Favorites{% endif %}</span>
                 </button>
 
@@ -191,12 +191,12 @@
                                 </p>
                                 
                                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                    <label for="images-upload-single" class="image-upload-label">
+                                    <label for="images-upload-single" class="btn btn-outline-primary">
                                         📷 Add Photo
                                     </label>
                                     <input type="file" id="images-upload-single" accept="image/*" class="image-upload-input">
                                     
-                                    <label for="images-upload" class="image-upload-label">
+                                    <label for="images-upload" class="btn btn-outline-primary">
                                         📁 Add Multiple
                                     </label>
                                     <input type="file" id="images-upload" name="images" accept="image/*" multiple class="image-upload-input" data-max="5">
@@ -268,7 +268,7 @@
                                 {% endif %}
                                 
                                 {% if comment.user == user %}
-                                    <button class="btn-review btn-edit-comment" data-comment-id="{{ comment.id }}">Edit</button>
+                                    <button class="btn btn-primary btn-edit-comment" data-comment-id="{{ comment.id }}">Edit</button>
 
                                     <div class="review-form-container review-edit" hidden>
                                         <h3>Edit Your Review</h3>
@@ -319,12 +319,12 @@
                                                     </p>
                                                     
                                                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                                        <label for="edit-images-single" class="image-upload-label">
+                                                        <label for="edit-images-single" class="btn btn-outline-primary">
                                                             📷 Add Photo
                                                         </label>
                                                         <input type="file" id="edit-images-single" accept="image/*" class="image-upload-input">
                                                         
-                                                        <label for="edit-images-multiple" class="image-upload-label">
+                                                        <label for="edit-images-multiple" class="btn btn-outline-primary">
                                                             📁 Add Multiple
                                                         </label>
                                                         <input type="file" id="edit-images-multiple" name="images" accept="image/*" multiple class="image-upload-input" data-max="5">
@@ -343,7 +343,7 @@
                                                 <div class="image-previews" id="edit-image-previews"></div>
                                             </div>
                                             
-                                            <button type="submit" class="btn-review">Update Review</button>
+                                            <button type="submit" class="btn btn-primary">Update Review</button>
                                         </form>
                                     </div>
                                 {% else %}

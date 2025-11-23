@@ -32,14 +32,18 @@
             </a>
         </div>
         <div class="nav nav-tabs">
-            <a href="{% url 'events:public' %}" 
-               class="nav-link {% if request.path == '/events/public/' %}active{% endif %}">
-                Public Events
-            </a>
-            <a href="{% url 'events:invitations' %}" 
-               class="nav-link {% if request.path == '/events/invitations/' %}active{% endif %}">
-                Invitations
-            </a>
+            <li class="nav-item">
+                <a href="{% url 'events:public' %}" 
+                class="nav-link {% if request.path == '/events/public/' %}active{% endif %}">
+                    Public Events
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'events:invitations' %}" 
+                class="nav-link {% if request.path == '/events/invitations/' %}active{% endif %}">
+                    Invitations
+                </a>
+            </li>
         </div>
     </div>
     

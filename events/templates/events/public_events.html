@@ -115,13 +115,6 @@
     /* color: #ffb3c6; */
     border: 1px solid rgba(250, 112, 154, 0.3);
 }
-.card-actions {
-    display: flex;
-    gap: 0.625rem;
-    margin-top: 1.25rem;
-    padding-top: 1.25rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
 .btn-join, .btn-view, .btn-joined {
     flex: 1;
     padding: 0.625rem 1rem;
@@ -162,7 +155,7 @@
     border-color: rgba(240, 147, 251, 0.5);
     transform: translateY(-2px);
 }
-.btn-favorite {
+/* .btn-favorite {
     padding: 0.625rem 0.75rem;
     border: none;
     border-radius: 8px;
@@ -176,7 +169,6 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     text-align: center;
     background: rgba(250, 112, 154, 0.15);
-    /* color: #ffb3c6; */
     border: 1px solid rgba(250, 112, 154, 0.3);
 }
 .btn-favorite:hover {
@@ -186,14 +178,13 @@
 }
 .btn-favorite.favorited {
     background: rgba(17, 153, 142, 0.15);
-    /* color: #5affe8; */
     border: 1px solid rgba(17, 153, 142, 0.3);
 }
 .btn-favorite.favorited:hover {
     background: rgba(17, 153, 142, 0.25);
     border-color: rgba(17, 153, 142, 0.5);
     transform: translateY(-2px);
-}
+} */
 </style>
 
 <div>
@@ -215,47 +206,60 @@
                     <option value="-start_time" {% if sort == '-start_time' %}selected{% endif %}>Latest First</option>
                 </select>
                 
-                <button class="btn btn-outline-primary" type="submit">Apply Filters</button>
+                <button class="btn btn-primary" type="submit">Search</button>
             </form>
         </div>
         
         <!-- Events grid -->
         {% if page_obj.object_list %}
-        <div class="events-grid">
+        <div class="content-grid">
             {% for event in page_obj %}
-            <div class="event-card">
-                <h3><a href="{% url 'events:detail' event.slug %}" style="text-decoration: none; color: inherit;">{{ event.title }}</a></h3>
-                <p><strong>Host:</strong> {{ event.host.username }}</p>
-                <p><strong>Date:</strong> {{ event.start_time|date:"F j, Y g:i A" }}</p>
-                <p><strong>Location:</strong> {{ event.start_location.title }}</p>
+            <div class="content-card">
+                <div class="art-card-header">
+                    <h3>
+                        <a href="{% url 'events:detail' event.slug %}" style="text-decoration: none; color: inherit;">{{ event.title }}</a>
+                    </h3>
+                </div>
+                <div class="art-card-body">
+                    {% if event.description %}
+                    <p>{{ event.description|truncatewords:20 }}</p>
+                    {% endif %}
+                    <p><strong>Host:</strong> {{ event.host.username }}</p>
+                    <p><strong>Date:</strong> {{ event.start_time|date:"F j, Y g:i A" }}</p>
+                    <p><strong>Location:</strong> {{ event.start_location.title }}</p>
+                    
+                    <span class="visibility-badge {% if event.visibility == 'PUBLIC_OPEN' %}badge-open{% else %}badge-invite{% endif %}">
+                        {% if event.visibility == 'PUBLIC_OPEN' %}Open{% else %}Invite Only{% endif %}
+                    </span>
+                </div>
                 
-                <span class="visibility-badge {% if event.visibility == 'PUBLIC_OPEN' %}badge-open{% else %}badge-invite{% endif %}">
-                    {% if event.visibility == 'PUBLIC_OPEN' %}Open{% else %}Invite Only{% endif %}
-                </span>
-                
-                <div class="card-actions">
+                <div class="art-card-footer">
                     <!-- Favorite/Unfavorite Button -->
                     {% if event.is_favorited %}
                     <form method="post" action="{% url 'events:unfavorite' event.slug %}" style="display:inline; flex: 0.3;">
                         {% csrf_token %}
-                        <button type="submit" class="btn-favorite favorited" style="width: 100%;" title="Remove from favorites">★</button>
+                        <button type="submit" class="btn btn-outline-primary favorited" style="width: 100%;" title="Remove from favorites">
+                            <i class="fas fa-heart"></i>
+                        </button>
                     </form>
                     {% else %}
                     <form method="post" action="{% url 'events:favorite' event.slug %}" style="display:inline; flex: 0.3;">
                         {% csrf_token %}
-                        <button type="submit" class="btn-favorite" style="width: 100%;" title="Add to favorites">☆</button>
+                        <button type="submit" class="btn btn-outline-primary" style="width: 100%;" title="Add to favorites">
+                            <i class="fas fa-heart"></i>
+                        </button>
                     </form>
                     {% endif %}
                     
                     {% if event.joined %}
-                    <button class="btn-joined" disabled>Joined</button>
+                    <button class="btn btn-outline-primary" disabled>Joined</button>
                     {% else %}
                     <form method="post" action="{% url 'events:join' event.slug %}" style="display:inline; flex: 1;">
                         {% csrf_token %}
-                        <button type="submit" class="btn-join" style="width: 100%;">Join Event</button>
+                        <button type="submit" class="btn btn-outline-primary" style="width: 100%;">Join Event</button>
                     </form>
                     {% endif %}
-                    <a href="{% url 'events:detail' event.slug %}" class="btn-view">View Details</a>
+                    <a href="{% url 'events:detail' event.slug %}" class="btn btn-outline-primary">View</a>
                 </div>
             </div>
             {% endfor %}

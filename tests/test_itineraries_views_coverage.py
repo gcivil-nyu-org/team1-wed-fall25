@@ -867,7 +867,7 @@ class ItineraryCreateButtonTests(TestCase):
         """Test create button is present on list page"""
         response = self.client.get(reverse("itineraries:list"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Create New Itinerary")
+        self.assertContains(response, "Create Itinerary")
         self.assertContains(response, 'href="/itineraries/create/"')
 
     def test_create_button_present_when_itineraries_exist(self):
@@ -876,7 +876,7 @@ class ItineraryCreateButtonTests(TestCase):
 
         response = self.client.get(reverse("itineraries:list"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Create New Itinerary")
+        self.assertContains(response, "Create Itinerary")
 
     def test_create_button_present_in_empty_state(self):
         """Test create button present in empty state"""
@@ -885,5 +885,5 @@ class ItineraryCreateButtonTests(TestCase):
 
         # FIXED: Check for specific button text instead of counting "Create"
         # Template has HTML comments and multiple buttons with "Create" in them
-        self.assertContains(response, "Create New Itinerary")
+        self.assertContains(response, "Create Itinerary")
         self.assertContains(response, "Create Your First Itinerary")

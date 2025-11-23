@@ -1,79 +1,72 @@
 {% if itineraries %}
-    <div class="itineraries-grid">
+    <div class="content-grid">
         {% for itinerary in itineraries %}
-            <div class="itinerary-card">
-                <div class="itinerary-header">
-                    <h3 class="itinerary-title">
-                        <a href="{% url 'itineraries:detail' itinerary.pk %}">
-                            {{ itinerary.title }}
-                        </a>
-                        <span class="badge bg-warning text-dark" style="padding: 6px 12px; border-radius: 20px; font-size: 0.85rem;">
-                            <i class="fas fa-star"></i>
-                        </span>
-                    </h3>
+            <a class="content-card" href="{% url 'itineraries:detail' itinerary.pk %}">
+                <div class="art-card-header">
+                    <h3 class="itinerary-title">{{ itinerary.title }}</h3>
                 </div>
                 
                 <div class="itinerary-body">
                     {% if itinerary.description %}
-                        <p style="color: #666; margin-bottom: 15px;">{{ itinerary.description|truncatewords:20 }}</p>
+                        <p>{{ itinerary.description|truncatewords:20 }}</p>
                     {% endif %}
 
                     <div class="itinerary-meta">
                         <div>
-                            <i class="fas fa-map-marker-alt" style="width: 20px; color: #667eea;"></i>
+                            <i class="fas fa-map-marker-alt"></i>
                             {{ itinerary.stops.count }} stop{{ itinerary.stops.count|pluralize }}
                         </div>
                         
                         {% if itinerary.date %}
                         <div>
-                            <i class="fas fa-calendar" style="width: 20px; color: #667eea;"></i>
+                            <i class="fas fa-calendar"></i>
                             Planned for {{ itinerary.date|date:"M d, Y" }}
                         </div>
                         {% endif %}
                         
                         <div>
-                            <i class="fas fa-user" style="width: 20px; color: #667eea;"></i>
+                            <i class="fas fa-user"></i>
                             By {{ itinerary.user.username }}
                         </div>
 
-                        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #e0e0e0; color: #999; font-size: 0.9rem;">
-                            <i class="fas fa-heart" style="width: 20px;"></i>
+                        <div>
+                            <i class="fas fa-heart"></i>
                             Favorited {{ itinerary.favorited_at|date:"M d, Y" }}
                         </div>
                     </div>
 
                     {% if itinerary.stops.all %}
-                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
-                        <small style="color: #666; font-weight: 600;">Stops:</small>
-                        <ol style="margin: 10px 0 0 0; padding-left: 20px; font-size: 0.9rem;">
+                    <div>
+                        <small>Stops:</small>
+                        <ol>
                             {% for stop in itinerary.stops.all|slice:":3" %}
-                            <li style="margin-bottom: 5px;">
+                            <li>
                                 {{ stop.location.title|default:"Untitled"|truncatewords:8 }}
                                 {% if stop.visit_time %}
-                                <span style="color: #999;">at {{ stop.visit_time|time:"g:i A" }}</span>
+                                <span>at {{ stop.visit_time|time:"g:i A" }}</span>
                                 {% endif %}
                             </li>
                             {% endfor %}
                             {% if itinerary.stops.count > 3 %}
-                            <li style="color: #999;">+ {{ itinerary.stops.count|add:"-3" }} more...</li>
+                            <li>+ {{ itinerary.stops.count|add:"-3" }} more...</li>
                             {% endif %}
                         </ol>
                     </div>
                     {% endif %}
 
                     <div class="action-buttons">
-                        <a href="{% url 'itineraries:detail' itinerary.pk %}" class="btn btn-primary">
-                            <i class="fas fa-eye"></i> View Itinerary
-                        </a>
                         <form method="post" action="{% url 'itineraries:unfavorite' itinerary.pk %}" style="display: inline;">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-warning">
-                                <i class="fas fa-star"></i> Unfavorite
+                            <button type="submit" class="btn btn-outline-primary">
+                                <i class="fas fa-heart favorited"></i>
                             </button>
                         </form>
+                        <span class="btn btn-outline-primary">
+                            <i class="fas fa-eye"></i> View
+                        </span>
                     </div>
                 </div>
-            </div>
+            </a>
         {% endfor %}
     </div>
 {% else %}

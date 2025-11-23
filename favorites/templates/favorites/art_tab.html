@@ -33,9 +33,9 @@
 
     {% if page_obj %}
         <!-- Favorites Grid -->
-        <div class="art-grid">
+        <div class="content-grid">
             {% for favorite in page_obj %}
-                <a class="art-card" href="{% url 'loc_detail:art_detail' favorite.art.id %}">
+                <a class="content-card" href="{% url 'loc_detail:art_detail' favorite.art.id %}">
                     <div class="art-card-header">
                         <div class="art-header">
                             <div>
@@ -43,11 +43,6 @@
                                 {% if favorite.art.borough %}
                                     <span class="art-badge">{{ favorite.art.borough }}</span>
                                 {% endif %}
-                                <button class="btn-remove-favorite favorite-icon favorited" 
-                                        data-art-id="{{ favorite.art.id }}"
-                                        onclick="event.preventDefault(); toggleFavorite('{{ favorite.art.id }}', this);">
-                                    ❤
-                                </button>
                             </div>
 
                             {% if favorite.art.image %}
@@ -96,7 +91,12 @@
                     </div>
                     
                     <div class="art-card-footer">
-                        <span class="view-details">View Details →</span>
+                        <button class="btn btn-outline-primary favorited" 
+                                data-art-id="{{ favorite.art.id }}"
+                                onclick="event.preventDefault(); toggleFavorite('{{ favorite.art.id }}', this);">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                        <span class="btn btn-outline-primary"><i class="fas fa-eye"></i> View</span>
                     </div>
                 </a>
             {% endfor %}
