@@ -7,7 +7,6 @@
 <style>
     .form-wrapper {
         min-height: 100vh;
-        padding: 3rem 1rem;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -15,55 +14,48 @@
     .form-container {
         max-width: 900px;
         width: 100%;
-        border-radius: 16px;
         padding: 3rem;
         border: 1px solid rgba(255, 255, 255, 0.1);
     }
     .form-container h1 {
-        margin: 0 0 0.75rem 0;
+        margin: 0 0 1.25rem 0;
         font-size: 2.25rem;
-        font-weight: 300;
         letter-spacing: 1px;
     }
-    .form-subtitle {
-        margin-bottom: 2.5rem;
-        font-size: 1rem;
-        font-weight: 300;
-        letter-spacing: 0.3px;
-    }
-    .form-group {
+    .create-form-group {
         margin-bottom: 1.75rem;
     }
-    .form-group:nth-child(1) { animation-delay: 0.1s; }
-    .form-group:nth-child(2) { animation-delay: 0.15s; }
-    .form-group:nth-child(3) { animation-delay: 0.2s; }
-    .form-group:nth-child(4) { animation-delay: 0.25s; }
-    .form-group label {
+    .create-form-group:nth-child(1) { animation-delay: 0.1s; }
+    .create-form-group:nth-child(2) { animation-delay: 0.15s; }
+    .create-form-group:nth-child(3) { animation-delay: 0.2s; }
+    .create-form-group:nth-child(4) { animation-delay: 0.25s; }
+    .create-form-group label {
         display: block;
         margin-bottom: 0.75rem;
         font-weight: 400;
         font-size: 0.95rem;
-        letter-spacing: 0.3px;
+        /* letter-spacing: 0.3px; */
+        color: var(--page-background);
     }
-    .form-group input[type="text"],
-    .form-group input[type="datetime-local"],
-    .form-group select,
-    .form-group textarea {
+    .create-form-group input[type="text"],
+    .create-form-group input[type="datetime-local"],
+    .create-form-group select,
+    .create-form-group textarea {
         width: 100%;
         padding: 0.75rem 1rem;
-        border: 1px solid #ccc;
-        border-radius: 8px;
+        border: 1px solid var(--dark-gray-background);
+        /* border-radius: 8px; */
         font-size: 0.95rem;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         font-weight: 300;
     }
-    .form-group input::placeholder,
-    .form-group textarea::placeholder {
+    .create-form-group input::placeholder,
+    .create-form-group textarea::placeholder {
         color: #666;
     }
-    .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus {
+    .create-form-group input:focus,
+    .create-form-group select:focus,
+    .create-form-group textarea:focus {
         outline: none;
         border: 1px solid #ccc;
         transform: translateY(-1px);
@@ -86,6 +78,7 @@
         border-radius: 0 0 8px 8px;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
         margin-top: -8px;
+        color: var(--page-background)
     }
     .autocomplete-item {
         padding: 0.875rem 1rem;
@@ -107,7 +100,7 @@
         margin-top: 0.875rem;
         min-height: 40px;
         padding: 0.625rem;
-        border-radius: 8px;
+        /* border-radius: 8px; */
         border: 1px solid #ccc;
         background-color: #eee;
     }
@@ -177,7 +170,7 @@
         transform: none;
     }
     .counter {
-        color: rgba(255, 255, 255, 0.5);
+        color: #666;
         font-size: 0.85rem;
         margin-top: 0.5rem;
         font-weight: 300;
@@ -185,10 +178,10 @@
     .form-actions {
         margin-top: 2.5rem;
         display: flex;
-        flex-direction: column;
         gap: 0.875rem;
         padding-top: 2rem;
         border-top: 1px solid rgba(255, 255, 255, 0.1);
+        justify-content: space-between;
     }
     .submit-button {
         flex: 1;
@@ -251,19 +244,12 @@
 <div class="form-wrapper">
     <div class="form-container">
         <h1>{% if is_update %}Edit Event{% else %}Create Event{% endif %}</h1>
-        <p class="form-subtitle">
-            {% if is_update %}
-            Update your event details and invite more people
-            {% else %}
-            Plan your next art adventure and invite friends to join
-            {% endif %}
-        </p>
         
         <form method="post" id="create-event-form">
         {% csrf_token %}
         
         <!-- Title -->
-        <div class="form-group">
+        <div class="create-form-group">
             <label for="{{ form.title.id_for_label }}">Event Title *</label>
             {{ form.title }}
             {% if form.title.errors %}
@@ -272,7 +258,7 @@
         </div>
         
         <!-- Date & Time -->
-        <div class="form-group">
+        <div class="create-form-group">
             <label for="{{ form.start_time.id_for_label }}">Date & Time *</label>
             {{ form.start_time }}
             {% if form.start_time.errors %}
@@ -281,7 +267,7 @@
         </div>
         
         <!-- Starting Location -->
-        <div class="form-group">
+        <div class="create-form-group">
             <label for="{{ form.start_location.id_for_label }}">Starting Location *</label>
             {{ form.start_location }}
             {% if form.start_location.errors %}
@@ -290,7 +276,7 @@
         </div>
         
         <!-- Description -->
-        <div class="form-group">
+        <div class="create-form-group">
             <label for="{{ form.description.id_for_label }}">Description</label>
             {{ form.description }}
             {% if form.description.errors %}
@@ -299,30 +285,29 @@
         </div>
         
         <!-- Additional Locations -->
-        <div class="form-group">
-            <label>Additional Locations (optional)</label>
-            <div id="locations-chips" class="chips-container"></div>
-            <div class="counter" id="locations-counter">0/5</div>
-            <select id="extra-location-select" class="form-select">
+        <div class="create-form-group">
+            <label for="extra-location-select">Additional Locations (optional) <span class="counter" id="locations-counter">0/5</span></label>
+            <select id="extra-location-select" class="create-form-select">
                 <option value="">Select a location to add...</option>
                 {% for location in locations %}
                 <option value="{{ location.id }}" data-title="{{ location.title }}">{{ location.title }}</option>
                 {% endfor %}
             </select>
+            <div id="locations-chips" class="chips-container"></div>
         </div>
         
         <!-- Invite Members -->
-        <div class="form-group">
+        <div class="create-form-group">
             <label>Invite Members</label>
-            <div id="invites-chips" class="chips-container"></div>
             <div class="user-search-container">
                 <input type="text" id="user-search" placeholder="Search for users to invite...">
                 <div id="user-results" class="autocomplete-results"></div>
             </div>
+            <div id="invites-chips" class="chips-container"></div>
         </div>
         
         <!-- Visibility -->
-        <div class="form-group">
+        <div class="create-form-group">
             <label for="{{ form.visibility.id_for_label }}">Visibility *</label>
             {{ form.visibility }}
             {% if form.visibility.errors %}
@@ -331,10 +316,10 @@
         </div>
         
         <div class="form-actions">
-            <button type="submit" class="submit-button">
+            <a href="{% if is_update %}{% url 'events:detail' event.slug %}{% else %}{% url 'events:public' %}{% endif %}" class="btn btn-outline-danger">Cancel</a>
+            <button type="submit" class="btn btn-primary">
                 {% if is_update %}Update Event{% else %}Create Event{% endif %}
             </button>
-            <a href="{% if is_update %}{% url 'events:detail' event.slug %}{% else %}{% url 'events:public' %}{% endif %}" class="cancel-button">Cancel</a>
         </div>
     </form>
     </div>

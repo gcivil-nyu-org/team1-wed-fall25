@@ -11,7 +11,7 @@ class EventForm(forms.ModelForm):
         widgets = {
             "start_time": forms.DateTimeInput(attrs={"type": "datetime-local"}),
             "description": forms.Textarea(attrs={"rows": 4, "maxlength": 300}),
-            "start_location": forms.Select(attrs={"class": "form-select"}),
+            "start_location": forms.Select(attrs={"class": "create-form-select"}),
         }
 
     def __init__(self, *args, **kwargs):

@@ -211,7 +211,6 @@ document.addEventListener('DOMContentLoaded', function() {
     overflow-y: auto;
     margin-bottom: 1.5rem;
     padding: 1rem;
-    border-radius: 12px;
     border: 1px solid #ccc;
 }
 .chat-messages::-webkit-scrollbar {
@@ -292,12 +291,12 @@ document.addEventListener('DOMContentLoaded', function() {
     align-items: center;
     justify-content: center;
     height: 100%;
-    background-color: #ddd;
+    background-color: var(--page-background);
 }
 .no-messages-icon {
     font-size: 3rem;
     margin-bottom: 1rem;
-    color: #666;
+    color: var(--white);
     animation: float 4s ease-in-out infinite;
 }
 @keyframes float {
@@ -312,11 +311,9 @@ document.addEventListener('DOMContentLoaded', function() {
     margin: 0.25rem 0;
     font-size: 1rem;
     font-weight: 400;
-    /* color: rgba(255, 255, 255, 0.7); */
 }
 .no-messages .sub-text {
     font-size: 0.875rem;
-    /* color: rgba(255, 255, 255, 0.5); */
     font-weight: 300;
 }
 .chat-form {

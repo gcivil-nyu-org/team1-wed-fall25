@@ -30,18 +30,18 @@
 
     <div class="filters-section">
         <form method="get" class="filters-form">
-            <div class="filter-group">
+            <div class="form-group">
                 <input 
                     type="text" 
                     name="search" 
                     placeholder="Search by title, artist, or location..." 
                     value="{{ search_query }}"
-                    class="search-input"
+                    class="form-control"
                 >
             </div>
             
-            <div class="filter-group">
-                <select name="borough" class="borough-select">
+            <div class="form-group">
+                <select name="borough" class="form-control">
                     <option value="">All Boroughs</option>
                     {% for borough in boroughs %}
                         <option value="{{ borough }}" {% if borough_filter == borough %}selected{% endif %}>
