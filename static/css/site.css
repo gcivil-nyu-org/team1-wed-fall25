@@ -8,6 +8,7 @@
     --text-color: #fff;
     --white: #fff;
     --highlight: #667eea;
+    --highlight-tint: #a9b1d5;
     --highlight-transparent: #667eea40;
     --danger: #bd2130;
 }
@@ -276,6 +277,19 @@ nav {
     min-width: 140px;
 }
 
+div.form-group.profile input,
+div.form-group.profile select,
+div.form-group.profile textarea {
+    background-color: var(--white);
+    border: 1px solid var(--page-background);
+    color: var(--page-background);
+    border-radius: 0;
+}
+
+div.form-group.profile {
+    margin-bottom: 1.5rem;
+}
+
 /* ========================================
    PROFILE ACTIONS
    ======================================== */
@@ -319,27 +333,6 @@ nav {
         width: 100%;
         min-width: auto;
     }
-}
-
-.profile-info .btn {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-    padding: 12px 28px;
-    font-size: 1rem;
-    font-weight: 600;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
-    transition: all 0.3s ease;
-}
-
-.profile-info .btn:hover {
-    box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
-    transform: translateY(-2px);
-}
-
-.profile-info .btn i {
-    margin-right: 8px;
 }
 
 main {
@@ -391,6 +384,11 @@ main {
     margin-bottom: 1.5rem;
 }
 
+div.form-group.form-group-accounts input {
+    background-color: var(--white);
+    border: 1px solid var(--page-background);
+}
+
 .form-group label {
     display: block;
     margin-bottom: 0.5rem;
@@ -430,7 +428,7 @@ main {
     width: 100%;
     padding: 12px;
     border: 1px solid #ddd;
-    border-radius: 8px;
+    /* border-radius: 8px; */
     font-size: 0.95rem;
 }
 
@@ -451,6 +449,10 @@ select.form-control:focus {
     outline: none;
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.account {
+    background-color: var(--white);
 }
 
 .error {
@@ -1173,7 +1175,7 @@ select.form-control:focus {
 
 .profile-username {
     font-size: 2rem;
-    color: #2c3e50;
+    /* color: #2c3e50; */
     margin: 0 0 0.5rem 0;
     font-weight: 600;
 }
@@ -1235,7 +1237,7 @@ select.form-control:focus {
 .stat-card {
     background: white;
     padding: 1.5rem;
-    border-radius: 8px;
+    /* border-radius: 8px; */
     text-align: center;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s;
@@ -1283,7 +1285,7 @@ select.form-control:focus {
 
 .section-title {
     font-size: 1.5rem;
-    color: #2c3e50;
+    /* color: #2c3e50; */
     margin-bottom: 1rem;
     font-weight: 600;
     border-bottom: 2px solid #e9ecef;
@@ -1296,7 +1298,7 @@ select.form-control:focus {
     line-height: 1.8;
     padding: 1rem;
     background: #f8f9fa;
-    border-radius: 8px;
+    /* border-radius: 8px; */
     border-left: 4px solid #3498db;
 }
 
@@ -1321,7 +1323,7 @@ select.form-control:focus {
 .event-card {
     background: white;
     border: 1px solid #e9ecef;
-    border-radius: 8px;
+    /* border-radius: 8px; */
     padding: 1.5rem;
     transition: all 0.2s;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -1373,7 +1375,7 @@ select.form-control:focus {
 
 .edit-card {
     background: white;
-    border-radius: 8px;
+    /* border-radius: 8px; */
     padding: 2rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
