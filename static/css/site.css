@@ -561,6 +561,16 @@ select.form-control:focus {
     align-self: stretch;
 }
 
+.art-card-header h5 a {
+    color: var(--white);
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.art-card-header h5 a:hover {
+    text-decoration: underline;
+}
+
 .art-header {
     display: flex;
     align-items: flex-start;
