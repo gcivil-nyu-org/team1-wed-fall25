@@ -729,9 +729,9 @@ select.form-control:focus {
 }
 
 .detail-main {
-    background: white;
+    background: var(--page-background);
+    color: var(--text-color);
     padding: 2rem;
-    border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -746,7 +746,6 @@ select.form-control:focus {
 
 .detail-title {
     font-size: 2rem;
-    color: #2c3e50;
     flex: 1;
 }
 
@@ -764,21 +763,18 @@ select.form-control:focus {
 }
 
 .detail-section h2 {
-    color: #2c3e50;
     font-size: 1.5rem;
     margin-bottom: 1rem;
     padding-bottom: 0.5rem;
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid var(--white);
 }
 
 .detail-artist {
     font-size: 1.25rem;
-    color: #555;
     font-weight: 500;
 }
 
 .detail-description {
-    color: #555;
     line-height: 1.8;
 }
 
@@ -792,24 +788,22 @@ select.form-control:focus {
     display: flex;
     flex-direction: column;
     padding: 1rem;
-    background: #f8f9fa;
-    border-radius: 4px;
+    background: var(--page-background);
+    border: 1px solid var(--white);
+    color: var(--white);
 }
 
 .info-label {
     font-size: 0.875rem;
-    color: #666;
     font-weight: 500;
     margin-bottom: 0.25rem;
 }
 
 .info-value {
-    color: #2c3e50;
     font-size: 1rem;
 }
 
 .detail-location {
-    color: #555;
     font-size: 1.1rem;
     margin-bottom: 1rem;
 }
@@ -817,24 +811,25 @@ select.form-control:focus {
 .coordinates {
     margin-top: 1rem;
     padding: 1rem;
-    background: #f8f9fa;
-    border-radius: 4px;
+    background: var(--page-background);
+    border: 1px solid var(--white);
+    color: var(--white);
+    transition: 0.2s;
+}
+
+.coordinates:hover {
+    border-color: var(--highlight);
 }
 
 .coordinates small {
     display: block;
-    color: #666;
     margin-bottom: 0.5rem;
 }
 
 .map-link {
-    color: #3498db;
-    text-decoration: none;
-    font-weight: 500;
-}
-
-.map-link:hover {
+    color: var(--white);
     text-decoration: underline;
+    font-weight: 500;
 }
 
 .detail-sidebar {
@@ -844,14 +839,11 @@ select.form-control:focus {
 }
 
 .sidebar-section {
-    background: white;
     padding: 1.5rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--white);
 }
 
 .sidebar-section h3 {
-    color: #2c3e50;
     font-size: 1.25rem;
     margin-bottom: 1rem;
     padding-bottom: 0.75rem;
@@ -877,12 +869,10 @@ select.form-control:focus {
 
 .quick-label {
     font-size: 0.875rem;
-    color: #666;
 }
 
 .quick-value {
     font-weight: 500;
-    color: #2c3e50;
 }
 
 .related-art-list {
@@ -893,32 +883,30 @@ select.form-control:focus {
 
 .related-art-item {
     padding: 1rem;
-    background: #f8f9fa;
-    border-radius: 4px;
     text-decoration: none;
     color: inherit;
-    transition: background 0.2s;
+    border: 1px solid var(--white);
+    transition: 0.2s;
 }
 
 .related-art-item:hover {
-    background: #e9ecef;
+    border-color: var(--highlight);
 }
 
 .related-art-title {
     font-weight: 500;
-    color: #2c3e50;
     margin-bottom: 0.25rem;
 }
 
 .related-art-artist {
     font-size: 0.875rem;
-    color: #666;
     margin-bottom: 0.25rem;
 }
 
 .related-art-location {
     font-size: 0.875rem;
-    color: #3498db;
+    color: var(--white);
+    text-decoration: underline;
 }
 
 /* Responsive Design */
