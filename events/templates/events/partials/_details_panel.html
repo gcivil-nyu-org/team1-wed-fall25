@@ -68,7 +68,7 @@
             {% for membership in attendees %}
             <li class="attendee-item">
                 <div class="attendee-info">
-                    <strong>{{ membership.user.username }}</strong>
+                    <strong>👤 {{ membership.user.username }}</strong>
                     {% if membership.role == 'HOST' %}
                     <span class="role-badge host">Host</span>
                     {% endif %}
@@ -121,7 +121,7 @@
 .panel-header h2 {
     margin: 0 0 1.5rem 0;
     padding-bottom: 1rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--white);
     font-size: 1.5rem;
     font-weight: 400;
     letter-spacing: 0.5px;
@@ -129,7 +129,7 @@
 .detail-section {
     margin-bottom: 1.75rem;
     padding-bottom: 1.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid var(--white);
 }
 .detail-section:last-child {
     border-bottom: none;
@@ -187,19 +187,9 @@
 .attendee-item {
     padding: 0.875rem 1rem;
     margin-bottom: 0.625rem;
-    border-radius: 8px;
-    border-left: 2px solid rgba(102, 126, 234, 0.3);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border: 1px solid #fff;
-}
-.attendee-item:hover {
-    border-left-color: rgba(102, 126, 234, 0.6);
-}
-.attendee-info {
-    flex: 1;
 }
 .attendee-item strong {
     font-weight: 400;

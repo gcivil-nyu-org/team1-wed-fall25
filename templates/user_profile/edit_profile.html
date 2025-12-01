@@ -34,6 +34,23 @@
     object-fit: cover;
 }
 
+input#profile-image-input.form-control[type="file"]{
+  border: none;
+}
+
+input[type="file"]::file-selector-button {
+  background-color: var(--highlight);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+input[type="file"]::file-selector-button:hover {
+  background-color: #5568d3;
+  border-color: #5568d3;
+}
+
 .clear-preview-btn {
     margin-top: 10px;
     padding: 5px 15px;
@@ -107,7 +124,7 @@
         <h2 class="form-section-title">Basic Information</h2>
 
         {% for field in user_form %}
-        <div class="form-group">
+        <div class="form-group profile">
           {{ field.label_tag }} 
           {{ field }} 
           {% if field.help_text %}
@@ -127,7 +144,7 @@
         <h2 class="form-section-title">Profile Details</h2>
 
         {% for field in profile_form %}
-        <div class="form-group">
+        <div class="form-group profile">
           {{ field.label_tag }} 
           {{ field }} 
           

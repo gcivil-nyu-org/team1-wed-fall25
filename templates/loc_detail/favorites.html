@@ -11,8 +11,8 @@
 
     {% if page_obj %}
         <!-- Search and Filter Controls -->
-        <div class="search-filter-container">
-            <form method="get" class="search-filter-form">
+        <div class="filters-section">
+            <form method="get" class="filters-form">
                 <div class="form-row">
                     <div class="form-group">
                         <input type="text" 
@@ -187,41 +187,6 @@
 .page-header h1 {
     color: #333;
     margin-bottom: 10px;
-}
-
-.search-filter-container {
-    background: #f8f9fa;
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-}
-
-.search-filter-form .form-row {
-    display: flex;
-    gap: 15px;
-    align-items: end;
-    flex-wrap: wrap;
-}
-
-.form-group {
-    flex: 1;
-    min-width: 200px;
-}
-
-.form-control {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-}
-
-/* Match art_list.html styling */
-.art-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 25px;
-    margin-bottom: 30px;
 }
 
 .btn-remove-favorite {
