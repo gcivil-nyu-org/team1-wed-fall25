@@ -68,8 +68,9 @@
             {% for membership in attendees %}
             <li class="attendee-item">
                 <div class="attendee-info">
-                    <a href="{% url 'user_profile:profile_view' membership.user.username %}" class="attendee-link">
-                        <strong>👤 {{ membership.user.username }}</strong>
+                    <a class="attendee-profile-link" href="{% url 'user_profile:profile_view' membership.user.username %}">
+                        <div class="review-avatar">{{ membership.user.username|first|upper }}</div>
+                        <div class="review-author">{{ membership.user.username }}</div>
                     </a>
                     {% if membership.role == 'HOST' %}
                     <span class="role-badge host">Host</span>
@@ -113,6 +114,9 @@
 </div>
 
 <style>
+.btn.btn-message{
+    flex-grow: 0;
+}
 .details-panel {
     background: transparent;
     padding: 0;
@@ -193,6 +197,17 @@
     justify-content: space-between;
     align-items: center;
 }
+.attendee-profile-link {
+    display: flex;
+    text-decoration: none;
+    color: var(--white);
+    gap: 0.5rem;
+    align-items: center;
+}
+.attendee-info {
+    display: flex;
+    align-items: center;
+}
 .attendee-item strong {
     font-weight: 400;
     font-size: 0.9rem;
@@ -207,6 +222,19 @@
 }
 .attendee-link:hover strong {
     text-decoration: underline;
+}
+.review-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #4285f4;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 16px;
+    flex-shrink: 0;
 }
 .role-badge {
     font-size: 0.75rem;
