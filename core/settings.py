@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     "favorites.apps.FavoritesConfig",
     "storages",
     "user_profile.apps.UserProfileConfig",
+    "messages.apps.MessagesConfig",
 ]
 
 SITE_ID = 1
