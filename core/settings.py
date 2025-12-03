@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     "storages",
     "user_profile.apps.UserProfileConfig",
     "messages.apps.MessagesConfig",
+    "chatbot",
 ]
 
 SITE_ID = 1
@@ -150,6 +151,8 @@ AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
 AWS_S3_REGION_NAME = "us-east-2"
 AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
 AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+
 
 # Only validate AWS settings if not in test mode
 if not ("test" in sys.argv or os.environ.get("TRAVIS") == "true"):

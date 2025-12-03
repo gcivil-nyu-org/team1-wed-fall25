@@ -32,4 +32,5 @@ urlpatterns = [
     ),
     path("admin/", admin.site.urls),
     path("profile/", include("user_profile.urls")),
+    path("chatbot/", include("chatbot.urls")),
 ]
