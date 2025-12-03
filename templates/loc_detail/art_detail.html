@@ -226,7 +226,10 @@
                         {% for comment in comments %}
                             <div class="review-item" data-comment-id="{{ comment.id }}">
                                 <div class="review-header">
-                                    <div class="review-avatar">{{ comment.user.username|first|upper }}</div>
+                                    <a href="{% url 'user_profile:profile_view' comment.user.username %}">
+                                        <div class="review-avatar">{{ comment.user.username|first|upper }}</div>
+                                    </a>
+
                                     <div class="review-author-info">
                                         <div class="review-author">{{ comment.user.username }}</div>
                                         <div class="review-meta">
@@ -394,7 +397,9 @@
                                     {% for reply in comment.replies.all %}
                                     <div class="reply-item" data-comment-id="{{ reply.id }}">
                                         <div class="review-header">
-                                            <div class="review-avatar">{{ reply.user.username|first|upper }}</div>
+                                            <a href="{% url 'user_profile:profile_view' reply.user.username %}">
+                                                <div class="review-avatar">{{ reply.user.username|first|upper }}</div>
+                                            </a>
                                             <div class="review-author-info">
                                                 <div class="review-author">{{ reply.user.username }}</div>
                                                 <div class="review-meta">
