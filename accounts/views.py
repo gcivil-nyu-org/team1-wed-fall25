@@ -170,6 +170,17 @@ class CustomLoginView(LoginView):
 
 def logout_view(request):
     """Handle both GET and POST logout"""
+    # Set user as offline before logging out
+    if request.user.is_authenticated:
+        try:
+            from messages.models import UserOnlineStatus
+
+            status = UserOnlineStatus.objects.filter(user=request.user).first()
+            if status:
+                status.set_offline()
+        except Exception:
+            pass  # Don't fail logout if status update fails
+
     logout(request)
     messages.success(request, "You have been logged out successfully.")
     return redirect("accounts:login")

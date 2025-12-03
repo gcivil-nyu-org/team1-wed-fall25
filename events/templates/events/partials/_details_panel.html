@@ -68,7 +68,9 @@
             {% for membership in attendees %}
             <li class="attendee-item">
                 <div class="attendee-info">
-                    <strong>👤 {{ membership.user.username }}</strong>
+                    <a href="{% url 'user_profile:profile_view' membership.user.username %}" class="attendee-link">
+                        <strong>👤 {{ membership.user.username }}</strong>
+                    </a>
                     {% if membership.role == 'HOST' %}
                     <span class="role-badge host">Host</span>
                     {% endif %}
@@ -77,9 +79,9 @@
                     {% endif %}
                 </div>
                 {% if membership.user != request.user %}
-                <button class="btn btn-outline-primary btn-message" data-event="{{ event.slug }}" data-user="{{ membership.user.id }}" data-username="{{ membership.user.username }}">
+                <a href="{% url 'user_messages:conversation' membership.user.id %}?from_event=true" class="btn btn-outline-primary btn-message">
                     💬 Message
-                </button>
+                </a>
                 {% endif %}
             </li>
             {% endfor %}
@@ -194,6 +196,17 @@
 .attendee-item strong {
     font-weight: 400;
     font-size: 0.9rem;
+}
+.attendee-link {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.2s;
+}
+.attendee-link:hover {
+    color: #8b9cff;
+}
+.attendee-link:hover strong {
+    text-decoration: underline;
 }
 .role-badge {
     font-size: 0.75rem;
