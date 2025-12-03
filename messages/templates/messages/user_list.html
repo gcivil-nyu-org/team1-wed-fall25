@@ -1,0 +1,375 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Find Users - Artinerary{% endblock %}
+
+{% block extra_css %}
+<style>
+    .user-list-container {
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .page-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin: 0;
+    }
+
+    .back-link {
+        color: #667eea;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 500;
+        transition: color 0.2s;
+    }
+
+    .back-link:hover {
+        color: #764ba2;
+    }
+
+    .search-box {
+        margin-bottom: 1.5rem;
+    }
+
+    .search-form {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .search-input {
+        flex: 1;
+        padding: 0.875rem 1.25rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 25px;
+        font-size: 1rem;
+        transition: border-color 0.2s;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+
+    .search-btn {
+        padding: 0 1.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 25px;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .search-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .users-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.25rem;
+    }
+
+    .user-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .user-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+    }
+
+    .user-avatar-wrapper {
+        position: relative;
+        flex-shrink: 0;
+    }
+
+    .user-avatar-lg {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 1.5rem;
+    }
+
+    .status-indicator {
+        position: absolute;
+        bottom: 3px;
+        right: 3px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 3px solid white;
+    }
+
+    .status-indicator.online {
+        background: #98d8aa;
+    }
+
+    .status-indicator.offline {
+        background: #f4a4a4;
+    }
+
+    .user-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .user-name {
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .user-status {
+        font-size: 0.85rem;
+        color: #95a5a6;
+    }
+
+    .user-status.online {
+        color: #27ae60;
+    }
+
+    .message-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.625rem 1rem;
+        border-radius: 20px;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+        white-space: nowrap;
+    }
+
+    .message-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        color: white;
+    }
+
+    .message-btn.existing {
+        background: #ecf0f1;
+        color: #667eea;
+    }
+
+    .message-btn.existing:hover {
+        background: #e0e5ec;
+        color: #764ba2;
+    }
+
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 2rem;
+        gap: 0.5rem;
+    }
+
+    .page-link {
+        padding: 0.5rem 1rem;
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        color: #667eea;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .page-link:hover {
+        background: #667eea;
+        color: white;
+    }
+
+    .page-link.active {
+        background: #667eea;
+        color: white;
+    }
+
+    .page-link.disabled {
+        color: #bdc3c7;
+        pointer-events: none;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        color: #bdc3c7;
+        margin-bottom: 1.5rem;
+    }
+
+    .empty-state h2 {
+        font-size: 1.5rem;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+        color: #7f8c8d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="user-list-container">
+    <div class="page-header">
+        <h1><i class="fas fa-user-friends"></i> Find Users</h1>
+        <a href="{% url 'user_messages:inbox' %}" class="back-link">
+            <i class="fas fa-arrow-left"></i> Back to Messages
+        </a>
+    </div>
+
+    <div class="search-box">
+        <form class="search-form" method="get">
+            <input 
+                type="text" 
+                name="q" 
+                class="search-input" 
+                placeholder="Search by username or name..."
+                value="{{ search_query }}"
+            >
+            <button type="submit" class="search-btn">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </form>
+    </div>
+
+    {% if users %}
+        <div class="users-grid">
+            {% for user_data in users %}
+                <div class="user-card">
+                    <div class="user-avatar-wrapper">
+                        {% if user_data.user.profile.profile_image %}
+                            <img src="{{ user_data.user.profile.profile_image.url }}" 
+                                 alt="{{ user_data.user.username }}" 
+                                 class="user-avatar-lg">
+                        {% else %}
+                            <div class="user-avatar-lg">
+                                {{ user_data.user.username|first|upper }}
+                            </div>
+                        {% endif %}
+                        <span class="status-indicator {% if user_data.is_online %}online{% else %}offline{% endif %}"></span>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name">{{ user_data.user.username }}</div>
+                        <div class="user-status {% if user_data.is_online %}online{% endif %}">
+                            {% if user_data.is_online %}
+                                <i class="fas fa-circle"></i> Online
+                            {% else %}
+                                <i class="far fa-circle"></i> Offline
+                            {% endif %}
+                        </div>
+                    </div>
+                    <a href="{% url 'user_messages:conversation' user_data.user.id %}" 
+                       class="message-btn {% if user_data.has_conversation %}existing{% endif %}">
+                        {% if user_data.has_conversation %}
+                            <i class="fas fa-comment"></i> Chat
+                        {% else %}
+                            <i class="fas fa-paper-plane"></i> Message
+                        {% endif %}
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if page_obj.has_other_pages %}
+            <div class="pagination-container">
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" 
+                       class="page-link">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <span class="page-link active">{{ num }}</span>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <a href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}" 
+                           class="page-link">
+                            {{ num }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" 
+                       class="page-link">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-search"></i>
+            </div>
+            {% if search_query %}
+                <h2>No users found</h2>
+                <p>Try a different search term</p>
+            {% else %}
+                <h2>No other users yet</h2>
+                <p>Be the first to invite your friends to Artinerary!</p>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Update online status periodically
+    async function updateOnlineStatus() {
+        try {
+            await fetch('/messages/api/online-status/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                }
+            });
+        } catch (error) {
+            console.error('Error updating online status:', error);
+        }
+    }
+
+    // Update status every 30 seconds
+    updateOnlineStatus();
+    setInterval(updateOnlineStatus, 30000);
+</script>
+{% endblock %}
+

@@ -18,9 +18,9 @@
 
     <div class="d-flex justify-content-between align-items-start mb-4">
         <div>
-            <h1 class="display-5">{{ itinerary.title }}</h1>
+            <h1>{{ itinerary.title }}</h1>
             {% if itinerary.description %}
-            <p class="lead text-muted">{{ itinerary.description }}</p>
+            <p class="lead">{{ itinerary.description }}</p>
             {% endif %}
             {% if itinerary.date %}
             <div class="mb-2">
@@ -30,7 +30,7 @@
                 </span>
             </div>
             {% endif %}
-            <small class="text-muted">
+            <small>
                 <i class="fas fa-clock me-1"></i>Created {{ itinerary.created_at|date:"F d, Y" }}
                 {% if itinerary.updated_at != itinerary.created_at %}
                 | Updated {{ itinerary.updated_at|date:"F d, Y" }}
@@ -38,7 +38,22 @@
             </small>
         </div>
         <div class="d-flex gap-2">
-            <div class="btn-group" role="group">
+            <div>
+                {% if is_favorited %}
+                <form method="post" action="{% url 'itineraries:unfavorite' itinerary.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-primary" title="Remove from favorites">
+                        <i class="fas fa-heart favorited"></i> Unfavorite
+                    </button>
+                </form>
+                {% else %}
+                <form method="post" action="{% url 'itineraries:favorite' itinerary.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-primary" title="Add to favorites">
+                        <i class="far fa-heart"></i> Favorite
+                    </button>
+                </form>
+                {% endif %}
                 <a href="{% url 'itineraries:edit' itinerary.pk %}" class="btn btn-outline-primary">
                     <i class="fas fa-edit me-1"></i>Edit
                 </a>
@@ -46,21 +61,6 @@
                     <i class="fas fa-trash me-1"></i>Delete
                 </a>
             </div>
-            {% if is_favorited %}
-            <form method="post" action="{% url 'itineraries:unfavorite' itinerary.pk %}" class="d-inline">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-warning" title="Remove from favorites">
-                    <i class="fas fa-star me-1"></i>Unfavorite
-                </button>
-            </form>
-            {% else %}
-            <form method="post" action="{% url 'itineraries:favorite' itinerary.pk %}" class="d-inline">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-outline-warning" title="Add to favorites">
-                    <i class="far fa-star me-1"></i>Favorite
-                </button>
-            </form>
-            {% endif %}
         </div>
     </div>
 
@@ -88,10 +88,10 @@
                                             <i class="fas fa-external-link-alt small"></i>
                                         </a>
                                     </h6>
-                                    <p class="mb-1 small text-muted">
+                                    <p class="mb-1 small">
                                         <i class="fas fa-user me-1"></i>{{ stop.location.artist_name|default:"Unknown Artist" }}
                                     </p>
-                                    <p class="mb-1 small text-muted">
+                                    <p class="mb-1 small">
                                         <i class="fas fa-map-marker-alt me-1"></i>{{ stop.location.location|default:"Location not specified" }}
                                         {% if stop.location.borough %}
                                         <span class="badge bg-secondary">{{ stop.location.borough }}</span>
@@ -146,65 +146,147 @@
 <script>
     {% if itinerary.stops.all %}
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize map
-        const map = L.map('itinerary-map').setView([40.7128, -74.0060], 11);
-        
-        // Use the same tile layer as the main map page (Vibrant/CARTO Voyager)
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-            subdomains: 'abcd',
-            maxZoom: 20
-        }).addTo(map);
-
-        const stops = [
-            {% for stop in itinerary.stops.all %}
-            {
-                lat: {{ stop.location.latitude }},
-                lng: {{ stop.location.longitude }},
-                title: "{{ stop.location.title|default:'Untitled'|escapejs }}",
-                artist: "{{ stop.location.artist_name|default:'Unknown'|escapejs }}",
-                time: {% if stop.visit_time %}"{{ stop.visit_time|time:'g:i A' }}"{% else %}null{% endif %},
-                order: {{ stop.order }}
-            }{% if not forloop.last %},{% endif %}
-            {% endfor %}
-        ];
-
-        const markers = [];
-        const latlngs = [];
-
-        stops.forEach((stop, index) => {
-            const marker = L.marker([stop.lat, stop.lng], {
-                icon: L.divIcon({
-                    className: 'custom-marker',
-                    html: `<div class="marker-content">${stop.order}</div>`,
-                    iconSize: [30, 30]
-                })
+        try {
+            // Initialize map with default NYC center
+            const map = L.map('itinerary-map').setView([40.7128, -74.0060], 11);
+            
+            // Add tile layer (CARTO Voyager)
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                subdomains: 'abcd',
+                maxZoom: 20
             }).addTo(map);
 
-            marker.bindPopup(`
-                <strong>${stop.title}</strong><br>
-                <small>${stop.artist}</small><br>
-                ${stop.time ? `<span class="badge bg-info text-dark">${stop.time}</span>` : ''}
-            `);
+            // Define stops array with validation
+            const stops = [
+                {% for stop in itinerary.stops.all %}
+                {
+                    lat: {{ stop.location.latitude|default:"null" }},
+                    lng: {{ stop.location.longitude|default:"null" }},
+                    title: "{{ stop.location.title|default:'Untitled'|escapejs }}",
+                    artist: "{{ stop.location.artist_name|default:'Unknown'|escapejs }}",
+                    time: {% if stop.visit_time %}"{{ stop.visit_time|time:'g:i A' }}"{% else %}null{% endif %},
+                    order: {{ stop.order|default:"0" }}
+                }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ];
 
-            markers.push(marker);
-            latlngs.push([stop.lat, stop.lng]);
-        });
+            console.log('Total stops loaded:', stops.length);
 
-        // Draw route line
-        if (latlngs.length > 1) {
-            L.polyline(latlngs, {
-                color: '#0d6efd',
-                weight: 3,
-                opacity: 0.7,
-                dashArray: '10, 5'
-            }).addTo(map);
-        }
+            const markers = [];
+            const latlngs = [];
+            let validStopsCount = 0;
 
-        // Fit map to show all markers
-        if (latlngs.length > 0) {
-            const bounds = L.latLngBounds(latlngs);
-            map.fitBounds(bounds, { padding: [50, 50] });
+            // Process each stop and create markers
+            stops.forEach((stop, index) => {
+                // Validate coordinates - must be numbers and not null
+                if (stop.lat === null || stop.lng === null || 
+                    isNaN(parseFloat(stop.lat)) || isNaN(parseFloat(stop.lng))) {
+                    console.warn(`Stop ${stop.order} (${stop.title}) has invalid coordinates:`, stop.lat, stop.lng);
+                    return; // Skip this stop
+                }
+
+                // Convert to numbers and validate range
+                const lat = parseFloat(stop.lat);
+                const lng = parseFloat(stop.lng);
+
+                // Validate NYC area coordinates (rough bounds)
+                if (lat < 40.4 || lat > 41.0 || lng < -74.3 || lng > -73.7) {
+                    console.warn(`Stop ${stop.order} (${stop.title}) has coordinates outside NYC:`, lat, lng);
+                    // Still try to display, but log warning
+                }
+
+                try {
+                    // Create custom marker with order number
+                    const marker = L.marker([lat, lng], {
+                        icon: L.divIcon({
+                            className: 'custom-marker',
+                            html: `<div class="marker-content">${stop.order}</div>`,
+                            iconSize: [30, 30],
+                            iconAnchor: [15, 30]
+                        })
+                    }).addTo(map);
+
+                    // Create popup content
+                    const popupContent = `
+                        <div style="min-width: 150px;">
+                            <strong>${stop.title}</strong><br>
+                            <small class="text-muted">${stop.artist}</small><br>
+                            ${stop.time ? `<span class="badge bg-info text-dark mt-1">${stop.time}</span>` : ''}
+                        </div>
+                    `;
+                    
+                    marker.bindPopup(popupContent);
+
+                    markers.push(marker);
+                    latlngs.push([lat, lng]);
+                    validStopsCount++;
+
+                    console.log(`Marker ${stop.order} created at [${lat}, ${lng}]`);
+                } catch (error) {
+                    console.error(`Error creating marker for stop ${stop.order}:`, error);
+                }
+            });
+
+            console.log('Valid stops with markers:', validStopsCount);
+
+            // Draw route line connecting all stops
+            if (latlngs.length > 1) {
+                try {
+                    L.polyline(latlngs, {
+                        color: '#0d6efd',
+                        weight: 3,
+                        opacity: 0.7,
+                        dashArray: '10, 5',
+                        lineJoin: 'round'
+                    }).addTo(map);
+                    console.log('Route line drawn connecting', latlngs.length, 'points');
+                } catch (error) {
+                    console.error('Error drawing route line:', error);
+                }
+            }
+
+            // Fit map bounds to show all markers
+            if (latlngs.length > 0) {
+                try {
+                    const bounds = L.latLngBounds(latlngs);
+                    map.fitBounds(bounds, { 
+                        padding: [50, 50],
+                        maxZoom: 15 // Prevent zooming in too much
+                    });
+                    console.log('Map bounds fitted to show all markers');
+                } catch (error) {
+                    console.error('Error fitting bounds:', error);
+                    // Fallback to showing first marker
+                    if (latlngs.length > 0) {
+                        map.setView(latlngs[0], 13);
+                    }
+                }
+            } else {
+                console.warn('No valid coordinates found for any stops');
+                // Keep default NYC view
+            }
+
+            // Add click handler to markers for debugging
+            markers.forEach((marker, index) => {
+                marker.on('click', function() {
+                    console.log(`Marker ${index + 1} clicked`);
+                });
+            });
+
+        } catch (error) {
+            console.error('Error initializing map:', error);
+            // Display error message to user
+            const mapDiv = document.getElementById('itinerary-map');
+            if (mapDiv) {
+                mapDiv.innerHTML = `
+                    <div class="alert alert-danger m-3" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Map Error:</strong> Unable to load the map. Please try refreshing the page.
+                        <br><small class="text-muted">Error: ${error.message}</small>
+                    </div>
+                `;
+            }
         }
     });
     {% endif %}

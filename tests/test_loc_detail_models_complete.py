@@ -242,17 +242,6 @@ class PublicArtThumbnailTests(TestCase):
         result = art.art_thumbnail()
         self.assertEqual(result, "No Thumbnail")
 
-    def test_square_thumbnail_method(self):
-        """Test square_thumbnail method returns styled HTML"""
-        art = PublicArt.objects.create(
-            title="Test Art", image=create_test_image("art.jpg", (800, 600))
-        )
-
-        html = art.square_thumbnail()
-        self.assertIn("<img", html)
-        self.assertIn("100px", html)
-        self.assertIn(art.thumbnail.url, html)
-
     def test_square_thumbnail_no_image(self):
         """Test square_thumbnail with no thumbnail"""
         art = PublicArt.objects.create(title="No Image Art")

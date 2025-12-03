@@ -1,26 +1,113 @@
-{% extends 'base.html' %} {% load static %} {% block title %}Edit Profile -
-Artinerary{% endblock %}
+{% extends 'base.html' %} 
+{% load static %} 
 
-{% block extra_js %}
-<script>
-// Ensure remove image form submits correctly
-document.addEventListener('DOMContentLoaded', function() {
-    const removeForm = document.getElementById('remove-image-form');
-    if (removeForm) {
-        removeForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            if (confirm('Are you sure you want to remove your profile image?')) {
-                this.submit();
-            }
-        });
-    }
-});
-</script>
-{% endblock %} {% block extra_head %}
+{% block title %}Edit Profile - Artinerary{% endblock %}
+
+{% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/site.css' %}" />
-{% endblock %} {% block content %}
+<style>
+.image-error {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: none;
+}
+
+.image-error.show {
+    display: block;
+}
+
+.image-preview-container {
+    margin-top: 15px;
+    display: none;
+}
+
+.image-preview-container.show {
+    display: block;
+}
+
+.image-preview {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 8px;
+    border: 2px solid #ddd;
+    object-fit: cover;
+}
+
+input#profile-image-input.form-control[type="file"]{
+  border: none;
+}
+
+input[type="file"]::file-selector-button {
+  background-color: var(--highlight);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+input[type="file"]::file-selector-button:hover {
+  background-color: #5568d3;
+  border-color: #5568d3;
+}
+
+.clear-preview-btn {
+    margin-top: 10px;
+    padding: 5px 15px;
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.clear-preview-btn:hover {
+    background: #5a6268;
+}
+
+.current-image-container {
+    position: relative;
+}
+
+.current-image-container.marked-for-removal {
+    opacity: 0.5;
+    filter: grayscale(100%);
+}
+
+.removal-indicator {
+    display: none;
+    background: #dc3545;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.removal-indicator.show {
+    display: block;
+}
+
+.undo-removal-btn {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    margin-left: 10px;
+}
+
+.undo-removal-btn:hover {
+    background: #218838;
+}
+</style>
+{% endblock %} 
+
+{% block content %}
 <div class="edit-profile-container">
   <div class="edit-card">
     <div class="edit-header">
@@ -29,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 
     {# Main profile update form #}
-    <form method="post" enctype="multipart/form-data">
+    <form method="post" enctype="multipart/form-data" id="profile-form">
       {% csrf_token %}
 
       <!-- Basic Information -->
@@ -37,12 +124,17 @@ document.addEventListener('DOMContentLoaded', function() {
         <h2 class="form-section-title">Basic Information</h2>
 
         {% for field in user_form %}
-        <div class="form-group">
-          {{ field.label_tag }} {{ field }} {% if field.help_text %}
+        <div class="form-group profile">
+          {{ field.label_tag }} 
+          {{ field }} 
+          {% if field.help_text %}
           <small>{{ field.help_text }}</small>
-          {% endif %} {% if field.errors %} {% for error in field.errors %}
+          {% endif %} 
+          {% if field.errors %} 
+          {% for error in field.errors %}
           <div class="error">{{ error }}</div>
-          {% endfor %} {% endif %}
+          {% endfor %} 
+          {% endif %}
         </div>
         {% endfor %}
       </div>
@@ -52,60 +144,237 @@ document.addEventListener('DOMContentLoaded', function() {
         <h2 class="form-section-title">Profile Details</h2>
 
         {% for field in profile_form %}
-        <div class="form-group">
-          {{ field.label_tag }} {{ field }} {% if field.help_text %}
+        <div class="form-group profile">
+          {{ field.label_tag }} 
+          {{ field }} 
+          
+          {# Image size error message (client-side) #}
+          {% if field.name == 'profile_image' %}
+          <small style="display: block; margin-top: 5px; color: #666;">Maximum file size: 5MB</small>
+          <div class="image-error" id="image-size-error">
+            Image file too large. Maximum size is 5MB.
+          </div>
+          
+          {# Image preview #}
+          <div class="image-preview-container" id="image-preview-container">
+            <p style="margin-bottom: 10px; font-weight: 500;">New Image Preview:</p>
+            <img id="image-preview" class="image-preview" src="" alt="Image preview">
+            <button type="button" class="clear-preview-btn" id="clear-preview">Clear</button>
+          </div>
+          {% endif %}
+          
+          {% if field.help_text %}
           <small>{{ field.help_text }}</small>
-          {% endif %} {% if field.errors %} {% for error in field.errors %}
+          {% endif %} 
+          {% if field.errors %} 
+          {% for error in field.errors %}
           <div class="error">{{ error }}</div>
-          {% endfor %} {% endif %}
+          {% endfor %} 
+          {% endif %}
         </div>
         {% endfor %}
       </div>
 
+      {# Current Profile Image Section - Part of the same form #}
+      {% if request.user.profile.profile_image %}
+      <div class="form-section" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
+        <h2 class="form-section-title">Current Profile Image</h2>
+        
+        <div class="current-image-container" id="current-image-container">
+          <img
+            src="{{ request.user.profile.profile_image.url }}"
+            alt="Current profile picture"
+            id="current-profile-image"
+            style="
+              max-width: 150px;
+              height: auto;
+              border-radius: 4px;
+              border: 1px solid #ccc;
+              margin-bottom: 10px;
+              display: block;
+            "
+          />
+          
+          <button 
+            type="button" 
+            class="btn btn-danger btn-sm" 
+            id="mark-for-removal-btn"
+            style="margin-top: 10px;">
+            <i class="fas fa-trash"></i> Remove Image
+          </button>
+          
+          <div class="removal-indicator" id="removal-indicator">
+            <i class="fas fa-exclamation-triangle"></i> 
+            This image will be removed when you save changes
+            <button type="button" class="undo-removal-btn" id="undo-removal-btn">
+              <i class="fas fa-undo"></i> Undo
+            </button>
+          </div>
+          
+          {# Hidden input to track removal #}
+          <input type="hidden" name="remove_image" id="remove-image-input" value="false">
+        </div>
+      </div>
+      {% endif %}
+
       <div class="form-actions">
-        <button type="submit" class="btn">Save Changes</button>
-        <a
-          href="{% url 'user_profile:profile_view' request.user.username %}"
-          class="btn btn-secondary"
-          >Cancel</a
-        >
+        <button type="submit" class="btn btn-primary" id="save-btn">
+          <i class="fas fa-save"></i> Save Changes
+        </button>
+        <a href="{% url 'user_profile:profile_view' request.user.username %}" 
+           class="btn btn-secondary" 
+           id="cancel-btn">
+          <i class="fas fa-times"></i> Cancel
+        </a>
       </div>
     </form>
 
-    {% if request.user.profile.profile_image %}
-    <div class="form-section" style="margin-top: 30px; border-top: 1px solid #e0e0e0; padding-top: 20px;">
-      <h2 class="form-section-title">Current Profile Image</h2>
-      <div class="current-image" style="margin-top: 10px">
-        <img
-          src="{{ request.user.profile.profile_image.url }}"
-          alt="Current profile picture"
-          style="
-            max-width: 150px;
-            height: auto;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-            margin-bottom: 10px;
-          "
-        />
-
-        <form
-          method="post"
-          action="{% url 'user_profile:remove_profile_image' %}"
-          style="margin-top: 10px"
-          id="remove-image-form"
-        >
-          {% csrf_token %}
-          <button
-            type="submit"
-            class="btn btn-danger"
-            onclick="return confirm('Are you sure you want to remove your profile image?')"
-          >
-            Remove Image
-          </button>
-        </form>
-      </div>
-    </div>
-    {% endif %}
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Track form changes
+    let formChanged = false;
+    
+    // Image validation constants
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
+    const imageInput = document.getElementById('profile-image-input');
+    const imageError = document.getElementById('image-size-error');
+    const imagePreviewContainer = document.getElementById('image-preview-container');
+    const imagePreview = document.getElementById('image-preview');
+    const clearPreviewBtn = document.getElementById('clear-preview');
+    const saveBtn = document.getElementById('save-btn');
+    
+    // Current image removal tracking
+    const currentImageContainer = document.getElementById('current-image-container');
+    const markForRemovalBtn = document.getElementById('mark-for-removal-btn');
+    const undoRemovalBtn = document.getElementById('undo-removal-btn');
+    const removalIndicator = document.getElementById('removal-indicator');
+    const removeImageInput = document.getElementById('remove-image-input');
+    let imageMarkedForRemoval = false;
+    
+    // Track all form inputs for changes
+    const form = document.getElementById('profile-form');
+    const formInputs = form.querySelectorAll('input:not([type="hidden"]), textarea, select');
+    
+    formInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            formChanged = true;
+        });
+        
+        if (input.tagName === 'TEXTAREA' || (input.tagName === 'INPUT' && input.type === 'text') || (input.tagName === 'INPUT' && input.type === 'email')) {
+            input.addEventListener('input', function() {
+                formChanged = true;
+            });
+        }
+    });
+    
+    // Image file validation
+    if (imageInput) {
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            
+            // Clear previous error and preview
+            imageError.classList.remove('show');
+            imagePreviewContainer.classList.remove('show');
+            saveBtn.disabled = false;
+            
+            if (file) {
+                // Check file size
+                if (file.size > MAX_FILE_SIZE) {
+                    imageError.classList.add('show');
+                    saveBtn.disabled = true;
+                    imageInput.value = ''; // Clear the input
+                    formChanged = false; // Don't count invalid file as change
+                    return;
+                }
+                
+                // Check if it's an image
+                if (!file.type.startsWith('image/')) {
+                    alert('Please select an image file.');
+                    imageInput.value = '';
+                    formChanged = false;
+                    return;
+                }
+                
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreviewContainer.classList.add('show');
+                };
+                reader.readAsDataURL(file);
+                
+                formChanged = true;
+            }
+        });
+    }
+    
+    // Clear preview button
+    if (clearPreviewBtn) {
+        clearPreviewBtn.addEventListener('click', function() {
+            imageInput.value = '';
+            imagePreviewContainer.classList.remove('show');
+            imageError.classList.remove('show');
+            saveBtn.disabled = false;
+            formChanged = true;
+        });
+    }
+    
+    // Mark current image for removal
+    if (markForRemovalBtn) {
+        markForRemovalBtn.addEventListener('click', function() {
+            imageMarkedForRemoval = true;
+            removeImageInput.value = 'true';
+            currentImageContainer.classList.add('marked-for-removal');
+            removalIndicator.classList.add('show');
+            markForRemovalBtn.style.display = 'none';
+            formChanged = true; // Mark form as changed
+        });
+    }
+    
+    // Undo removal
+    if (undoRemovalBtn) {
+        undoRemovalBtn.addEventListener('click', function() {
+            imageMarkedForRemoval = false;
+            removeImageInput.value = 'false';
+            currentImageContainer.classList.remove('marked-for-removal');
+            removalIndicator.classList.remove('show');
+            markForRemovalBtn.style.display = 'inline-block';
+            formChanged = true; // Mark form as changed (user took action)
+        });
+    }
+    
+    // Cancel button warning
+    const cancelBtn = document.getElementById('cancel-btn');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function(e) {
+            if (formChanged) {
+                e.preventDefault();
+                if (confirm('You have unsaved changes. Are you sure you want to discard them?')) {
+                    formChanged = false; // Prevent beforeunload warning
+                    window.location.href = this.href;
+                }
+            }
+        });
+    }
+    
+    // Browser back/refresh warning
+    window.addEventListener('beforeunload', function(e) {
+        if (formChanged) {
+            e.preventDefault();
+            e.returnValue = '';
+            return '';
+        }
+    });
+    
+    // Reset formChanged when form is submitted
+    form.addEventListener('submit', function() {
+        formChanged = false;
+    });
+});
+</script>
 {% endblock %}

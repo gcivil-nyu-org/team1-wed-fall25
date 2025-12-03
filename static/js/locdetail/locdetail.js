@@ -333,7 +333,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 return false;
             }
             if (file.size > maxFileSize) {
-                alert('"' + file.name + '" is too large. Max size is 5MB');
+                alert('Your uploaded file "' + file.name + '" is too large. Max size is 5MB');
                 return false;
             }
             return true;

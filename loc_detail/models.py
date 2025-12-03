@@ -134,12 +134,9 @@ class PublicArt(models.Model):
     def square_thumbnail(self):
         if self.thumbnail:
             return mark_safe(
-                (
-                    '<img style="border: 1px solid #ccc;'
-                    "object-fit: cover; object-position: top;"
-                    'width: 100px; height: 100px;"'
-                    'src="{url}" />'
-                ).format(url=self.thumbnail.url)
+                ('<img class="art-thumbnail" src="{url}" />').format(
+                    url=self.thumbnail.url
+                )
             )
         return "No Thumbnail"
 

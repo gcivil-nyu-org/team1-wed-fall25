@@ -79,6 +79,18 @@
     .location-select {
         font-size: 15px;
     }
+    
+    /* ADDED: Hide order field and DELETE checkbox */
+    input[name$="-order"],
+    .order-field,
+    input[name$="-DELETE"],
+    input[type="checkbox"][name$="-DELETE"] {
+        display: none !important;
+    }
+    
+    label[for$="-DELETE"] {
+        display: none !important;
+    }
 </style>
 {% endblock %}
 
@@ -91,10 +103,19 @@
         </a>
     </div>
 
-    <h1 class="display-5 mb-4">
+    <h1>
         <i class="fas fa-{% if is_edit %}edit{% else %}plus{% endif %} me-2"></i>
         {% if is_edit %}Edit{% else %}Create New{% endif %} Itinerary
     </h1>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
 
     <form method="post" id="itinerary-form">
         {% csrf_token %}
@@ -195,8 +216,8 @@
                             </div>
                         </div>
 
-                        <!-- Hidden order field - will be updated automatically -->
-                        <input type="hidden" class="order-field" name="stops-{{ forloop.counter0 }}-order" value="{{ stop_form.order.value|default:forloop.counter }}">
+                        <!-- Hidden fields rendered by Django -->
+                        {{ stop_form.order }}
                         {{ stop_form.id }}
                         {{ stop_form.DELETE }}
                     </div>
@@ -207,7 +228,7 @@
                     <i class="fas fa-plus-circle me-2"></i>Add Location
                 </button>
 
-                <div class="text-muted small mt-3">
+                <div class="small mt-3">
                     <i class="fas fa-info-circle me-1"></i>
                     Drag and drop stops to reorder them. The order is automatically saved.
                 </div>
@@ -268,8 +289,8 @@
             </div>
         </div>
 
-        <input type="hidden" class="order-field" name="stops-__prefix__-order" value="1">
         <input type="hidden" name="stops-__prefix__-id" value="">
+        <input type="checkbox" name="stops-__prefix__-DELETE" style="display:none;">
     </div>
 </template>
 {% endblock %}

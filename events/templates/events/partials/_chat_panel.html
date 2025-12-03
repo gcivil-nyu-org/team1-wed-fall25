@@ -18,7 +18,7 @@
                     </div>
                     {% if msg.author != request.user %}
                     <button class="report-btn" data-message-id="{{ msg.id }}" title="Report this message">
-                        ⚠️
+                        Report ⚠️
                     </button>
                     {% endif %}
                 </div>
@@ -45,7 +45,7 @@
             maxlength="300" 
             rows="3"
             required></textarea>
-        <button type="submit" class="btn-send">Send</button>
+        <button type="submit" class="btn btn-primary">Send</button>
     </form>
 </div>
 
@@ -188,11 +188,12 @@ document.addEventListener('DOMContentLoaded', function() {
     height: 650px;
     position: relative;
     overflow: hidden;
+    width: 100%;
 }
 .chat-header {
     margin-bottom: 1.5rem;
     padding-bottom: 1rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--white);
 }
 .chat-header h2 {
     margin: 0 0 0.5rem 0;
@@ -211,7 +212,6 @@ document.addEventListener('DOMContentLoaded', function() {
     overflow-y: auto;
     margin-bottom: 1.5rem;
     padding: 1rem;
-    border-radius: 12px;
     border: 1px solid #ccc;
 }
 .chat-messages::-webkit-scrollbar {
@@ -229,9 +229,11 @@ document.addEventListener('DOMContentLoaded', function() {
     background: rgba(102, 126, 234, 0.5);
 }
 .chat-message {
+    width: 80%;
+    color: var(--page-background);
     margin-bottom: 0.875rem;
     padding: 0.875rem 1rem;
-    background: rgba(255, 255, 255);
+    background: var(--white);
     border-radius: 12px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     animation: messageSlideIn 0.4s ease-out backwards;
@@ -247,26 +249,27 @@ document.addEventListener('DOMContentLoaded', function() {
         transform: translateX(0);
     }
 }
-.chat-message:hover {
+/* .chat-message:hover {
     border-left-color: rgba(102, 126, 234, 0.5);
-}
+} */
 .chat-message.own-message {
-    background: rgba(102, 126, 234, 0.1);
-    border-left-color: rgba(102, 126, 234, 0.5);
+    background-color: var(--highlight-tint);
+    /* border-left-color: rgba(102, 126, 234, 0.5); */
+    justify-self: flex-end;
 }
 .message-author {
-    margin-bottom: 0.5rem;
+    /* margin-bottom: 0.5rem; */
     display: flex;
     align-items: center;
     gap: 0.5rem;
 }
 .message-author strong {
-    font-size: 0.875rem;
-    font-weight: 400;
+    font-size: 0.75rem;
+    font-weight: 600;
 }
 .host-badge {
     background: rgba(250, 112, 154, 0.15);
-    color: #ffb3c6;
+    /* color: #ffb3c6; */
     padding: 0.25rem 0.625rem;
     border-radius: 6px;
     font-size: 0.7rem;
@@ -292,12 +295,12 @@ document.addEventListener('DOMContentLoaded', function() {
     align-items: center;
     justify-content: center;
     height: 100%;
-    background-color: #ddd;
+    background-color: var(--page-background);
 }
 .no-messages-icon {
     font-size: 3rem;
     margin-bottom: 1rem;
-    color: #666;
+    color: var(--white);
     animation: float 4s ease-in-out infinite;
 }
 @keyframes float {
@@ -312,59 +315,34 @@ document.addEventListener('DOMContentLoaded', function() {
     margin: 0.25rem 0;
     font-size: 1rem;
     font-weight: 400;
-    /* color: rgba(255, 255, 255, 0.7); */
 }
 .no-messages .sub-text {
     font-size: 0.875rem;
-    /* color: rgba(255, 255, 255, 0.5); */
     font-weight: 300;
 }
 .chat-form {
     display: flex;
     gap: 0.75rem;
-    align-items: stretch;
+    align-items: end;
 }
 .chat-form textarea {
     flex: 1;
     padding: 0.875rem;
     border: 1px solid #ccc;
-    border-radius: 8px;
+    /* border-radius: 8px; */
     resize: none;
     font-size: 0.9rem;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     font-family: inherit;
-    background: #fff;
-    color: #000;
     font-weight: 300;
 }
 .chat-form textarea::placeholder {
-    color: rgba(255, 255, 255, 0.4);
+    color: rgba(255, 255, 255, 0.6);
 }
 .chat-form textarea:focus {
     outline: none;
     border-color: rgba(102, 126, 234, 0.5);
-    background: rgba(255, 255, 255, 0.08);
-}
-.btn-send {
-    padding: 0.875rem 1.75rem;
-    background: rgba(102, 126, 234, 0.15);
-    color: #8b9cff;
-    border: 1px solid rgba(102, 126, 234, 0.3);
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 400;
-    font-size: 0.9rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    white-space: nowrap;
-    letter-spacing: 0.3px;
-}
-.btn-send:hover {
-    background: rgba(102, 126, 234, 0.25);
-    border-color: rgba(102, 126, 234, 0.5);
-    transform: translateY(-2px);
-}
-.btn-send:active {
-    transform: translateY(0);
+    /* background: rgba(255, 255, 255, 0.08); */
 }
 
 /* Message Header with Report Button */
@@ -372,14 +350,14 @@ document.addEventListener('DOMContentLoaded', function() {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.25rem;
+    /* margin-bottom: 0.25rem; */
 }
 
 .report-btn {
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 0.75rem;
     padding: 0.25rem 0.5rem;
     opacity: 0;
     transition: opacity 0.2s;
@@ -593,7 +571,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const isHost = msg.is_host ? '<span class="host-badge">Host</span>' : '';
             const isOwnMessage = msg.author === '{{ request.user.username }}';
             const reportButton = !isOwnMessage ? 
-                `<button class="report-btn" data-message-id="${msg.id}" title="Report this message">⚠️</button>` : '';
+                `<button class="report-btn" data-message-id="${msg.id}" title="Report this message">Report ⚠️</button>` : '';
             
             messageDiv.innerHTML = `
                 <div class="message-header">

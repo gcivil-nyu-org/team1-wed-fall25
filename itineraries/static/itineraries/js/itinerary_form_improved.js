@@ -1,12 +1,20 @@
 /**
  * Improved Itinerary Form with Drag-and-Drop Functionality
+ * FIXED VERSION - Properly handles deletions and reordering
  */
 
 document.addEventListener('DOMContentLoaded', function() {
     const container = document.getElementById('stops-container');
     const addBtn = document.getElementById('add-stop-btn');
     const form = document.getElementById('itinerary-form');
-    const managementForm = document.querySelector('[name="stops-TOTAL_FORMS"]');
+    const managementForm = document.querySelector('input[name$="-TOTAL_FORMS"]');
+    
+    if (!container || !addBtn || !form || !managementForm) {
+        console.error('Required elements not found');
+        return;
+    }
+    
+    console.log('Itinerary form: Initializing...');
     
     // Initialize Sortable for drag-and-drop
     const sortable = new Sortable(container, {
@@ -14,15 +22,21 @@ document.addEventListener('DOMContentLoaded', function() {
         handle: '.drag-handle',
         ghostClass: 'sortable-ghost',
         onEnd: function() {
+            console.log('Drag ended, updating numbers');
             updateStopNumbers();
         }
     });
     
     /**
      * Update stop numbers and order fields after reordering
+     * FIXED: Properly handles visible vs hidden stops
      */
     function updateStopNumbers() {
-        const stops = container.querySelectorAll('.stop-item');
+        const stops = Array.from(container.querySelectorAll('.stop-item'))
+            .filter(stop => stop.style.display !== 'none');
+        
+        console.log(`Updating ${stops.length} visible stops`);
+        
         stops.forEach((stop, index) => {
             // Update visible stop number
             const stopNumSpan = stop.querySelector('.stop-num');
@@ -31,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Update hidden order field
-            const orderField = stop.querySelector('.order-field');
+            const orderField = stop.querySelector('.order-field, input[name$="-order"]');
             if (orderField) {
                 orderField.value = index + 1;
             }
@@ -44,6 +58,14 @@ document.addEventListener('DOMContentLoaded', function() {
     function addStop() {
         const totalForms = parseInt(managementForm.value);
         const template = document.getElementById('stop-form-template');
+        
+        if (!template) {
+            console.error('Template not found');
+            return;
+        }
+        
+        console.log(`Adding new stop, current total: ${totalForms}`);
+        
         const newStop = template.content.cloneNode(true);
         
         // Replace __prefix__ with the actual form index
@@ -58,6 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Update total forms count
         managementForm.value = totalForms + 1;
+        console.log(`New stop added, total forms now: ${totalForms + 1}`);
         
         // Update stop numbers
         updateStopNumbers();
@@ -73,35 +96,33 @@ document.addEventListener('DOMContentLoaded', function() {
     
     /**
      * Remove a stop form
+     * FIXED: Properly marks for deletion and renumbers remaining stops
      */
     function removeStop(stopElement) {
-        // Check if this is the last remaining stop
-        const stops = container.querySelectorAll('.stop-item');
-        if (stops.length <= 1) {
+        // Check if this is the last remaining visible stop
+        const visibleStops = Array.from(container.querySelectorAll('.stop-item'))
+            .filter(stop => stop.style.display !== 'none');
+        
+        if (visibleStops.length <= 1) {
             alert('You must have at least one stop in your itinerary.');
             return;
         }
         
-        // Check if this stop has an ID (i.e., it's saved in the database)
-        const idInput = stopElement.querySelector('[name$="-id"]');
-        if (idInput && idInput.value) {
-            // Mark for deletion instead of removing
-            const deleteInput = stopElement.querySelector('[name$="-DELETE"]');
-            if (deleteInput) {
-                deleteInput.checked = true;
-            }
-            // Hide the element
-            stopElement.style.display = 'none';
-        } else {
-            // Remove from DOM entirely
-            stopElement.remove();
-            
-            // Update total forms count
-            const totalForms = parseInt(managementForm.value);
-            managementForm.value = totalForms - 1;
-        }
+        console.log('Removing stop');
         
-        // Update stop numbers
+        // Check if this stop has an ID (i.e., it's saved in the database)
+        const idInput = stopElement.querySelector('input[name$="-id"]');
+        
+        // Always just mark for deletion and hide - don't remove from DOM
+        const deleteInput = stopElement.querySelector('input[name$="-DELETE"]');
+        if (deleteInput) {
+            deleteInput.checked = true;
+        }
+        stopElement.style.display = 'none';
+        
+        console.log('Stop marked for deletion and hidden');
+        
+        // Update stop numbers for remaining visible stops
         updateStopNumbers();
     }
     
@@ -110,6 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
      */
     function initializeRemoveButtons() {
         const removeBtns = container.querySelectorAll('.remove-stop-btn');
+        console.log(`Initializing ${removeBtns.length} remove buttons`);
         removeBtns.forEach(btn => {
             btn.addEventListener('click', function() {
                 const stopElement = this.closest('.stop-item');
@@ -120,10 +142,18 @@ document.addEventListener('DOMContentLoaded', function() {
     
     /**
      * Form validation before submit
+     * FIXED: Only validates visible stops
      */
     function validateForm(e) {
+        console.log('Validating form before submission');
+        
+        // Update order fields one final time
+        updateStopNumbers();
+        
         const visibleStops = Array.from(container.querySelectorAll('.stop-item'))
             .filter(stop => stop.style.display !== 'none');
+        
+        console.log(`Found ${visibleStops.length} visible stops`);
         
         if (visibleStops.length === 0) {
             e.preventDefault();
@@ -131,12 +161,19 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         }
         
-        // Check for duplicate locations
+        // Check for duplicate locations among visible stops
         const locationIds = [];
         let hasDuplicate = false;
         
         visibleStops.forEach(stop => {
-            const locationSelect = stop.querySelector('[name$="-location"]');
+            const locationSelect = stop.querySelector('select[name$="-location"]');
+            const deleteInput = stop.querySelector('input[name$="-DELETE"]');
+            
+            // Skip if marked for deletion
+            if (deleteInput && deleteInput.checked) {
+                return;
+            }
+            
             if (locationSelect && locationSelect.value) {
                 if (locationIds.includes(locationSelect.value)) {
                     hasDuplicate = true;
@@ -152,6 +189,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         }
         
+        console.log('Form validation passed');
         return true;
     }
     
@@ -167,4 +205,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (form) {
         form.addEventListener('submit', validateForm);
     }
+    
+    console.log('Itinerary form: Initialization complete');
+    console.log(`Initial TOTAL_FORMS: ${managementForm.value}`);
 });

@@ -1,5 +1,6 @@
 """
 Views for the itineraries app
+COMPLETE FIX - Gen-AI logic intact + cleaned_data check
 """
 
 from django.shortcuts import render, redirect, get_object_or_404
@@ -8,8 +9,9 @@ from django.contrib import messages
 from django.db import transaction
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from django.forms import formset_factory
 from .models import Itinerary, ItineraryStop
-from .forms import ItineraryForm, ItineraryStopFormSet
+from .forms import ItineraryForm, ItineraryStopForm, ItineraryStopFormSet
 from loc_detail.models import PublicArt
 
 
@@ -65,10 +67,50 @@ def itinerary_detail(request, pk):
 
 @login_required
 def itinerary_create(request):
-    """View for creating a new itinerary"""
+    """Create a new itinerary - Shows exact chatbot suggestions"""
+
+    # Check for chatbot-suggested locations in session FIRST
+    suggested_location_ids = request.session.get("chatbot_suggested_locations", [])
+    initial_stops = []
+    has_chatbot_suggestions = False
+
+    if suggested_location_ids:
+        num_locations = len(suggested_location_ids)
+        print(f"Found {num_locations} chatbot-suggested locations in session")
+
+        # Pre-populate with suggested locations
+        for i, location_id in enumerate(suggested_location_ids):
+            try:
+                location = PublicArt.objects.get(id=location_id)
+                initial_stops.append(
+                    {
+                        "location": location.id,
+                        "order": i + 1,
+                    }
+                )
+                print(f"  - Added location {i+1}: {location.title}")
+            except PublicArt.DoesNotExist:
+                print(f"  - Location ID {location_id} not found, skipping")
+                continue
+
+        has_chatbot_suggestions = True
+        print(f"Total initial_stops prepared: {len(initial_stops)}")
+
     if request.method == "POST":
         form = ItineraryForm(request.POST)
-        formset = ItineraryStopFormSet(request.POST)
+
+        # Use same formset type for POST as we used in GET
+        if has_chatbot_suggestions:
+            DynamicStopFormSet = formset_factory(
+                ItineraryStopForm,
+                extra=0,
+                can_delete=True,
+                min_num=1,
+                validate_min=False,
+            )
+            formset = DynamicStopFormSet(request.POST, prefix="stops")
+        else:
+            formset = ItineraryStopFormSet(request.POST)
 
         if form.is_valid() and formset.is_valid():
             try:
@@ -77,12 +119,51 @@ def itinerary_create(request):
                     itinerary.user = request.user
                     itinerary.save()
 
-                    formset.instance = itinerary
-                    formset.save()
+                    stops_data = []
+                    for form_instance in formset.forms:
+                        if (
+                            form_instance.cleaned_data
+                            and not form_instance.cleaned_data.get("DELETE", False)
+                        ):
+                            location = form_instance.cleaned_data.get("location")
+                            if location:
+                                stops_data.append(
+                                    {
+                                        "location": location,
+                                        "visit_time": (
+                                            form_instance.cleaned_data.get("visit_time")
+                                        ),
+                                        "notes": (
+                                            form_instance.cleaned_data.get("notes", "")
+                                        ),
+                                    }
+                                )
 
-                    messages.success(
-                        request, f'Itinerary "{itinerary.title}" created successfully!'
-                    )
+                    for i, stop_data in enumerate(stops_data):
+                        ItineraryStop.objects.create(
+                            itinerary=itinerary,
+                            location=stop_data["location"],
+                            order=i + 1,
+                            visit_time=stop_data["visit_time"],
+                            notes=stop_data["notes"],
+                        )
+
+                    # Clear session after successful save
+                    if "chatbot_suggested_locations" in request.session:
+                        del request.session["chatbot_suggested_locations"]
+                        request.session.modified = True
+
+                    if has_chatbot_suggestions:
+                        messages.success(
+                            request,
+                            f'Itinerary "{itinerary.title}" created '
+                            f"successfully with your chatbot suggestions!",
+                        )
+                    else:
+                        messages.success(
+                            request,
+                            f'Itinerary "{itinerary.title}" created ' f"successfully!",
+                        )
                     return redirect("itineraries:detail", pk=itinerary.pk)
             except Exception as e:
                 messages.error(request, f"Error creating itinerary: {str(e)}")
@@ -98,9 +179,31 @@ def itinerary_create(request):
                             messages.error(request, f"Stop {i+1} - {field}: {error}")
     else:
         form = ItineraryForm()
-        formset = ItineraryStopFormSet()
 
-    # Get all locations for the dropdown
+        if initial_stops:
+            print(f"Creating formset for {len(initial_stops)} " f"chatbot suggestions")
+
+            DynamicStopFormSet = formset_factory(
+                ItineraryStopForm,
+                extra=0,
+                can_delete=True,
+                min_num=1,
+                validate_min=False,
+            )
+
+            formset = DynamicStopFormSet(initial=initial_stops, prefix="stops")
+
+            print(f"  Formset created with {len(formset.forms)} forms")
+
+            messages.info(
+                request,
+                f"We've pre-filled {len(initial_stops)} locations "
+                f"from your chatbot conversation. "
+                f"You can edit, reorder, or add more locations below.",
+            )
+        else:
+            formset = ItineraryStopFormSet()
+
     locations = PublicArt.objects.filter(
         latitude__isnull=False, longitude__isnull=False
     ).order_by("title")
@@ -110,13 +213,14 @@ def itinerary_create(request):
         "formset": formset,
         "locations": locations,
         "is_edit": False,
+        "has_chatbot_suggestions": has_chatbot_suggestions,
     }
     return render(request, "itineraries/create_improved.html", context)
 
 
 @login_required
 def itinerary_edit(request, pk):
-    """View for editing an existing itinerary"""
+    """View for editing an existing itinerary - COMPLETE FIX"""
     itinerary = get_object_or_404(Itinerary, pk=pk, user=request.user)
 
     if request.method == "POST":
@@ -126,11 +230,54 @@ def itinerary_edit(request, pk):
         if form.is_valid() and formset.is_valid():
             try:
                 with transaction.atomic():
+                    # Save the itinerary form
                     form.save()
-                    formset.save()
+
+                    # Collect new stops data
+                    new_stops_data = []
+
+                    for form_instance in formset.forms:
+                        # CRITICAL FIX: Check if cleaned_data exists first
+                        if not hasattr(form_instance, "cleaned_data"):
+                            continue
+                        if not form_instance.cleaned_data:
+                            continue
+
+                        # Skip if marked for deletion
+                        if form_instance.cleaned_data.get("DELETE", False):
+                            continue
+
+                        # Only process if has location
+                        location = form_instance.cleaned_data.get("location")
+                        if location:
+                            new_stops_data.append(
+                                {
+                                    "location": location,
+                                    "visit_time": (
+                                        form_instance.cleaned_data.get("visit_time")
+                                    ),
+                                    "notes": (
+                                        form_instance.cleaned_data.get("notes", "")
+                                    ),
+                                }
+                            )
+
+                    # Delete ALL existing stops
+                    itinerary.stops.all().delete()
+
+                    # Recreate stops with new sequential ordering
+                    for i, stop_data in enumerate(new_stops_data):
+                        ItineraryStop.objects.create(
+                            itinerary=itinerary,
+                            location=stop_data["location"],
+                            order=i + 1,
+                            visit_time=stop_data["visit_time"],
+                            notes=stop_data["notes"],
+                        )
 
                     messages.success(
-                        request, f'Itinerary "{itinerary.title}" updated successfully!'
+                        request,
+                        f'Itinerary "{itinerary.title}" updated ' f"successfully!",
                     )
                     return redirect("itineraries:detail", pk=itinerary.pk)
             except Exception as e:
@@ -149,7 +296,6 @@ def itinerary_edit(request, pk):
         form = ItineraryForm(instance=itinerary)
         formset = ItineraryStopFormSet(instance=itinerary)
 
-    # Get all locations for the dropdown
     locations = PublicArt.objects.filter(
         latitude__isnull=False, longitude__isnull=False
     ).order_by("title")
@@ -233,20 +379,15 @@ def api_add_to_itinerary(request):
         itinerary_id = request.POST.get("itinerary_id")
         new_itinerary_title = request.POST.get("new_itinerary_title")
 
-        # Validate location
         location = get_object_or_404(PublicArt, id=location_id)
 
-        # Handle creating new itinerary or using existing one
         if new_itinerary_title:
-            # Create new itinerary
             itinerary = Itinerary.objects.create(
                 user=request.user, title=new_itinerary_title.strip()
             )
             order = 1
         elif itinerary_id:
-            # Use existing itinerary
             itinerary = get_object_or_404(Itinerary, id=itinerary_id, user=request.user)
-            # Get the next order number
             last_stop = itinerary.stops.order_by("-order").first()
             order = (last_stop.order + 1) if last_stop else 1
         else:
@@ -254,19 +395,17 @@ def api_add_to_itinerary(request):
                 {"success": False, "error": "No itinerary specified"}, status=400
             )
 
-        # Check if location already exists in this itinerary
         if ItineraryStop.objects.filter(
             itinerary=itinerary, location=location
         ).exists():
             return JsonResponse(
                 {
                     "success": False,
-                    "error": f"This location is already in {itinerary.title}",
+                    "error": (f"This location is already in {itinerary.title}"),
                 },
                 status=400,
             )
 
-        # Add the location to the itinerary
         ItineraryStop.objects.create(
             itinerary=itinerary, location=location, order=order
         )
@@ -292,17 +431,12 @@ def favorite_itinerary(request, pk):
 
     itinerary = get_object_or_404(Itinerary, pk=pk)
 
-    # Check if user has permission to favorite (can't favorite own itineraries)
-    # Actually, users can favorite their own itineraries for easy access
-
     try:
-        # Create favorite (idempotent)
         ItineraryFavorite.objects.get_or_create(itinerary=itinerary, user=request.user)
         messages.success(request, f'Added "{itinerary.title}" to favorites.')
     except Exception as e:
         messages.error(request, f"Failed to add to favorites: {str(e)}")
 
-    # Redirect back to the referring page or itinerary detail
     return redirect(request.META.get("HTTP_REFERER", itinerary.get_absolute_url()))
 
 
@@ -326,7 +460,6 @@ def unfavorite_itinerary(request, pk):
     except Exception as e:
         messages.error(request, f"Failed to remove from favorites: {str(e)}")
 
-    # Redirect back to the referring page or itinerary detail
     return redirect(request.META.get("HTTP_REFERER", itinerary.get_absolute_url()))
 
 
@@ -335,7 +468,6 @@ def favorites(request):
     """Display user's favorite itineraries"""
     from .models import ItineraryFavorite
 
-    # Get favorited itineraries
     favorites_qs = (
         ItineraryFavorite.objects.filter(user=request.user)
         .select_related("itinerary", "itinerary__user")
@@ -343,7 +475,6 @@ def favorites(request):
         .order_by("-created_at")
     )
 
-    # Extract itineraries with favorited_at timestamp
     favorites_list = []
     for fav in favorites_qs:
         fav.itinerary.favorited_at = fav.created_at

@@ -136,12 +136,11 @@ class ItineraryStopFormTests(TestCase):
         self.assertEqual(notes_widget.attrs.get("rows"), "2")
         self.assertEqual(notes_widget.attrs.get("class"), "form-control")
 
-    def test_form_order_min_value(self):
-        """Test that order field has minimum value"""
+    def test_form_order_widget_is_hidden(self):
+        """Test that order field uses hidden input widget"""
         form = ItineraryStopForm()
         order_widget = form.fields["order"].widget
-        # Min value is 0 or 1 depending on form configuration
-        self.assertIsNotNone(order_widget.attrs.get("min"))
+        self.assertEqual(order_widget.__class__.__name__, "HiddenInput")
 
     def test_form_visit_time_not_required(self):
         """Test that visit_time is not required"""

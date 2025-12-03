@@ -26,6 +26,11 @@ urlpatterns = [
     path("events/", include(("events.urls", "events"), namespace="events")),
     path("itineraries/", include("itineraries.urls")),
     path("favorites/", include("favorites.urls")),
+    path(
+        "messages/",
+        include(("messages.urls", "user_messages"), namespace="user_messages"),
+    ),
     path("admin/", admin.site.urls),
     path("profile/", include("user_profile.urls")),
+    path("chatbot/", include("chatbot.urls")),
 ]
