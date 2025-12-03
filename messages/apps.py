@@ -12,4 +12,3 @@ class MessagesConfig(AppConfig):
     def ready(self):
         # Import signals when app is ready
         pass
-

@@ -24,4 +24,3 @@ class MessageForm(forms.ModelForm):
         if not content:
             raise forms.ValidationError("Message cannot be empty.")
         return content
-

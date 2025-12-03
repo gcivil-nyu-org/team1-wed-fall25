@@ -146,4 +146,3 @@ class ConversationHidden(models.Model):
 
     def __str__(self):
         return f"{self.user.username} hid conversation {self.conversation.id}"
-

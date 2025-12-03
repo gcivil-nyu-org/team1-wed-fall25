@@ -16,69 +16,142 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Conversation',
+            name="Conversation",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('user1', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='conversations_started', to=settings.AUTH_USER_MODEL)),
-                ('user2', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='conversations_received', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "user1",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="conversations_started",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "user2",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="conversations_received",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'db_table': 'messaging_conversation',
-                'ordering': ['-updated_at'],
+                "db_table": "messaging_conversation",
+                "ordering": ["-updated_at"],
             },
         ),
         migrations.CreateModel(
-            name='PrivateMessage',
+            name="PrivateMessage",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('content', models.TextField(max_length=2000)),
-                ('is_read', models.BooleanField(db_index=True, default=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True, db_index=True)),
-                ('conversation', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='private_messages', to='user_messages.conversation')),
-                ('sender', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='sent_private_messages', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("content", models.TextField(max_length=2000)),
+                ("is_read", models.BooleanField(db_index=True, default=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
+                (
+                    "conversation",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="private_messages",
+                        to="user_messages.conversation",
+                    ),
+                ),
+                (
+                    "sender",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="sent_private_messages",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'db_table': 'messaging_privatemessage',
-                'ordering': ['created_at'],
+                "db_table": "messaging_privatemessage",
+                "ordering": ["created_at"],
             },
         ),
         migrations.CreateModel(
-            name='UserOnlineStatus',
+            name="UserOnlineStatus",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('is_online', models.BooleanField(default=False)),
-                ('last_seen', models.DateTimeField(default=django.utils.timezone.now)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='online_status', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("is_online", models.BooleanField(default=False)),
+                ("last_seen", models.DateTimeField(default=django.utils.timezone.now)),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="online_status",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'db_table': 'messaging_useronlinestatus',
-                'verbose_name_plural': 'User online statuses',
+                "db_table": "messaging_useronlinestatus",
+                "verbose_name_plural": "User online statuses",
             },
         ),
         migrations.AddIndex(
-            model_name='conversation',
-            index=models.Index(fields=['user1', '-updated_at'], name='messaging_c_user1_i_d0a6ec_idx'),
+            model_name="conversation",
+            index=models.Index(
+                fields=["user1", "-updated_at"], name="messaging_c_user1_i_d0a6ec_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='conversation',
-            index=models.Index(fields=['user2', '-updated_at'], name='messaging_c_user2_i_f7de4e_idx'),
+            model_name="conversation",
+            index=models.Index(
+                fields=["user2", "-updated_at"], name="messaging_c_user2_i_f7de4e_idx"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='conversation',
-            constraint=models.UniqueConstraint(fields=('user1', 'user2'), name='uniq_conversation_users'),
+            model_name="conversation",
+            constraint=models.UniqueConstraint(
+                fields=("user1", "user2"), name="uniq_conversation_users"
+            ),
         ),
         migrations.AddIndex(
-            model_name='privatemessage',
-            index=models.Index(fields=['conversation', '-created_at'], name='messaging_p_convers_936bb5_idx'),
+            model_name="privatemessage",
+            index=models.Index(
+                fields=["conversation", "-created_at"],
+                name="messaging_p_convers_936bb5_idx",
+            ),
         ),
         migrations.AddIndex(
-            model_name='privatemessage',
-            index=models.Index(fields=['sender', '-created_at'], name='messaging_p_sender__815ccd_idx'),
+            model_name="privatemessage",
+            index=models.Index(
+                fields=["sender", "-created_at"], name="messaging_p_sender__815ccd_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='privatemessage',
-            index=models.Index(fields=['is_read', 'conversation'], name='messaging_p_is_read_eb955c_idx'),
+            model_name="privatemessage",
+            index=models.Index(
+                fields=["is_read", "conversation"],
+                name="messaging_p_is_read_eb955c_idx",
+            ),
         ),
     ]

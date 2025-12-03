@@ -8,7 +8,6 @@ urlpatterns = [
     path("", views.inbox, name="inbox"),
     path("users/", views.user_list, name="user_list"),
     path("conversation/<int:user_id>/", views.conversation_detail, name="conversation"),
-
     # API endpoints
     path("api/send/<int:user_id>/", views.send_message, name="send_message"),
     path("api/messages/<int:user_id>/", views.get_messages, name="get_messages"),
@@ -20,4 +19,3 @@ urlpatterns = [
         name="delete_conversation",
     ),
 ]
-

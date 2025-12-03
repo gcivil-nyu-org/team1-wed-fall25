@@ -20,7 +20,14 @@ class ConversationAdmin(admin.ModelAdmin):
 
 @admin.register(PrivateMessage)
 class PrivateMessageAdmin(admin.ModelAdmin):
-    list_display = ["id", "conversation", "sender", "short_content", "is_read", "created_at"]
+    list_display = [
+        "id",
+        "conversation",
+        "sender",
+        "short_content",
+        "is_read",
+        "created_at",
+    ]
     list_filter = ["is_read", "created_at"]
     search_fields = ["sender__username", "content"]
     raw_id_fields = ["conversation", "sender"]
@@ -30,4 +37,3 @@ class PrivateMessageAdmin(admin.ModelAdmin):
         return obj.content[:50] + "..." if len(obj.content) > 50 else obj.content
 
     short_content.short_description = "Content"
-

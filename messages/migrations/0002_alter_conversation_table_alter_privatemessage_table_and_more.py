@@ -8,23 +8,54 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('user_messages', '0001_initial'),
+        ("user_messages", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ConversationHidden',
+            name="ConversationHidden",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('hidden_at', models.DateTimeField(auto_now_add=True)),
-                ('conversation', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='hidden_by', to='user_messages.conversation')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='hidden_conversations', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("hidden_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "conversation",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="hidden_by",
+                        to="user_messages.conversation",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="hidden_conversations",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'db_table': 'messaging_conversationhidden',
-                'indexes': [models.Index(fields=['user', '-hidden_at'], name='messaging_c_user_id_3221e5_idx')],
-                'constraints': [models.UniqueConstraint(fields=('conversation', 'user'), name='uniq_conversation_hidden')],
+                "db_table": "messaging_conversationhidden",
+                "indexes": [
+                    models.Index(
+                        fields=["user", "-hidden_at"],
+                        name="messaging_c_user_id_3221e5_idx",
+                    )
+                ],
+                "constraints": [
+                    models.UniqueConstraint(
+                        fields=("conversation", "user"), name="uniq_conversation_hidden"
+                    )
+                ],
             },
         ),
     ]

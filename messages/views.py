@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import JsonResponse
-from django.db.models import Q, Max, Count, Exists, OuterRef
+from django.db.models import Q, Max, Exists, OuterRef
 from django.views.decorators.http import require_http_methods, require_POST
 from django.utils import timezone
 from django.core.paginator import Paginator
@@ -23,11 +23,14 @@ def inbox(request):
     }
 
     # Get all conversations where user is participant
-    conversations = Conversation.objects.filter(
-        Q(user1=user) | Q(user2=user)
-    ).select_related("user1", "user2").annotate(
-        last_message_time=Max("private_messages__created_at"),
-    ).order_by("-last_message_time")
+    conversations = (
+        Conversation.objects.filter(Q(user1=user) | Q(user2=user))
+        .select_related("user1", "user2")
+        .annotate(
+            last_message_time=Max("private_messages__created_at"),
+        )
+        .order_by("-last_message_time")
+    )
 
     # Prepare conversation data with other user info
     conversation_list = []
@@ -36,7 +39,9 @@ def inbox(request):
         if conv.id in hidden_info:
             hidden_at = hidden_info[conv.id]
             # Check if there are new messages after hidden_at
-            has_new_messages = conv.private_messages.filter(created_at__gt=hidden_at).exists()
+            has_new_messages = conv.private_messages.filter(
+                created_at__gt=hidden_at
+            ).exists()
             if not has_new_messages:
                 # No new messages since hiding, skip this conversation
                 continue
@@ -46,20 +51,27 @@ def inbox(request):
         # Get last message (considering hidden_at for display)
         if conv.id in hidden_info:
             # Only show last message if it's after hidden_at
-            last_message = conv.private_messages.filter(
-                created_at__gt=hidden_info[conv.id]
-            ).order_by("-created_at").first()
+            last_message = (
+                conv.private_messages.filter(created_at__gt=hidden_info[conv.id])
+                .order_by("-created_at")
+                .first()
+            )
         else:
             last_message = conv.get_last_message()
 
         # Calculate unread count (considering hidden_at)
         if conv.id in hidden_info:
-            unread_count = conv.private_messages.filter(
-                is_read=False,
-                created_at__gt=hidden_info[conv.id]
-            ).exclude(sender=user).count()
+            unread_count = (
+                conv.private_messages.filter(
+                    is_read=False, created_at__gt=hidden_info[conv.id]
+                )
+                .exclude(sender=user)
+                .count()
+            )
         else:
-            unread_count = conv.private_messages.filter(is_read=False).exclude(sender=user).count()
+            unread_count = (
+                conv.private_messages.filter(is_read=False).exclude(sender=user).count()
+            )
 
         # Get online status
         try:
@@ -67,13 +79,15 @@ def inbox(request):
         except UserOnlineStatus.DoesNotExist:
             online_status = False
 
-        conversation_list.append({
-            "conversation": conv,
-            "other_user": other_user,
-            "last_message": last_message,
-            "unread_count": unread_count,
-            "is_online": online_status,
-        })
+        conversation_list.append(
+            {
+                "conversation": conv,
+                "other_user": other_user,
+                "last_message": last_message,
+                "unread_count": unread_count,
+                "is_online": online_status,
+            }
+        )
 
     context = {
         "conversations": conversation_list,
@@ -112,7 +126,8 @@ def conversation_detail(request, user_id):
         conversation=conversation, user=user
     ).first()
 
-    # Mark all messages from other user as read (only those after hidden_at if applicable)
+    # Mark all messages from other user as read
+    # (only those after hidden_at if applicable)
     messages_to_mark = PrivateMessage.objects.filter(
         conversation=conversation, sender=other_user, is_read=False
     )
@@ -145,21 +160,24 @@ def conversation_detail(request, user_id):
             conversation.updated_at = timezone.now()
             conversation.save(update_fields=["updated_at"])
 
-            # Note: We don't delete sender's hidden record to preserve the hidden_at filter
+            # Note: We don't delete sender's hidden record
+            # to preserve the hidden_at filter
             # This ensures only messages after hidden_at are shown
 
             # Return JSON for AJAX requests
             if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-                return JsonResponse({
-                    "status": "success",
-                    "message": {
-                        "id": message.id,
-                        "content": message.content,
-                        "sender": user.username,
-                        "created_at": message.created_at.strftime("%I:%M %p"),
-                        "is_mine": True,
+                return JsonResponse(
+                    {
+                        "status": "success",
+                        "message": {
+                            "id": message.id,
+                            "content": message.content,
+                            "sender": user.username,
+                            "created_at": message.created_at.strftime("%I:%M %p"),
+                            "is_mine": True,
+                        },
                     }
-                })
+                )
 
             return redirect("user_messages:conversation", user_id=user_id)
     else:
@@ -182,21 +200,27 @@ def user_list(request):
     user = request.user
 
     # Get all users except current user
-    users = User.objects.exclude(id=user.id).select_related("profile").annotate(
-        has_conversation=Exists(
-            Conversation.objects.filter(
-                Q(user1=user, user2=OuterRef("pk")) | Q(user2=user, user1=OuterRef("pk"))
+    users = (
+        User.objects.exclude(id=user.id)
+        .select_related("profile")
+        .annotate(
+            has_conversation=Exists(
+                Conversation.objects.filter(
+                    Q(user1=user, user2=OuterRef("pk"))
+                    | Q(user2=user, user1=OuterRef("pk"))
+                )
             )
         )
-    ).order_by("username")
+        .order_by("username")
+    )
 
     # Search functionality
     search_query = request.GET.get("q", "").strip()
     if search_query:
         users = users.filter(
-            Q(username__icontains=search_query) |
-            Q(first_name__icontains=search_query) |
-            Q(last_name__icontains=search_query)
+            Q(username__icontains=search_query)
+            | Q(first_name__icontains=search_query)
+            | Q(last_name__icontains=search_query)
         )
 
     # Pagination
@@ -212,11 +236,13 @@ def user_list(request):
         except UserOnlineStatus.DoesNotExist:
             is_online = False
 
-        user_list_data.append({
-            "user": u,
-            "is_online": is_online,
-            "has_conversation": u.has_conversation,
-        })
+        user_list_data.append(
+            {
+                "user": u,
+                "is_online": is_online,
+                "has_conversation": u.has_conversation,
+            }
+        )
 
     context = {
         "users": user_list_data,
@@ -235,11 +261,15 @@ def send_message(request, user_id):
     other_user = get_object_or_404(User, id=user_id)
 
     if user == other_user:
-        return JsonResponse({"status": "error", "message": "Cannot message yourself"}, status=400)
+        return JsonResponse(
+            {"status": "error", "message": "Cannot message yourself"}, status=400
+        )
 
     content = request.POST.get("content", "").strip()
     if not content:
-        return JsonResponse({"status": "error", "message": "Message cannot be empty"}, status=400)
+        return JsonResponse(
+            {"status": "error", "message": "Message cannot be empty"}, status=400
+        )
 
     # Get or create conversation
     conversation, _ = Conversation.get_or_create_conversation(user, other_user)
@@ -259,16 +289,18 @@ def send_message(request, user_id):
     # - Sender's hidden_at ensures they only see messages after that time
     # - Recipient's hidden_at ensures they only see messages after that time
 
-    return JsonResponse({
-        "status": "success",
-        "message": {
-            "id": message.id,
-            "content": message.content,
-            "sender": user.username,
-            "created_at": message.created_at.strftime("%I:%M %p"),
-            "is_mine": True,
+    return JsonResponse(
+        {
+            "status": "success",
+            "message": {
+                "id": message.id,
+                "content": message.content,
+                "sender": user.username,
+                "created_at": message.created_at.strftime("%I:%M %p"),
+                "is_mine": True,
+            },
         }
-    })
+    )
 
 
 @login_required
@@ -298,9 +330,9 @@ def get_messages(request, user_id):
     ).first()
 
     # Get new messages
-    new_messages = conversation.private_messages.filter(
-        id__gt=last_id
-    ).select_related("sender")
+    new_messages = conversation.private_messages.filter(id__gt=last_id).select_related(
+        "sender"
+    )
 
     # Filter by hidden_at if applicable
     if user_hidden:
@@ -313,13 +345,15 @@ def get_messages(request, user_id):
 
     messages_data = []
     for msg in new_messages:
-        messages_data.append({
-            "id": msg.id,
-            "content": msg.content,
-            "sender": msg.sender.username,
-            "created_at": msg.created_at.strftime("%I:%M %p"),
-            "is_mine": msg.sender == user,
-        })
+        messages_data.append(
+            {
+                "id": msg.id,
+                "content": msg.content,
+                "sender": msg.sender.username,
+                "created_at": msg.created_at.strftime("%I:%M %p"),
+                "is_mine": msg.sender == user,
+            }
+        )
 
     return JsonResponse({"status": "success", "messages": messages_data})
 
@@ -390,4 +424,3 @@ def delete_conversation(request, conversation_id):
         return JsonResponse({"status": "success"})
 
     return redirect("user_messages:inbox")
-
