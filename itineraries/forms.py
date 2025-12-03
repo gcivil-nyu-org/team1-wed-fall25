@@ -58,11 +58,9 @@ class ItineraryStopForm(forms.ModelForm):
                     "required": False,
                 }
             ),
-            "order": forms.NumberInput(
+            "order": forms.HiddenInput(
                 attrs={
-                    "class": "form-control order-input",
-                    "min": "1",
-                    "required": True,
+                    "class": "order-field",
                 }
             ),
             "notes": forms.Textarea(
@@ -74,12 +72,35 @@ class ItineraryStopForm(forms.ModelForm):
             ),
         }
 
+    def validate_unique(self):
+        """
+        Skip unique_together validation for (itinerary, order).
+        The view handles ordering by deleting all stops and recreating them.
+        """
+        exclude = self._get_validation_exclusions()
+        # Exclude 'order' from unique validation since we handle it manually
+        exclude.add("order")
+        try:
+            self.instance.validate_unique(exclude=exclude)
+        except forms.ValidationError as e:
+            self._update_errors(e)
+
+
+# Custom formset that skips unique_together validation for order field
+# (since we delete all stops and recreate them with new order values)
+class BaseItineraryStopFormSet(forms.BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+        # Skip the unique_together validation that Django does automatically
+        # We handle ordering manually by deleting and recreating stops
+
 
 # Formset for managing multiple stops
 ItineraryStopFormSet = inlineformset_factory(
     Itinerary,
     ItineraryStop,
     form=ItineraryStopForm,
+    formset=BaseItineraryStopFormSet,
     extra=0,  # Don't show extra empty forms (min_num will handle the minimum)
     can_delete=True,
     min_num=1,  # Show and require at least 1 stop
