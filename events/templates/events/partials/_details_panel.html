@@ -68,7 +68,10 @@
             {% for membership in attendees %}
             <li class="attendee-item">
                 <div class="attendee-info">
-                    <strong>{{ membership.user.username }}</strong>
+                    <a class="attendee-profile-link" href="{% url 'user_profile:profile_view' membership.user.username %}">
+                        <div class="review-avatar">{{ membership.user.username|first|upper }}</div>
+                        <div class="review-author">{{ membership.user.username }}</div>
+                    </a>
                     {% if membership.role == 'HOST' %}
                     <span class="role-badge host">Host</span>
                     {% endif %}
@@ -77,9 +80,9 @@
                     {% endif %}
                 </div>
                 {% if membership.user != request.user %}
-                <button class="btn btn-outline-primary btn-message" data-event="{{ event.slug }}" data-user="{{ membership.user.id }}" data-username="{{ membership.user.username }}">
+                <a href="{% url 'user_messages:conversation' membership.user.id %}?from_event=true" class="btn btn-outline-primary btn-message">
                     💬 Message
-                </button>
+                </a>
                 {% endif %}
             </li>
             {% endfor %}
@@ -111,6 +114,9 @@
 </div>
 
 <style>
+.btn.btn-message{
+    flex-grow: 0;
+}
 .details-panel {
     background: transparent;
     padding: 0;
@@ -121,7 +127,7 @@
 .panel-header h2 {
     margin: 0 0 1.5rem 0;
     padding-bottom: 1rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--white);
     font-size: 1.5rem;
     font-weight: 400;
     letter-spacing: 0.5px;
@@ -129,7 +135,7 @@
 .detail-section {
     margin-bottom: 1.75rem;
     padding-bottom: 1.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid var(--white);
 }
 .detail-section:last-child {
     border-bottom: none;
@@ -187,23 +193,48 @@
 .attendee-item {
     padding: 0.875rem 1rem;
     margin-bottom: 0.625rem;
-    border-radius: 8px;
-    border-left: 2px solid rgba(102, 126, 234, 0.3);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border: 1px solid #fff;
 }
-.attendee-item:hover {
-    border-left-color: rgba(102, 126, 234, 0.6);
+.attendee-profile-link {
+    display: flex;
+    text-decoration: none;
+    color: var(--white);
+    gap: 0.5rem;
+    align-items: center;
 }
 .attendee-info {
-    flex: 1;
+    display: flex;
+    align-items: center;
 }
 .attendee-item strong {
     font-weight: 400;
     font-size: 0.9rem;
+}
+.attendee-link {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.2s;
+}
+.attendee-link:hover {
+    color: #8b9cff;
+}
+.attendee-link:hover strong {
+    text-decoration: underline;
+}
+.review-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #4285f4;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 16px;
+    flex-shrink: 0;
 }
 .role-badge {
     font-size: 0.75rem;

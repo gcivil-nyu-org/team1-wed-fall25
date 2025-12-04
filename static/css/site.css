@@ -4,9 +4,11 @@
     box-sizing: border-box;
     --page-background: #000;
     --nav-background: #000;
+    --dark-gray-background: #2e2e2e;
     --text-color: #fff;
     --white: #fff;
     --highlight: #667eea;
+    --highlight-tint: #a9b1d5;
     --highlight-transparent: #667eea40;
     --danger: #bd2130;
 }
@@ -275,6 +277,19 @@ nav {
     min-width: 140px;
 }
 
+div.form-group.profile input,
+div.form-group.profile select,
+div.form-group.profile textarea {
+    background-color: var(--white);
+    border: 1px solid var(--page-background);
+    color: var(--page-background);
+    border-radius: 0;
+}
+
+div.form-group.profile {
+    margin-bottom: 1.5rem;
+}
+
 /* ========================================
    PROFILE ACTIONS
    ======================================== */
@@ -320,27 +335,6 @@ nav {
     }
 }
 
-.profile-info .btn {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-    padding: 12px 28px;
-    font-size: 1rem;
-    font-weight: 600;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
-    transition: all 0.3s ease;
-}
-
-.profile-info .btn:hover {
-    box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
-    transform: translateY(-2px);
-}
-
-.profile-info .btn i {
-    margin-right: 8px;
-}
-
 main {
     max-width: 1200px;
     margin: 2rem auto;
@@ -372,17 +366,27 @@ main {
     margin: 0 auto;
     background: white;
     padding: 2rem;
-    border-radius: 8px;
+    /* border-radius: 8px; */
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .form-container h1 {
     margin-bottom: 1.5rem;
-    color: #2c3e50;
+    color: var(--page-background);
+}
+
+.form-group {
+    flex: 1;
+    min-width: 200px;
 }
 
 .form-group-accounts {
     margin-bottom: 1.5rem;
+}
+
+div.form-group.form-group-accounts input {
+    background-color: var(--white);
+    border: 1px solid var(--page-background);
 }
 
 .form-group label {
@@ -395,14 +399,22 @@ main {
 .form-group input {
     width: 100%;
     padding: 0.75rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
     font-size: 1rem;
+    background: var(--dark-gray-background);
+    color: #fff;
+    border: none;
+    border-bottom: 1px solid #fff;
+    border-radius: 0;
 }
 
 .form-group input:focus {
-    outline: none;
-    border-color: #3498db;
+    background: var(--dark-gray-background);
+    color: #fff;
+}
+
+.form-group ::placeholder {
+    color: var(--text-color);
+    opacity: 0.7;
 }
 
 .form-group small {
@@ -410,6 +422,37 @@ main {
     margin-top: 0.25rem;
     color: #666;
     font-size: 0.875rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    /* border-radius: 8px; */
+    font-size: 0.95rem;
+}
+
+select.form-control {
+    background: var(--dark-gray-background);
+    color: #fff;
+    border: none;
+    border-bottom: 1px solid #fff;
+    border-radius: 0;
+}
+
+select.form-control:focus {
+    background: var(--dark-gray-background);
+    color: #fff;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.account {
+    background-color: var(--white);
 }
 
 .error {
@@ -461,12 +504,21 @@ main {
 }
 
 .filters-section {
-    /* background: white; */
-    padding: 1.5rem;
-    /* border-radius: 8px; */
-    /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); */
     margin-bottom: 2rem;
-    border: 1px solid #fff;
+}
+
+.filters-section select.filter-select {
+    background: var(--dark-gray-background);
+    color: #fff;
+    border: none;
+    border-bottom: 1px solid #fff;
+    border-radius: 0;
+    padding: 0 0.5rem;
+}
+
+.filters-section select.filter-select:focus {
+    background: var(--dark-gray-background);
+    color: #fff;
 }
 
 .filters-form {
@@ -504,36 +556,19 @@ main {
     background: #7f8c8d;
 }
 
-/* .art-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.art-card {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s, box-shadow 0.2s;
-    overflow: hidden;
-    text-decoration: none;
-    color: inherit;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-}
-
-.art-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-} */
-
 .art-card-header {
     padding: 1.5rem;
-    /* background: #f8f9fa; */
-    /* border-bottom: 1px solid #e9ecef; */
     align-self: stretch;
+}
+
+.art-card-header h5 a {
+    color: var(--white);
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.art-card-header h5 a:hover {
+    text-decoration: underline;
 }
 
 .art-header {
@@ -544,7 +579,6 @@ main {
 
 .art-title {
     font-size: 1.25rem;
-    /* color: #2c3e50; */
     margin-bottom: 0.5rem;
 }
 
@@ -565,7 +599,6 @@ main {
 .art-card-body p {
     margin-bottom: 0.75rem;
     font-size: 0.9rem;
-    /* color: #555; */
 }
 
 .art-card-body p:last-child {
@@ -577,6 +610,8 @@ main {
     align-self: stretch;
     display: flex;
     gap: 8px;
+    justify-content: space-between;
+    align-items: end;
 }
 
 .art-rating-stars {
@@ -594,7 +629,6 @@ main {
 }
 
 .view-details {
-    /* color: #3498db; */
     font-weight: 500;
     font-size: 0.9rem;
 }
@@ -705,9 +739,9 @@ main {
 }
 
 .detail-main {
-    background: white;
+    background: var(--page-background);
+    color: var(--text-color);
     padding: 2rem;
-    border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -722,7 +756,6 @@ main {
 
 .detail-title {
     font-size: 2rem;
-    color: #2c3e50;
     flex: 1;
 }
 
@@ -740,21 +773,18 @@ main {
 }
 
 .detail-section h2 {
-    color: #2c3e50;
     font-size: 1.5rem;
     margin-bottom: 1rem;
     padding-bottom: 0.5rem;
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid var(--white);
 }
 
 .detail-artist {
     font-size: 1.25rem;
-    color: #555;
     font-weight: 500;
 }
 
 .detail-description {
-    color: #555;
     line-height: 1.8;
 }
 
@@ -768,24 +798,22 @@ main {
     display: flex;
     flex-direction: column;
     padding: 1rem;
-    background: #f8f9fa;
-    border-radius: 4px;
+    background: var(--page-background);
+    border: 1px solid var(--white);
+    color: var(--white);
 }
 
 .info-label {
     font-size: 0.875rem;
-    color: #666;
     font-weight: 500;
     margin-bottom: 0.25rem;
 }
 
 .info-value {
-    color: #2c3e50;
     font-size: 1rem;
 }
 
 .detail-location {
-    color: #555;
     font-size: 1.1rem;
     margin-bottom: 1rem;
 }
@@ -793,24 +821,25 @@ main {
 .coordinates {
     margin-top: 1rem;
     padding: 1rem;
-    background: #f8f9fa;
-    border-radius: 4px;
+    background: var(--page-background);
+    border: 1px solid var(--white);
+    color: var(--white);
+    transition: 0.2s;
+}
+
+.coordinates:hover {
+    border-color: var(--highlight);
 }
 
 .coordinates small {
     display: block;
-    color: #666;
     margin-bottom: 0.5rem;
 }
 
 .map-link {
-    color: #3498db;
-    text-decoration: none;
-    font-weight: 500;
-}
-
-.map-link:hover {
+    color: var(--white);
     text-decoration: underline;
+    font-weight: 500;
 }
 
 .detail-sidebar {
@@ -820,14 +849,11 @@ main {
 }
 
 .sidebar-section {
-    background: white;
     padding: 1.5rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--white);
 }
 
 .sidebar-section h3 {
-    color: #2c3e50;
     font-size: 1.25rem;
     margin-bottom: 1rem;
     padding-bottom: 0.75rem;
@@ -853,12 +879,10 @@ main {
 
 .quick-label {
     font-size: 0.875rem;
-    color: #666;
 }
 
 .quick-value {
     font-weight: 500;
-    color: #2c3e50;
 }
 
 .related-art-list {
@@ -869,32 +893,30 @@ main {
 
 .related-art-item {
     padding: 1rem;
-    background: #f8f9fa;
-    border-radius: 4px;
     text-decoration: none;
     color: inherit;
-    transition: background 0.2s;
+    border: 1px solid var(--white);
+    transition: 0.2s;
 }
 
 .related-art-item:hover {
-    background: #e9ecef;
+    border-color: var(--highlight);
 }
 
 .related-art-title {
     font-weight: 500;
-    color: #2c3e50;
     margin-bottom: 0.25rem;
 }
 
 .related-art-artist {
     font-size: 0.875rem;
-    color: #666;
     margin-bottom: 0.25rem;
 }
 
 .related-art-location {
     font-size: 0.875rem;
-    color: #3498db;
+    color: var(--white);
+    text-decoration: underline;
 }
 
 /* Responsive Design */
@@ -1151,7 +1173,7 @@ main {
 
 .profile-username {
     font-size: 2rem;
-    color: #2c3e50;
+    /* color: #2c3e50; */
     margin: 0 0 0.5rem 0;
     font-weight: 600;
 }
@@ -1213,7 +1235,7 @@ main {
 .stat-card {
     background: white;
     padding: 1.5rem;
-    border-radius: 8px;
+    /* border-radius: 8px; */
     text-align: center;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s;
@@ -1261,7 +1283,7 @@ main {
 
 .section-title {
     font-size: 1.5rem;
-    color: #2c3e50;
+    /* color: #2c3e50; */
     margin-bottom: 1rem;
     font-weight: 600;
     border-bottom: 2px solid #e9ecef;
@@ -1274,7 +1296,7 @@ main {
     line-height: 1.8;
     padding: 1rem;
     background: #f8f9fa;
-    border-radius: 8px;
+    /* border-radius: 8px; */
     border-left: 4px solid #3498db;
 }
 
@@ -1299,7 +1321,7 @@ main {
 .event-card {
     background: white;
     border: 1px solid #e9ecef;
-    border-radius: 8px;
+    /* border-radius: 8px; */
     padding: 1.5rem;
     transition: all 0.2s;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -1351,7 +1373,7 @@ main {
 
 .edit-card {
     background: white;
-    border-radius: 8px;
+    /* border-radius: 8px; */
     padding: 2rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }

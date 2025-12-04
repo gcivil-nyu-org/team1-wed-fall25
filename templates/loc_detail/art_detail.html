@@ -186,7 +186,7 @@
                         
                         <div class="image-upload-container">
                             <div style="margin-bottom: 15px;">
-                                <p style="font-size: 14px; color: #5f6368; margin-bottom: 10px;">
+                                <p style="font-size: 14px; margin-bottom: 10px;">
                                     Add photos to your review (Max 5 images)
                                 </p>
                                 
@@ -208,7 +208,7 @@
                             </div>
                             
                             <div id="drop-area" class="drop-area">
-                                <p style="margin: 0; color: #5f6368; font-size: 14px;">Or drag and drop images here</p>
+                                <p style="margin: 0; font-size: 14px;">Or drag and drop images here</p>
                             </div>
                             
                             <div class="image-previews" id="image-previews"></div>
@@ -226,7 +226,10 @@
                         {% for comment in comments %}
                             <div class="review-item" data-comment-id="{{ comment.id }}">
                                 <div class="review-header">
-                                    <div class="review-avatar">{{ comment.user.username|first|upper }}</div>
+                                    <a href="{% url 'user_profile:profile_view' comment.user.username %}">
+                                        <div class="review-avatar">{{ comment.user.username|first|upper }}</div>
+                                    </a>
+
                                     <div class="review-author-info">
                                         <div class="review-author">{{ comment.user.username }}</div>
                                         <div class="review-meta">
@@ -314,7 +317,7 @@
                                                 
                                             <div class="image-upload-container">
                                                 <div style="margin-bottom: 15px;">
-                                                    <p style="font-size: 14px; color: #5f6368; margin-bottom: 10px;">
+                                                    <p style="font-size: 14px; margin-bottom: 10px;">
                                                         Add more photos (Max 5 total)
                                                     </p>
                                                     
@@ -337,7 +340,7 @@
                                                 </div>
                                                 
                                                 <div id="edit-drop-area" class="drop-area">
-                                                    <p style="margin: 0; color: #5f6368; font-size: 14px;">Or drag and drop images here</p>
+                                                    <p style="margin: 0; font-size: 14px;">Or drag and drop images here</p>
                                                 </div>
                                                 
                                                 <div class="image-previews" id="edit-image-previews"></div>
@@ -382,8 +385,8 @@
                                             class="reply-textarea"
                                         ></textarea>
                                         <div class="reply-actions">
-                                            <button type="button" class="btn-cancel" onclick="cancelReply('{{ comment.id }}')">Cancel</button>
-                                            <button type="submit" class="btn-review">Reply</button>
+                                            <button type="button" class="btn btn-outline-danger" onclick="cancelReply('{{ comment.id }}')">Cancel</button>
+                                            <button type="submit" class="btn btn-primary">Reply</button>
                                         </div>
                                     </form>
                                 </div>
@@ -394,7 +397,9 @@
                                     {% for reply in comment.replies.all %}
                                     <div class="reply-item" data-comment-id="{{ reply.id }}">
                                         <div class="review-header">
-                                            <div class="review-avatar">{{ reply.user.username|first|upper }}</div>
+                                            <a href="{% url 'user_profile:profile_view' reply.user.username %}">
+                                                <div class="review-avatar">{{ reply.user.username|first|upper }}</div>
+                                            </a>
                                             <div class="review-author-info">
                                                 <div class="review-author">{{ reply.user.username }}</div>
                                                 <div class="review-meta">

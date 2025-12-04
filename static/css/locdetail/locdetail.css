@@ -28,13 +28,13 @@ span.favorited {
 
 /* Rating Summary */
 .rating-summary {
-    background: #f8f9fa;
     padding: 20px;
-    border-radius: 8px;
     margin-bottom: 20px;
     display: flex;
     align-items: center;
     gap: 30px;
+    border: 1px solid var(--white);
+    color: var(--white);
 }
 
 .rating-score {
@@ -44,7 +44,6 @@ span.favorited {
 .rating-number {
     font-size: 48px;
     font-weight: bold;
-    color: #333;
 }
 
 .rating-stars {
@@ -53,7 +52,6 @@ span.favorited {
 }
 
 .rating-count {
-    color: #666;
     margin-top: 5px;
 }
 
@@ -85,9 +83,7 @@ span.favorited {
 
 /* Review Form */
 .review-form-container {
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    border: 1px solid var(--white);
     padding: 20px;
     margin-bottom: 30px;
 }
@@ -96,6 +92,7 @@ span.favorited {
     margin-top: 0;
     font-size: 18px;
     font-weight: 600;
+    color: var(--white);
 }
 
 .review-textarea {
@@ -103,14 +100,19 @@ span.favorited {
     min-height: 60px;
     max-height: 300px;
     padding: 12px;
-    border: 1px solid #dadce0;
-    border-radius: 4px;
+    border: 1px solid var(--white);
+    background-color: var(--dark-gray-background);
     font-size: 14px;
     font-family: inherit;
     resize: none;
     box-sizing: border-box;
     overflow-y: hidden;
     transition: min-height 0.2s ease;
+    color: var(--white);
+}
+
+.review-textarea::placeholder {
+    color: var(--white);
 }
 
 .review-textarea:focus {
@@ -177,7 +179,6 @@ span.favorited {
 
 .review-author {
     font-weight: 600;
-    color: #202124;
 }
 
 .review-meta {
@@ -185,7 +186,6 @@ span.favorited {
     align-items: center;
     gap: 8px;
     font-size: 13px;
-    color: #5f6368;
     margin-top: 2px;
 }
 
@@ -196,7 +196,6 @@ span.favorited {
 
 .review-body {
     margin: 12px 0;
-    color: #3c4043;
     line-height: 1.6;
     white-space: pre-wrap;
     word-wrap: break-word;
@@ -217,7 +216,7 @@ span.favorited {
     background: none;
     border: none;
     cursor: pointer;
-    color: #5f6368;
+    color: var(--white);
     font-size: 13px;
     display: flex;
     align-items: center;
@@ -259,7 +258,7 @@ span.favorited {
     background: none;
     border: none;
     cursor: pointer;
-    color: #5f6368;
+    color: var(--white);
     font-size: 13px;
     padding: 5px 10px;
     display: flex;
@@ -361,10 +360,9 @@ span.favorited {
 
 .drop-area {
     border: 2px dashed #dadce0;
-    border-radius: 8px;
     padding: 20px;
     text-align: center;
-    background: #f8f9fa;
+    background: var(--dark-gray-background);
     margin: 15px 0;
     transition: all 0.3s;
 }

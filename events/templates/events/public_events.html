@@ -35,7 +35,7 @@
         grid-template-columns: 1fr;
     }
 }
-.filters input, .filters select {
+/* .filters input, .filters select {
     padding: 0.75rem;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -43,7 +43,7 @@
 }
 .filters input::placeholder {
     color: #666;
-}
+} */
 .events-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -155,36 +155,6 @@
     border-color: rgba(240, 147, 251, 0.5);
     transform: translateY(-2px);
 }
-/* .btn-favorite {
-    padding: 0.625rem 0.75rem;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    font-weight: 400;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    text-align: center;
-    background: rgba(250, 112, 154, 0.15);
-    border: 1px solid rgba(250, 112, 154, 0.3);
-}
-.btn-favorite:hover {
-    background: rgba(250, 112, 154, 0.25);
-    border-color: rgba(250, 112, 154, 0.5);
-    transform: translateY(-2px);
-}
-.btn-favorite.favorited {
-    background: rgba(17, 153, 142, 0.15);
-    border: 1px solid rgba(17, 153, 142, 0.3);
-}
-.btn-favorite.favorited:hover {
-    background: rgba(17, 153, 142, 0.25);
-    border-color: rgba(17, 153, 142, 0.5);
-    transform: translateY(-2px);
-} */
 </style>
 
 <div>
@@ -192,19 +162,25 @@
         
         <!-- Search and filters -->
          <div class="filters-section">
-            <form method="get" class="filters">
-                <input type="text" name="q" value="{{ query }}" placeholder="🔍 Search events...">
+            <form method="get" class="filters-form">
+                <div class="form-group">
+                    <input class="form-control" type="text" name="q" value="{{ query }}" placeholder="Search events...">
+                </div>
+
+                <div class="form-group">
+                    <select name="filter" class="form-control">
+                        <option value="">All Types</option>
+                        <option value="open" {% if filter == 'open' %}selected{% endif %}>Open to All</option>
+                        <option value="invite" {% if filter == 'invite' %}selected{% endif %}>Invite Only</option>
+                    </select>
+                </div>
                 
-                <select name="filter">
-                    <option value="">All Types</option>
-                    <option value="open" {% if filter == 'open' %}selected{% endif %}>Open to All</option>
-                    <option value="invite" {% if filter == 'invite' %}selected{% endif %}>Invite Only</option>
-                </select>
-                
-                <select name="sort">
-                    <option value="start_time" {% if sort == 'start_time' %}selected{% endif %}>Soonest First</option>
-                    <option value="-start_time" {% if sort == '-start_time' %}selected{% endif %}>Latest First</option>
-                </select>
+                <div class="form-group">
+                    <select name="sort" class="form-control">
+                        <option value="start_time" {% if sort == 'start_time' %}selected{% endif %}>Soonest First</option>
+                        <option value="-start_time" {% if sort == '-start_time' %}selected{% endif %}>Latest First</option>
+                    </select>
+                </div>
                 
                 <button class="btn btn-primary" type="submit">Search</button>
             </form>
@@ -252,7 +228,7 @@
                     {% endif %}
                     
                     {% if event.joined %}
-                    <button class="btn btn-outline-primary" disabled>Joined</button>
+                    <button class="btn btn-outline-primary flex-grow-1" disabled>Joined</button>
                     {% else %}
                     <form method="post" action="{% url 'events:join' event.slug %}" style="display:inline; flex: 1;">
                         {% csrf_token %}
