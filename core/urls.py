@@ -18,7 +18,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
+from artinerary import views as artinerary_views
+
 urlpatterns = [
+    path("", artinerary_views.landing_page, name="landing_page"),
     path("accounts/", include("accounts.urls")),
     path("accounts/", include("allauth.urls")),  # Add allauth URLs
     path("artinerary/", include("artinerary.urls")),
