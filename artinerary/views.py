@@ -29,9 +29,9 @@ def dashboard(request):
     my_itineraries = Itinerary.objects.filter(user=user).order_by("-updated_at")[:3]
 
     # Get recent chats (top 3)
-    recent_chats = Conversation.objects.filter(
-        Q(user1=user) | Q(user2=user)
-    ).order_by("-updated_at")[:3]
+    recent_chats = Conversation.objects.filter(Q(user1=user) | Q(user2=user)).order_by(
+        "-updated_at"
+    )[:3]
 
     context = {
         "upcoming_events": upcoming_events,
