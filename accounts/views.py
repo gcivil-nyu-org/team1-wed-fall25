@@ -172,4 +172,4 @@ def logout_view(request):
     """Handle both GET and POST logout"""
     logout(request)
     messages.success(request, "You have been logged out successfully.")
-    return redirect("accounts:login")
+    return redirect("landing_page")
