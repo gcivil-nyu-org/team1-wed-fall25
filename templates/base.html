@@ -240,14 +240,6 @@
         {% block content %}{% endblock %}
     </main>
     
-    <!-- Direct Chat Widget (1-on-1) - Only for authenticated users -->
-    {% if user.is_authenticated %}
-    <div id="direct-chat-widget"></div>
-    {% include 'events/partials/_direct_chat_widget.html' %}
-    {% endif %}
-    
-    {% block direct_chat_widget %}{% endblock %}
-    
     <script>
     function toggleDropdown() {
         document.getElementById("userDropdown").classList.toggle("show");
