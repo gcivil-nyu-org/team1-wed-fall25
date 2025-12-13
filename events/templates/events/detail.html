@@ -401,27 +401,31 @@ function copyShareLink() {
     const title = "{{ event.title|escapejs }}";
     const text = "Check out this event on Artinerary!";
     
-    if (navigator.share) {
-        // Native share on mobile/modern browsers
+    // Detect mobile devices (touch capability + small screen)
+    const isMobile = (
+        ('ontouchstart' in window || navigator.maxTouchPoints > 0) &&
+        window.innerWidth <= 768
+    );
+    
+    if (isMobile && navigator.share) {
+        // Mobile: Use native share sheet with full content
         navigator.share({
             title: title,
             text: text,
             url: url
         }).catch(function(err) {
-            // User cancelled or error occurred - silently fail
             console.log('Share cancelled or failed:', err);
         });
     } else if (navigator.clipboard) {
-        // Copy to clipboard on desktop
+        // Desktop (including macOS): Direct clipboard copy
         navigator.clipboard.writeText(url).then(function() {
             alert('Link copied to clipboard!');
         }).catch(function(err) {
             console.error('Failed to copy:', err);
-            // Fallback to prompt
             prompt('Copy this event link:', url);
         });
     } else {
-        // Fallback for older browsers
+        // Legacy fallback
         prompt('Copy this event link:', url);
     }
 }
